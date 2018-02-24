@@ -1,8 +1,8 @@
-const client = require('../../redis/client')
+const client = require('../redis/client')
 
-module.exports = (key, instance) => {
+module.exports = (key) => {
   return new Promise((resolve, reject) => {
-    client.zrem([key, instance], (err) => {
+    client.del(key, (err) => {
       if (err) {
         reject(err)
       }

@@ -1,13 +1,13 @@
-const client = require('../../redis/client')
+const client = require('../redis/client')
 
 module.exports = (key) => {
   return new Promise((resolve, reject) => {
-    client.del(key, (err) => {
+    client.zrange([key, 0, -1], (err, results) => {
       if (err) {
         reject(err)
       }
       else {
-        resolve(true)
+        resolve(results)
       }
     })
   })

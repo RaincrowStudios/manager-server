@@ -1,16 +1,29 @@
-const checkFamiliars = require('./checkFamiliars')
-const checkPlaces = require('./checkPlaces')
-const checkPortals = require('./checkPortals')
-const checkSpirits = require('./checkSpirits')
+const timers = require('../database/timers')
+const conditionAdd = require('./conditions/conditionAdd')
+const portalAdd = require('./portals/portalAdd')
 
-async function manager() {
+const addTimers = {
+  condition: conditionAdd,
+  portal: portalAdd
+}
+
+async function manager(message) {
   try {
-    Promise.all([
-      checkFamiliars(),
-      checkPlaces(),
-      checkPortals(),
-      checkSpirits()
-    ])
+    switch (message.command) {
+      case 'remove':
+        const timersToClear = timers.by("instance", message.instance)
+        for (const key of Object.keys(timersToClear)) {
+          if (key !== 'instance') {
+            clearTimeout(timersToClear[key])
+          }
+        }
+        break
+      case 'add':
+        addTimers[message.type](message.instance, message[message.type])
+        break
+      default:
+        break
+    }
   }
   catch (err) {
     console.error(err)

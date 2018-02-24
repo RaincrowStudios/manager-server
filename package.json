@@ -9,8 +9,11 @@
   },
   "author": "Sean Landis",
   "license": "SEE LICENSE IN LICENSE",
+  "repository": "github:RaincrowStudios/creatrix-server",
   "dependencies": {
-    "redis": "^2.8.0"
+    "lokijs": "^1.5.3",
+    "redis": "^2.8.0",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "nodemon": "^1.15.1"
