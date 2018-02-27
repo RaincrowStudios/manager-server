@@ -4,6 +4,7 @@ console.log('Starting Creatrix Server...')
 
 const client = require('./redis/client')
 const subscriber = require('./redis/subscriber')
+const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const spawner = require('./spawner/spawner')
 
@@ -21,6 +22,8 @@ const server = app.listen(port, function listening() {
   console.log('Server started at http://%s:%d', server.address().address, server.address().port)
 })*/
 
+
+initializer()
 
 process.on('unhandledRejection', (reason, location) => {
   console.error('Unhandled Rejection at:', location, 'reason:', reason)

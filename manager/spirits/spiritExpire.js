@@ -3,9 +3,9 @@ const timers = require('../../database/timers')
 const getFromRedis = require('../../utils/getFromRedis')
 const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByPoint')
 const informPlayers = require('../../utils/informPlayers')
-const removeFromGeohash = require('./../utils/removeFromGeohash')
-const removeFromSet = require('./../utils/removeFromSet')
-const removeInstanceFromRedis = require('./../utils/removeInstanceFromRedis')
+const removeFromGeohash = require('../../utils/removeFromGeohash')
+const removeFromSet = require('../../utils/removeFromSet')
+const removeFromRedis = require('../../utils/removeFromRedis')
 
 module.exports = async (instance, spirit) => {
   try {
@@ -34,8 +34,10 @@ module.exports = async (instance, spirit) => {
       ),
       removeFromGeohash('Spirits', instance),
       removeFromSet('spirits', instance),
-      removeInstanceFromRedis(instance)
+      removeFromRedis(instance)
     ])
+
+    console.log("Spirit %s has expired", instance)
 
     const spiritTimers = timers.by("instance", instance)
     clearTimeout(spiritTimers.expireTimer)

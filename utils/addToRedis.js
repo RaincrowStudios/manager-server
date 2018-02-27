@@ -1,22 +1,20 @@
 const client = require('../redis/client')
 
-module.exports = (instance, item) => {
+module.exports = (key, fields, values) => {
+  let update = []
+  for (let i = 0; i < fields.length; i++) {
+    update.push(fields[i], JSON.stringify(values[i]))
+  }
   return new Promise((resolve, reject) => {
-    client.hmset([
-      instance,
-      'info',
-      JSON.stringify(item.info),
-      'mapSelection',
-      JSON.stringify(item.mapSelection),
-      'mapToken',
-      JSON.stringify(item.mapToken),
-    ], (error) => {
-      if (error) {
-        reject(error)
+    client.hmset([key, ...update],
+      (err, result) => {
+        if (err) {
+          reject(err)
+        }
+        else {
+          resolve(true)
+        }
       }
-      else {
-        resolve(true)
-      }
-    })
+    )
   })
 }

@@ -1,4 +1,4 @@
-const timers = require('../../database/timers')
+const timers = require('../database/timers')
 const getSetFromRedis = require('../utils/getSetFromRedis')
 const getAllFromRedis = require('../utils/getAllFromRedis')
 const spiritExpire = require('../manager/spirits/spiritExpire')
@@ -15,19 +15,30 @@ async function initializeSpirits() {
 
         if (spirit.info.expiresOn > currentTime && spirit.info.energy > 0) {
           const expireTimer =
-            setTimeout(spiritExpire(spirits[i], spirit), spirit.info.expiresOn)
+            setTimeout(() =>
+              spiritExpire(spirits[i], spirit),
+              spirit.info.expiresOn - currentTime
+            )
 
           const moveTimer =
-            setTimeout(spiritMove(spirits[i], spirit), spirit.info.nextMove)
+            setTimeout(() =>
+              spiritMove(spirits[i], spirit),
+              spirit.info.moveOn > currentTime ?
+                spirit.info.moveOn - currentTime : 0
+            )
 
           const actionTimer =
-            setTimeout(spiritAction(spirits[i], spirit), spirit.info.actionMove)
+            setTimeout(() =>
+              spiritAction(spirits[i], spirit),
+              spirit.info.actionOn > currentTime ?
+                spirit.info.actionOn - currentTime : 0
+            )
 
           timers.insert({
-            spirits[i],
-            expireTimer,
-            moveTimer,
-            actionTimer
+            instance: spirits[i],
+            expireTimer: expireTimer,
+            moveTimer: moveTimer,
+            actionTimer: actionTimer
           })
         }
         else {

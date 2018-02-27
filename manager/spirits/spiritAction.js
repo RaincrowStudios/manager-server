@@ -5,47 +5,74 @@ const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByP
 const informPlayers = require('../../utils/informPlayers')
 const updateGeohash = require('../../utils/updateGeohash')
 const updateRedis = require('../../utils/updateRedis')
-const calculateSpiritMove = require('./calculateSpiritMove')
+const determineTargets = require('./action/determineTargets')
+const determineAction = require('./action/determineAction')
 
-module.exports = async (instance, spirit) => {
+async function spiritAction(instance, spirit) {
   try {
+    const currentTime = Date.now()
     const range = spirit.info.actionFreq.split('-')
     const min = parseInt(range[0], 10)
     const max = parseInt(range[1], 10)
-    spirit.info.nextAction +=
-      (Math.floor(Math.random() * (max - min)) + min) * 60000
+    spirit.info.actionOn =
+      currentTime + (Math.floor(Math.random() * (max - min)) + min) * 60000
 
-    const charactersNearLocation = await getNearbyFromGeohashByPoint(
-      'Characters',
-      spirit.info.latitude,
-      spirit.info.longitude,
-      constants.radiusVisual
-    )
+    const target = await determineTargets(spirit)
 
-    const playersToInform = charactersNearLocation.length !== 0 ?
-      await Promise.all(
-        charactersNearLocation.map(async (character) => {
-          const characterInfo = await getFromRedis(character[0], 'info')
-          return characterInfo.owner
-        })
-      ) : []
+    if (target) {
+      const result = {}
+      if (target.type === 'place' || target.type === 'portal') {
+        result = resolveBasicAttack(spirit, target)
+      }
+      else {
+        const action = determineAction(spirit.info)
+      }
 
-    const result = resolveSpiritAction(spirit)
+      const charactersNearLocation =
+        await getNearbyFromGeohashByPoint(
+          'Characters',
+          spirit.info.latitude,
+          spirit.info.longitude,
+          constants.radiusVisual
+        )
 
-    await Promise.all([
-      informPlayers(
-        playersToInform,
-        {
-          command: 'map_spirit_action',
-          instance: instance,
-          result: result
-        }
-      ),
-      updateRedis(instance, ['info'], [spirit.info])
-    ])
+      const playersToInform = charactersNearLocation.length !== 0 ?
+        await Promise.all(
+          charactersNearLocation.map(async (character) => {
+            const characterInfo = await getFromRedis(character[0], 'info')
+            return characterInfo.owner
+          })
+        ) : []
+
+      await Promise.all([
+        informPlayers(
+          playersToInform,
+          {
+            command: 'map_spirit_action',
+            instance: instance,
+            target: target.instance,
+            result: result
+          }
+        ),
+        informPlayers(
+          [spirit.info.ownerPlayer],
+          {
+            command: 'xp_gain',
+            xp
+          }
+        ),
+        updateRedis(instance, ['info'], [spirit.info])
+      ])
+    }
+    else {
+      await updateRedis(instance, ['info'], [spirit.info])
+    }
 
     const newTimer =
-      setTimeout(spiritAction(instance, spirit), spirit.info.nextAction - Date.now())
+      setTimeout(() =>
+        spiritAction(instance, spirit), spirit.info.actionOn - currentTime
+      )
+
     let spiritTimers = timers.by("instance", instance)
     spiritTimers.actionTimer = newTimer
     timers.update(spiritTimers)
@@ -54,3 +81,5 @@ module.exports = async (instance, spirit) => {
     console.error(err)
   }
 }
+
+module.exports = spiritAction
