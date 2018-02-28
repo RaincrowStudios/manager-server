@@ -36,9 +36,9 @@ async function initializeSpirits() {
 
           timers.insert({
             instance: spirits[i],
-            expireTimer: expireTimer,
-            moveTimer: moveTimer,
-            actionTimer: actionTimer
+            expireTimer,
+            moveTimer,
+            actionTimer
           })
         }
         else {

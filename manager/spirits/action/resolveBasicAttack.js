@@ -1,50 +1,32 @@
-const checkForSpecialCondition = require('./checkForSpecialCondition')
-const determineHeal = require('./resolveNormalSpell/determineHeal')
-const determineDamage = require('./resolveNormalSpell/determineDamage')
-const addCondition = require('./resolveNormalSpell/addCondition')
+const determineCritical = require('./determineCritical')
+const determineResist = require('./determineResist')
 
 module.exports = (spirit, target) => {
-  return new Promise((resolve, reject) => {
-    try {
-      let spellSuccess = {}
-      if (spell.range.includes('*')) {
-        const result = determineHeal(
-          spell,
-          caster,
-          target
-        )
-        spellSuccess = {
-          characterName: target.characterName,
-          alignment: target.alignment,
-          energy: target.energy + result.total,
-          healing: result.total
-        }
-        if (spell.duration > 0) {
-          spellSuccess.condition = addCondition(spell, target)
-        }
-      }
-      else {
-        const result = determineDamage(
-          spell,
-          caster,
-          target,
-          ingredients,
-          channelCount
-        )
-        spellSuccess = {
-          characterName: target.characterName,
-          alignment: target.alignment,
-          energy: target.energy - result.total,
-          damage: result.total,
-          critical: result.critical,
-          resist: result.resist
-        }
+  const range = spirit.attack.split('-')
+  const min = parseInt(range[0], 10)
+  const max = parseInt(range[1], 10)
+  let critical = false
+  let resist = false
 
+  let total = Math.floor(Math.random() * (max - min + 1)) + min
+
+  if (determineCritical(spirit, target)) {
+    let total = Math.floor(Math.random() * (max - min + 1)) + min
+
+    if (spirit.conditions && spirit.conditions.length !== 0) {
+      for (const condition of conditions) {
+        if (condition.beCrit) {
+          total += condition.power
+        }
       }
-      resolve(spellSuccess)
     }
-    catch (err) {
-      reject(err)
-    }
-  })
+    critical = true
+  }
+
+  if (determineResist(target)) {
+    total /= 2
+    resist = true
+  }
+
+  return { total: total * -1, critical, resist }
 }

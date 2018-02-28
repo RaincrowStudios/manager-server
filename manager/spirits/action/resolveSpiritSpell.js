@@ -1,7 +1,6 @@
-const checkForSpecialCondition = require('./checkForSpecialCondition')
-const determineHeal = require('./resolveNormalSpell/determineHeal')
-const determineDamage = require('./resolveNormalSpell/determineDamage')
-const addCondition = require('./resolveNormalSpell/addCondition')
+const determineHeal = require('./determineHeal')
+const determineDamage = require('./determineDamage')
+const addCondition = require('./addCondition')
 
 module.exports = (spirit, spell, target) => {
   return new Promise((resolve, reject) => {

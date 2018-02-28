@@ -14,17 +14,17 @@ module.exports = (spirit) => {
   let newLong = 0
   do {
     newLat = spirit.latitude +
-      (((Math.floor(Math.random() * (max - min)) + min) * 0.0001) *
+      (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001) *
       (spirit.directionBias[0] < 0 ?
         0 : (Math.random() < spirit.directionBias[0] ? 1 : -1)))
 
     newLong = spirit.longitude +
-      (((Math.floor(Math.random() * max) - min) * 0.0001 *
+      (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001 *
       Math.cos(spirit.latitude * (Math.PI / 180)))  *
       (spirit.directionBias[1] < 0 ?
       0 : (Math.random() < spirit.directionBias[1] ? 1 : -1)))
   }
-  while (spirit.maxDistance > calculateDistance(spirit.latitude, spirit.longitude, newLat, newLong))
+  while (spirit.maxDistance < calculateDistance(spirit.summonLat, spirit.summonLong, newLat, newLong))
 
-  return [precisionRound(newLat, 4), precisionRound(newLong, 4)]
+  return [precisionRound(newLat, 6), precisionRound(newLong, 6)]
 }

@@ -28,7 +28,7 @@ module.exports = async (instance, spirit) => {
       informPlayers(
         playersToInform,
         {
-          command: 'map_remove',
+          command: 'map_spirit_expire',
           instance: instance
         }
       ),
@@ -37,12 +37,10 @@ module.exports = async (instance, spirit) => {
       removeFromRedis(instance)
     ])
 
-    console.log("Spirit %s has expired", instance)
-
     const spiritTimers = timers.by("instance", instance)
     clearTimeout(spiritTimers.expireTimer)
     clearTimeout(spiritTimers.moveTimer)
-    clearTimeout(spiritTimers.actionTime)
+    clearTimeout(spiritTimers.actionTimer)
     timers.remove(spiritTimers)
   }
   catch (err) {

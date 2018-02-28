@@ -12,7 +12,7 @@ module.exports = (spirit, spell, target) => {
 
   total += spirit.power
 
-  if (spirit.conditions.length !== 0) {
+  if (spirit.conditions && spirit.conditions.length !== 0) {
     for (const condition of conditions) {
       if (condition.beCrit) {
         total += condition.power
@@ -25,7 +25,7 @@ module.exports = (spirit, spell, target) => {
 
     total += spirit.power
 
-    if (spirit.conditions.length !== 0) {
+    if (spirit.conditions && spirit.conditions.length !== 0) {
       for (const condition of conditions) {
         if (condition.beCrit) {
           total += condition.power
@@ -41,5 +41,5 @@ module.exports = (spirit, spell, target) => {
     resist = true
   }
 
-  return { total, critical, resist }
+  return { total: total * -1, critical, resist }
 }
