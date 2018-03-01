@@ -16,7 +16,7 @@ async function spiritMove(instance, spirit) {
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)
       spirit.info.moveOn =
-        currentTime + (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
+        currentTime + (Math.floor(Math.random() * (max - min + 1)) + min) * 1000
 
       const charactersNearOldLocation =
         await getNearbyFromGeohashByPoint(
@@ -35,13 +35,13 @@ async function spiritMove(instance, spirit) {
         ) : []
 
       const newCoords = determineSpiritMove(spirit.info)
-      console.log({
+      /*console.log({
         'event': 'spirit_move',
         spirit: instance,
         type: spirit.info.id,
         owner: spirit.info.ownerPlayer,
         to: [newCoords[0], newCoords[1]]
-      })
+      })*/
       spirit.info.latitude = newCoords[0]
       spirit.info.longitude = newCoords[1]
       spirit.mapSelection.latitude = newCoords[0]
@@ -68,7 +68,7 @@ async function spiritMove(instance, spirit) {
       await informPlayers(
         playersToRemoveSpirit,
         {
-          command: 'map_remove',
+          command: 'map_spirit_remove',
           instance: instance
         }
       )
@@ -77,8 +77,9 @@ async function spiritMove(instance, spirit) {
         informPlayers(
           playersToAddSpirit,
           {
-            command: 'map_add',
+            command: 'map_spirit_add',
             instance: instance,
+            type: spirit.info.type,
             token: spirit.mapToken
           }
         ),
@@ -108,8 +109,10 @@ async function spiritMove(instance, spirit) {
           spiritMove(instance, spirit), spirit.info.moveOn - currentTime
         )
       let spiritTimers = timers.by("instance", instance)
-      spiritTimers.moveTimer = newTimer
-      timers.update(spiritTimers)
+      if (spiritTimers) {
+        spiritTimers.moveTimer = newTimer
+        timers.update(spiritTimers)
+      }
     }
   }
   catch (err) {

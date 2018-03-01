@@ -9,7 +9,7 @@ module.exports = (instance, spirit, killer) => {
     try {
       await Promise.all([
         informPlayers(
-          [spirit.info.ownerPlayer],
+          [spirit.ownerPlayer],
           {
             command: 'player_spirit_death',
             instance: instance,

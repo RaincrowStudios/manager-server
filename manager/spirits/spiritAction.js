@@ -20,8 +20,7 @@ async function spiritAction(instance, spirit) {
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)
       spirit.info.actionOn =
-        currentTime +
-          (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
+        currentTime + (Math.floor(Math.random() * (max - min + 1)) + min) * 1000
 
       let target, index
       [target, index] = await determineTargets(instance, spirit.info)
@@ -39,7 +38,7 @@ async function spiritAction(instance, spirit) {
         target.info.energy += result.total
         target.mapSelection.energy += result.total
         target.info.lastAttackBy = { instance, type: 'spirit' }
-
+        console.log(target.info.energy)
         let dead = false
         if (target.info.type === 'spirit' || target.info.energy <= 0) {
           dead = true
@@ -132,7 +131,6 @@ async function spiritAction(instance, spirit) {
         }
       }
       else {
-        console.log('%s found no targets', instance)
         await updateRedis(instance, ['info'], [spirit.info])
       }
 
@@ -142,8 +140,10 @@ async function spiritAction(instance, spirit) {
         )
 
       let spiritTimers = timers.by("instance", instance)
-      spiritTimers.actionTimer = newTimer
-      timers.update(spiritTimers)
+      if (spiritTimers) {
+        spiritTimers.actionTimer = newTimer
+        timers.update(spiritTimers)
+      }
     }
   }
   catch (err) {

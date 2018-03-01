@@ -28,7 +28,7 @@ module.exports = async (instance, spirit) => {
       informPlayers(
         playersToInform,
         {
-          command: 'map_spirit_expire',
+          command: 'map_spirit_remove',
           instance: instance
         }
       ),
@@ -38,10 +38,12 @@ module.exports = async (instance, spirit) => {
     ])
 
     const spiritTimers = timers.by("instance", instance)
-    clearTimeout(spiritTimers.expireTimer)
-    clearTimeout(spiritTimers.moveTimer)
-    clearTimeout(spiritTimers.actionTimer)
-    timers.remove(spiritTimers)
+    if (spiritTimers) {
+      clearTimeout(spiritTimers.expireTimer)
+      clearTimeout(spiritTimers.moveTimer)
+      clearTimeout(spiritTimers.actionTimer)
+      timers.remove(spiritTimers)
+    }
   }
   catch (err) {
     console.error(err)
