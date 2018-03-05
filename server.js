@@ -5,7 +5,6 @@ console.log('Starting Creatrix Server...')
 const subscriber = require('./redis/subscriber')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
-const spawner = require('./spawner/spawner')
 
 subscriber.on('message', ((channel, message) => {
     manager(JSON.parse(message))
