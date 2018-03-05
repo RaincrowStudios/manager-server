@@ -30,7 +30,7 @@ module.exports = (instance, spirit, killer) => {
         owner: spirit.ownerPlayer
       })
 
-      const spiritTimers = timers.by("instance", instance)
+      const spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {
         clearTimeout(spiritTimers.expireTimer)
         clearTimeout(spiritTimers.moveTimer)

@@ -31,11 +31,19 @@ async function initializeConditions() {
                     condition.triggerOn - currentTime : 0
                 )
 
-              timers.insert({
-                instance: conditions[i],
-                expireTimer,
-                triggerTimer,
-              })
+              const previousTimers = timers.by('instance', conditions[i])
+              if (previousTimers) {
+                previousTimers.expireTimer
+                previousTimers.triggerTimer
+                timers.update(previousTimers)
+              }
+              else {
+                timers.insert({
+                  instance: conditions[i],
+                  expireTimer,
+                  triggerTimer,
+                })
+              }
             }
             else {
               conditionExpire(conditions[i], bearerName)

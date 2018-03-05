@@ -1,5 +1,6 @@
 const timers = require('../../database/timers')
 const getAllFromRedis = require('../../utils/getAllFromRedis')
+const updateRedis = require('../../utils/updateRedis')
 const spiritDeath = require('../spirits/spiritDeath')
 const conditionExpire = require('./conditionExpire')
 const resolveCondition = require('./resolveCondition')
@@ -37,7 +38,7 @@ async function conditionTrigger (instance, bearerName) {
           bearer: bearerName,
           condition: conditionToUpdate.id,
           total: total,
-          energyRemaing: bearer.info.energy
+          energy: bearer.info.energy
         })
 
         if (
@@ -55,6 +56,12 @@ async function conditionTrigger (instance, bearerName) {
               conditionTrigger(instance, bearerName),
               conditionToUpdate.tick * 60000
             )
+
+          await updateRedis(
+            bearerName,
+            ['info', 'mapSelection'],
+            [bearer.info, bearer.mapSelection]
+          )
 
           let conditionTimer = timers.by('instance', instance)
           if (conditionTimer) {

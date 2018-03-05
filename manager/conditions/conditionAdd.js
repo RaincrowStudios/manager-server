@@ -11,7 +11,7 @@ module.exports = async (instance, bearerName, condition) => {
     const expireTimer =
       setTimeout(() =>
         conditionExpire(instance, bearerName),
-        condition.expiresOn - currentTime
+        condition.expireOn - currentTime
       )
 
     timer.expireTimer = expireTimer
@@ -19,7 +19,8 @@ module.exports = async (instance, bearerName, condition) => {
     if (condition.triggerOn) {
       const triggerTimer =
         setTimeout(() =>
-          conditionTrigger(instance, bearerName), condition.triggerOn - currentTime
+          conditionTrigger(instance, bearerName),
+          condition.triggerOn - currentTime
         )
 
       timer.triggerTimer = triggerTimer

@@ -79,6 +79,7 @@ module.exports = (instance, spirit) => {
                 }
               }
             }
+            break
           case 'previousTarget':
             if (spirit.previousTarget) {
               const targetType =
@@ -104,6 +105,84 @@ module.exports = (instance, spirit) => {
                 }
               }
             }
+            break
+          case 'allies':
+          case 'enemies':
+            if (
+              nearByCharacters.length !== 0 ||
+              nearBySpirits.length !== 0
+            ) {
+
+              const redisQuery = []
+              for (let i = 0; i < nearByCharacters.length; i++) {
+                redisQuery.push(getAllFromRedis(nearByCharacters[i][0]))
+              }
+              for (let i = 0; i < nearBySpirits.length; i++) {
+                redisQuery.push(getAllFromRedis(nearBySpirits[i][0]))
+              }
+
+              const redisInfo = await Promise.all(redisQuery)
+
+              if (spirit.targets[i] === 'allies') {
+                const allies = []
+                const alliesInfo = []
+                for (let i = 0; i < nearByCharacters.length; i++) {
+                  if (redisInfo[i].info.coven === spirit.ownerCoven) {
+                    allies.push(nearByCharacters[i][0])
+                    alliesInfo.push(redisInfo[i])
+                  }
+                }
+                for (let i = 0; i < nearBySpirits.length; i++) {
+                  if (redisInfo[i].info.ownerCoven === spirit.ownerCoven) {
+                    allies.push(nearBySpirits[i][0])
+                    alliesInfo.push(redisInfo[i])
+                  }
+                }
+
+                if (allies.length > 0) {
+                  const index = Math.floor(Math.random() * allies.length)
+                  resolve([
+                    {
+                      instance: allies[index],
+                      info: alliesInfo[index].info,
+                      mapSelection: alliesInfo[index].mapSelection,
+                      mapToken: alliesInfo[index].mapToken
+                    },
+                    i
+                  ])
+                }
+              }
+              else {
+                const enemies = []
+                const enemiesInfo = []
+                for (let i = 0; i < nearByCharacters.length; i++) {
+                  if (redisInfo[i].info.coven !== spirit.ownerCoven) {
+                    enemies.push(nearByCharacters[i][0])
+                    enemiesInfo.push(redisInfo[i])
+                  }
+                }
+                for (let i = 0; i < nearBySpirits.length; i++) {
+                  if (redisInfo[i].info.ownerCoven !== spirit.ownerCoven) {
+                    enemies.push(nearBySpirits[i][0])
+                    enemiesInfo.push(redisInfo[i])
+                  }
+                }
+
+                if (enemies.length > 0) {
+                  const index = Math.floor(Math.random() * enemies.length)
+                  resolve([
+                    {
+                      instance: enemies[index],
+                      info: enemiesInfo[index].info,
+                      mapSelection: enemiesInfo[index].mapSelection,
+                      mapToken: enemiesInfo[index].mapToken
+                    },
+                    i
+                  ])
+                }
+              }
+            }
+            break
           case 'summoner':
             if (nearByCharacters.length !== 0) {
               for (const target of nearByCharacters) {
@@ -121,6 +200,7 @@ module.exports = (instance, spirit) => {
                 }
               }
             }
+            break
           case 'summonerAttacker':
             break
           case 'summonerPortalAttacker':
@@ -143,6 +223,7 @@ module.exports = (instance, spirit) => {
                 ])
               }
             }
+            break
           case 'portals':
             if (nearByPortals.length !== 0) {
               const target = nearBySpirits[
@@ -161,6 +242,7 @@ module.exports = (instance, spirit) => {
                 ])
               }
             }
+            break
           case 'spirits':
             for (let i = 0; i < nearBySpirits.length; i++) {
               if (nearBySpirits[i][0] === instance) {
@@ -186,6 +268,7 @@ module.exports = (instance, spirit) => {
                 ])
               }
             }
+            break
           case 'vampires':
           case 'witches':
             if (nearByCharacters.length !== 0) {
@@ -212,6 +295,7 @@ module.exports = (instance, spirit) => {
               }
               while (nearByCharacters.length > 0)
             }
+            break
           default:
             break
         }

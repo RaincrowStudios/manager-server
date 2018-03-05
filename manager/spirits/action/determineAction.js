@@ -11,6 +11,9 @@ module.exports = (spirit, index) => {
       if (roll < weight) {
         return potentialActions[i][0]
       }
+      else if (i === potentialActions.length -1) {
+        return potentialActions[i][0]
+      }
     }
     return potentialActions[-1][0]
   }
