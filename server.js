@@ -2,7 +2,6 @@
 
 console.log('Starting Creatrix Server...')
 
-const client = require('./redis/client')
 const subscriber = require('./redis/subscriber')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')

@@ -2,7 +2,7 @@ module.exports = (spirit, target) => {
   let critChance = spirit.critical
 
   if (spirit.conditions && spirit.conditions.length !== 0) {
-    for (const condition of conditions) {
+    for (const condition of spirit.conditions) {
       if (condition.beCrit) {
         critChance += condition.toCrit
       }
@@ -10,7 +10,7 @@ module.exports = (spirit, target) => {
   }
 
   if (target.conditions && target.conditions.length !== 0) {
-    for (const condition of conditions) {
+    for (const condition of spirit.conditions) {
       if (condition.beCrit) {
         critChance += condition.beCrit
       }

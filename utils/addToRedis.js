@@ -6,15 +6,13 @@ module.exports = (key, fields, values) => {
     update.push(fields[i], JSON.stringify(values[i]))
   }
   return new Promise((resolve, reject) => {
-    client.hmset([key, ...update],
-      (err, result) => {
-        if (err) {
-          reject(err)
-        }
-        else {
-          resolve(true)
-        }
+    client.hmset([key, ...update], (err) => {
+      if (err) {
+        reject(err)
       }
-    )
+      else {
+        resolve(true)
+      }
+    })
   })
 }

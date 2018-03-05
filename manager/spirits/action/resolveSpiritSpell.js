@@ -1,46 +1,75 @@
+const getFromRedis = require('../../../utils/getFromRedis')
 const determineHeal = require('./determineHeal')
 const determineDamage = require('./determineDamage')
 const addCondition = require('./addCondition')
 
-module.exports = (spirit, spell, target) => {
-  return new Promise((resolve, reject) => {
+function resolveSpiritSpell(instance, spirit, action, target) {
+  return new Promise(async (resolve, reject) => {
     try {
-      let spellSuccess = {}
-      if (spell.range.includes('*')) {
-        const result = determineHeal(
-          spell,
-          caster,
-          target
-        )
-        spellSuccess = {
-          characterName: target.characterName,
-          alignment: target.alignment,
-          energy: target.energy + result.total,
-          healing: result.total
-        }
-        if (spell.duration > 0) {
-          spellSuccess.condition = addCondition(spell, target)
+      const spell = await getFromRedis('spells', action)
+      let result = {}
+      if (spell.special) {
+        switch (spell.special) {
+          case 'greaterHex':
+            spell.id = 'hex'
+            spell.displayName = 'Hex'
+            delete spell.special
+            for (let i = 0; i < 3; i++) {
+              const intermediateResult =
+                resolveSpiritSpell(instance, spirit, spell, target)
+              result.total += intermediateResult.total
+              result.conditions.push(intermediateResult.conditions)
+              result.conditionsHidden.push(intermediateResult.conditionsHidden)
+            }
+            break
+          default:
+            break
         }
       }
       else {
-        const result = determineDamage(spirit, spell, target)
-        spellSuccess = {
-          characterName: target.characterName,
-          alignment: target.alignment,
-          energy: target.energy - result.total,
-          damage: result.total,
-          critical: result.critical,
-          resist: result.resist
+        if (spell.range.includes('#')) {
+          result = determineHeal(spell)
         }
+        else {
+          result = determineDamage(spirit, spell, target)
+        }
+        if (spell.conditions.length > 0) {
+          result.conditions = []
+          result.conditionsHidden = []
+          for (const condition of spell.conditions) {
+            let stack = 0
+            for (const condition of target.info.conditions) {
+              if (condition.id === spell.id) {
+                stack++
+              }
+            }
+            for (const condition of target.info.conditionsHidden) {
+              if (condition.id === spell.id) {
+                stack++
+              }
+            }
 
-        if (spell.duration > 0) {
-          spellSuccess.condition = addCondition(spell, ingredients)
+            if (stack < condition.maxStack) {
+              if (condition.hidden) {
+                result.conditionsHidden.push(
+                  addCondition(instance, spirit, action, spell, condition, target)
+                )
+              }
+              else {
+                result.conditions.push(
+                  addCondition(instance, spirit, action, spell, condition, target)
+                )
+              }
+            }
+          }
         }
       }
-      resolve(spellSuccess)
+      resolve(result)
     }
     catch (err) {
       reject(err)
     }
   })
 }
+
+module.exports = resolveSpiritSpell

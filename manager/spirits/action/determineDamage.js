@@ -13,21 +13,21 @@ module.exports = (spirit, spell, target) => {
   total += spirit.power
 
   if (spirit.conditions && spirit.conditions.length !== 0) {
-    for (const condition of conditions) {
-      if (condition.beCrit) {
+    for (const condition of spirit.conditions) {
+      if (condition.power) {
         total += condition.power
       }
     }
   }
 
   if (determineCritical(spirit, target)) {
-    let total = Math.floor(Math.random() * (max - min + 1)) + min
+    total += Math.floor(Math.random() * (max - min + 1)) + min
 
     total += spirit.power
 
     if (spirit.conditions && spirit.conditions.length !== 0) {
-      for (const condition of conditions) {
-        if (condition.beCrit) {
+      for (const condition of spirit.conditions) {
+        if (condition.power) {
           total += condition.power
         }
       }
