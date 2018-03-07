@@ -1,6 +1,6 @@
 'use strict'
 
-console.log('Starting Creatrix Server...')
+console.log('Starting Manager Server...')
 
 const subscriber = require('./redis/subscriber')
 const initializer = require('./initializer/initializer')

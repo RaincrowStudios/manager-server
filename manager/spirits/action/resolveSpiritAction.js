@@ -20,10 +20,22 @@ module.exports = (instance, spirit) => {
       if (target) {
         const action = determineAction(spirit.info, index)
 
-        const result =
-          action === 'attack' ?
-            await resolveBasicAttack(spirit.info, target.info) :
-            await resolveSpiritSpell(instance, spirit.info, action, target)
+        let result
+        switch (action) {
+          case 'attack':
+            result = await resolveBasicAttack(spirit.info, target.info)
+            break
+          case 'collect':
+            break
+          default:
+            result = await resolveSpiritSpell(
+              instance,
+              spirit.info,
+              action,
+              target
+            )
+            break
+        }
 
         spirit.info.previousTarget = target.instance
         target.info.energy += result.total

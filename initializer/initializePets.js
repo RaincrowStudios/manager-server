@@ -15,7 +15,7 @@ async function initializePets() {
           const expireTimer =
             setTimeout(petExpire(pets[i], pet), pet.info.expiresOn)
 
-          timers.insert({pets[i], expireTimer})
+          timers.insert({instance: pets[i], expireTimer})
         }
         else {
           petExpire(pets[i], pet)

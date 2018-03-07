@@ -4,7 +4,7 @@ const getAllFromRedis = require('../../../utils/getAllFromRedis')
 module.exports = (instance, spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const nearByTokens = await Promise.all([
+      const nearTokens = await Promise.all([
         getNearbyFromGeohashByPoint(
           'Characters',
           spirit.latitude,
@@ -37,28 +37,48 @@ module.exports = (instance, spirit) => {
         )
       ])
 
-      let nearByCharacters,
-        nearByCollectibles,
-        nearByPlaces,
-        nearByPortals,
-        nearBySpirits
+      let nearCharacters,
+        nearCollectibles,
+        nearPlaces,
+        nearPortals,
+        nearSpirits
 
-      [nearByCharacters,
-        nearByCollectibles,
-        nearByPlaces,
-        nearByPortals,
-        nearBySpirits] = nearByTokens
+      [nearCharacters,
+        nearCollectibles,
+        nearPlaces,
+        nearPortals,
+        nearSpirits] = nearTokens
 
       for (let i = 0; i < spirit.targets.length; i++) {
         switch (spirit.targets[i]) {
           case 'self':
             resolve(['self', i])
             break
+          case 'collectibles':
+            if (nearCollectibles.length !== 0) {
+              const collectible =
+                nearCollectibles[
+                  Math.floor(Math.random() * nearCollectibles.length)
+                ][0]
+
+              const redisInfo = await getAllFromRedis(collectible)
+
+              resolve([
+                {
+                  instance: collectible,
+                  info: redisInfo.info,
+                  mapSelection: redisInfo.mapSelection,
+                  mapToken: redisInfo.mapToken
+                },
+                i
+              ])
+            }
+            break
           case 'attacker':
             if (spirit.lastAttackBy) {
               const attackerType =
                 spirit.lastAttackBy.type === 'spirit' ?
-                  nearBySpirits : nearByCharacters
+                  nearSpirits : nearCharacters
 
               if (attackerType.length !== 0) {
                 for (const target of attackerType) {
@@ -84,7 +104,7 @@ module.exports = (instance, spirit) => {
             if (spirit.previousTarget) {
               const targetType =
                 spirit.previousTarget.type === 'spirit' ?
-                  nearBySpirits : nearByCharacters
+                  nearSpirits : nearCharacters
 
               if (targetType.length !== 0) {
                 for (const target of targetType) {
@@ -109,16 +129,16 @@ module.exports = (instance, spirit) => {
           case 'allies':
           case 'enemies':
             if (
-              nearByCharacters.length !== 0 ||
-              nearBySpirits.length !== 0
+              nearCharacters.length !== 0 ||
+              nearSpirits.length !== 0
             ) {
 
               const redisQuery = []
-              for (let i = 0; i < nearByCharacters.length; i++) {
-                redisQuery.push(getAllFromRedis(nearByCharacters[i][0]))
+              for (let i = 0; i < nearCharacters.length; i++) {
+                redisQuery.push(getAllFromRedis(nearCharacters[i][0]))
               }
-              for (let i = 0; i < nearBySpirits.length; i++) {
-                redisQuery.push(getAllFromRedis(nearBySpirits[i][0]))
+              for (let i = 0; i < nearSpirits.length; i++) {
+                redisQuery.push(getAllFromRedis(nearSpirits[i][0]))
               }
 
               const redisInfo = await Promise.all(redisQuery)
@@ -126,15 +146,15 @@ module.exports = (instance, spirit) => {
               if (spirit.targets[i] === 'allies') {
                 const allies = []
                 const alliesInfo = []
-                for (let i = 0; i < nearByCharacters.length; i++) {
+                for (let i = 0; i < nearCharacters.length; i++) {
                   if (redisInfo[i].info.coven === spirit.ownerCoven) {
-                    allies.push(nearByCharacters[i][0])
+                    allies.push(nearCharacters[i][0])
                     alliesInfo.push(redisInfo[i])
                   }
                 }
-                for (let i = 0; i < nearBySpirits.length; i++) {
+                for (let i = 0; i < nearSpirits.length; i++) {
                   if (redisInfo[i].info.ownerCoven === spirit.ownerCoven) {
-                    allies.push(nearBySpirits[i][0])
+                    allies.push(nearSpirits[i][0])
                     alliesInfo.push(redisInfo[i])
                   }
                 }
@@ -155,15 +175,15 @@ module.exports = (instance, spirit) => {
               else {
                 const enemies = []
                 const enemiesInfo = []
-                for (let i = 0; i < nearByCharacters.length; i++) {
+                for (let i = 0; i < nearCharacters.length; i++) {
                   if (redisInfo[i].info.coven !== spirit.ownerCoven) {
-                    enemies.push(nearByCharacters[i][0])
+                    enemies.push(nearCharacters[i][0])
                     enemiesInfo.push(redisInfo[i])
                   }
                 }
-                for (let i = 0; i < nearBySpirits.length; i++) {
+                for (let i = 0; i < nearSpirits.length; i++) {
                   if (redisInfo[i].info.ownerCoven !== spirit.ownerCoven) {
-                    enemies.push(nearBySpirits[i][0])
+                    enemies.push(nearSpirits[i][0])
                     enemiesInfo.push(redisInfo[i])
                   }
                 }
@@ -184,8 +204,8 @@ module.exports = (instance, spirit) => {
             }
             break
           case 'summoner':
-            if (nearByCharacters.length !== 0) {
-              for (const target of nearByCharacters) {
+            if (nearCharacters.length !== 0) {
+              for (const target of nearCharacters) {
                 if (target[0] === spirit.owner) {
                   const redisInfo = await getAllFromRedis(spirit.owner)
                   resolve([
@@ -206,9 +226,9 @@ module.exports = (instance, spirit) => {
           case 'summonerPortalAttacker':
             break
           case 'places':
-            if (nearByPlaces.length !== 0) {
-              const target = nearBySpirits[
-                Math.floor(Math.random() * nearBySpirits.length)
+            if (nearPlaces.length !== 0) {
+              const target = nearSpirits[
+                Math.floor(Math.random() * nearSpirits.length)
               ][0]
               const redisInfo = await getAllFromRedis(target)
               if (redisInfo) {
@@ -225,9 +245,9 @@ module.exports = (instance, spirit) => {
             }
             break
           case 'portals':
-            if (nearByPortals.length !== 0) {
-              const target = nearBySpirits[
-                Math.floor(Math.random() * nearBySpirits.length)
+            if (nearPortals.length !== 0) {
+              const target = nearSpirits[
+                Math.floor(Math.random() * nearSpirits.length)
               ][0]
               const redisInfo = await getAllFromRedis(target)
               if (redisInfo) {
@@ -244,16 +264,16 @@ module.exports = (instance, spirit) => {
             }
             break
           case 'spirits':
-            for (let i = 0; i < nearBySpirits.length; i++) {
-              if (nearBySpirits[i][0] === instance) {
-                nearBySpirits.splice(i, 1)
+            for (let i = 0; i < nearSpirits.length; i++) {
+              if (nearSpirits[i][0] === instance) {
+                nearSpirits.splice(i, 1)
               }
             }
 
-            if (nearBySpirits.length !== 0) {
+            if (nearSpirits.length !== 0) {
               const target =
-                nearBySpirits[
-                  Math.floor(Math.random() * nearBySpirits.length)
+                nearSpirits[
+                  Math.floor(Math.random() * nearSpirits.length)
                 ][0]
               const redisInfo = await getAllFromRedis(target)
               if (redisInfo) {
@@ -271,11 +291,11 @@ module.exports = (instance, spirit) => {
             break
           case 'vampires':
           case 'witches':
-            if (nearByCharacters.length !== 0) {
+            if (nearCharacters.length !== 0) {
               do {
                 const index =
-                  Math.floor(Math.random() * nearByCharacters.length)
-                const target = nearByCharacters[index][0]
+                  Math.floor(Math.random() * nearCharacters.length)
+                const target = nearCharacters[index][0]
 
                 const redisInfo = await getAllFromRedis(target)
                 if (redisInfo.info.type === spirit.targets[i]) {
@@ -290,10 +310,10 @@ module.exports = (instance, spirit) => {
                   ])
                 }
                 else {
-                  nearByCharacters.splice(index, 1)
+                  nearCharacters.splice(index, 1)
                 }
               }
-              while (nearByCharacters.length > 0)
+              while (nearCharacters.length > 0)
             }
             break
           default:

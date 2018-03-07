@@ -50,7 +50,8 @@ async function conditionTrigger (instance, bearerName) {
           conditionExpire(instance, bearerName)
         }
         else {
-          conditionToUpdate.triggerOn = currentTime + (conditionToUpdate.tick * 60000)
+          conditionToUpdate.triggerOn =
+            currentTime + (conditionToUpdate.tick * 60000)
           const newTimer =
             setTimeout(() =>
               conditionTrigger(instance, bearerName),

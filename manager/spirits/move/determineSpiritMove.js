@@ -15,16 +15,18 @@ module.exports = (spirit) => {
   do {
     newLat = spirit.latitude +
       (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001) *
-      (spirit.directionBias[0] < 0 ?
-        0 : (Math.random() < spirit.directionBias[0] ? 1 : -1)))
+      (Math.random() < 0.5 ? 1 : -1))
 
     newLong = spirit.longitude +
       (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001 *
       Math.cos(spirit.latitude * (Math.PI / 180)))  *
-      (spirit.directionBias[1] < 0 ?
-      0 : (Math.random() < spirit.directionBias[1] ? 1 : -1)))
+      (Math.random() < 0.5 ? 1 : -1))
   }
-  while (spirit.maxDistance < calculateDistance(spirit.summonLat, spirit.summonLong, newLat, newLong))
+  while (
+    spirit.maxDistance !== 0 &&
+    spirit.maxDistance <
+    calculateDistance(spirit.summonLat, spirit.summonLong, newLat, newLong)
+  )
 
   return [precisionRound(newLat, 6), precisionRound(newLong, 6)]
 }

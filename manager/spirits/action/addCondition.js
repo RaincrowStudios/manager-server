@@ -1,7 +1,9 @@
 const uuidv1 = require('uuid/v1')
+const addToRedis = require('../../../utils/addToRedis')
+const addToSet = require('../../../utils/addToSet')
 const conditionAdd = require('../../conditions/conditionAdd')
 
-module.exports = (casterName, caster, action, spell, condition, target) => {
+module.exports = async (casterName, caster, action, spell, condition, target) => {
   const instance = uuidv1()
   const currentTime = Date.now()
 
@@ -68,6 +70,10 @@ module.exports = (casterName, caster, action, spell, condition, target) => {
       }
     }
   }
+  await Promise.all([
+    addToRedis(instance, ['bearer'], [target.instance]),
+    addToSet('conditions', instance)
+  ])
   conditionAdd(instance, target.instance, result)
   return result
 }
