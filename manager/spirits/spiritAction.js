@@ -6,7 +6,7 @@ async function spiritAction(instance, spirit) {
     const spiritAlive = timers.by('instance', instance)
 
     if (spiritAlive) {
-      const currentTime = Date.now()
+      const currentTime = new Date()
       const range = spirit.info.actionFreq.split('-')
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)

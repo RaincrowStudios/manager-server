@@ -8,7 +8,7 @@ async function initializePets() {
     const pets = await getSetFromRedis('pets')
     if (pets !== []) {
       for (let i = pets.length - 1; i >= 0; i--) {
-        const currentTime = Date.now()
+        const currentTime = new Date()
         const pet = await getAllFromRedis(pets[i])
 
         if (pet.info.expiresOn > currentTime) {

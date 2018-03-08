@@ -11,10 +11,10 @@ module.exports = (spirit, target) => {
   let total = Math.floor(Math.random() * (max - min + 1)) + min
 
   if (determineCritical(spirit, target)) {
-    let total = Math.floor(Math.random() * (max - min + 1)) + min
+    total += Math.floor(Math.random() * (max - min + 1)) + min
 
     if (spirit.conditions && spirit.conditions.length !== 0) {
-      for (const condition of conditions) {
+      for (const condition of spirit.conditions.conditions) {
         if (condition.beCrit) {
           total += condition.power
         }

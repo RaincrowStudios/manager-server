@@ -8,7 +8,7 @@ const deleteCondition = require('./deleteCondition')
 
 async function conditionTrigger (instance, bearerName) {
   try {
-    const currentTime = Date.now()
+    const currentTime = new Date()
     const bearer = await getAllFromRedis(bearerName)
     if (bearer) {
       let conditionToUpdate

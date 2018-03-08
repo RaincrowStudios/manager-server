@@ -1,4 +1,4 @@
-const constants = require('../../../constants/constants')
+const constants = require('../../../constants')
 const getFromRedis = require('../../../utils/getFromRedis')
 const getNearbyFromGeohashByPoint = require('../../../utils/getNearbyFromGeohashByPoint')
 const informPlayers = require('../../../utils/informPlayers')
@@ -35,8 +35,6 @@ module.exports = (instance, spirit) => {
       })*/
       spirit.info.latitude = newCoords[0]
       spirit.info.longitude = newCoords[1]
-      spirit.mapSelection.latitude = newCoords[0]
-      spirit.mapSelection.longitude = newCoords[1]
       spirit.mapToken.latitude = newCoords[0]
       spirit.mapToken.longitude = newCoords[1]
 

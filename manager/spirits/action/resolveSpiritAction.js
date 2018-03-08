@@ -1,4 +1,4 @@
-const constants = require('../../../constants/constants')
+const constants = require('../../../constants')
 const getFromRedis = require('../../../utils/getFromRedis')
 const getNearbyFromGeohashByPoint = require('../../../utils/getNearbyFromGeohashByPoint')
 const informPlayers = require('../../../utils/informPlayers')
@@ -48,9 +48,9 @@ module.exports = (instance, spirit) => {
 
         target.mapSelection.energy += result.total
         if (result.total < 0) {
-          target.info.lastAttackBy = { instance, type: 'spirit' }
+          target.info.lastAttackedBy = { instance, type: 'spirit' }
         }
-        else {
+        else if (result.total > 0) {
           target.info.lastHealedBy = { instance, type: 'spirit' }
         }
 

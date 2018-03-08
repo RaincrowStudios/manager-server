@@ -1,4 +1,4 @@
-const constants = require('../../constants/constants')
+const constants = require('../../constants')
 const timers = require('../../database/timers')
 const getFromRedis = require('../../utils/getFromRedis')
 const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByPoint')

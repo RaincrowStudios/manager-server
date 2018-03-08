@@ -9,7 +9,7 @@ async function initializePortals() {
     const portals = await getSetFromRedis('portals')
     if (portals !== []) {
       for (let i = portals.length - 1; i >= 0; i--) {
-        const currentTime = Date.now()
+        const currentTime = new Date()
         const portal = await getAllFromRedis(portals[i])
 
         if (portal.info.summonOn > currentTime && portal.info.ward > 0) {

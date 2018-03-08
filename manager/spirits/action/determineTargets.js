@@ -75,14 +75,14 @@ module.exports = (instance, spirit) => {
             }
             break
           case 'attacker':
-            if (spirit.lastAttackBy) {
+            if (spirit.lastAttackedBy) {
               const attackerType =
-                spirit.lastAttackBy.type === 'spirit' ?
+                spirit.lastAttackedBy.type === 'spirit' ?
                   nearSpirits : nearCharacters
 
               if (attackerType.length !== 0) {
                 for (const target of attackerType) {
-                  if (target[0] === spirit.lastAttackBy.instance) {
+                  if (target[0] === spirit.lastAttackedBy.instance) {
                     const redisInfo = await getAllFromRedis(target[0])
                     if (redisInfo) {
                       resolve([

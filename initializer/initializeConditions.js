@@ -11,7 +11,7 @@ async function initializeConditions() {
     const conditions = await getSetFromRedis('conditions')
     if (conditions !== []) {
       for (let i = conditions.length - 1; i >= 0; i--) {
-        const currentTime = Date.now()
+        const currentTime = new Date()
         const bearerName = await getFromRedis(conditions[i], 'bearer')
         const bearer = await getAllFromRedis(bearerName)
 

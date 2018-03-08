@@ -4,10 +4,26 @@ console.log('Starting Manager Server...')
 
 const subscriber = require('./redis/subscriber')
 const initializer = require('./initializer/initializer')
-const manager = require('./manager/manager')
+const clearTimers = require('./manager/utils/clearTimers')
 
 subscriber.on('message', ((channel, message) => {
-    manager(JSON.parse(message))
+    const { command, instance } = JSON.parse(message)
+    switch (command) {
+      case 'clear':
+        clearTimers(instance)
+        break
+      case 'condition':
+        conditionAdd(instance)
+        break
+      case 'portal':
+        portalAdd(instance)
+        break
+      case 'spirit':
+        spiritAdd(instance)
+        break
+      default:
+        break
+    }
   })
 )
 

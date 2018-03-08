@@ -5,7 +5,7 @@ const conditionAdd = require('../../conditions/conditionAdd')
 
 module.exports = async (casterName, caster, action, spell, condition, target) => {
   const instance = uuidv1()
-  const currentTime = Date.now()
+  const currentTime = new Date()
 
   let result = {
     instance: instance,

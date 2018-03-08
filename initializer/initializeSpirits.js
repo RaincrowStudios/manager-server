@@ -10,7 +10,7 @@ async function initializeSpirits() {
     const spirits = await getSetFromRedis('spirits')
     if (spirits !== []) {
       for (let i = spirits.length - 1; i >= 0; i--) {
-        const currentTime = Date.now()
+        const currentTime = new Date()
         const spirit = await getAllFromRedis(spirits[i])
 
         if (spirit.info.expiresOn > currentTime && spirit.info.energy > 0) {
