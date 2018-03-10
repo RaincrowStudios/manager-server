@@ -1,38 +1,33 @@
 const timers = require('../../database/timers')
-const getAllFromRedis = require('../../utils/getAllFromRedis')
+const getInfoFromRedis = require('../../utils/getInfoFromRedis')
 const informPlayers = require('../../utils/informPlayers')
 const removeFromSet = require('../../utils/removeFromSet')
 const removeFromRedis = require('../../utils/removeFromRedis')
-const updateRedis = require('../../utils/updateRedis')
+const addToRedis = require('../../utils/addToRedis')
 
 module.exports = async (instance, bearerName) => {
   try {
-    let bearer = await getAllFromRedis(bearerName)
+    let bearer = await getInfoFromRedis(bearerName)
     if (bearer) {
       let hidden = true
       let informPlayer = true
-      for (let i = 0; i < bearer.info.conditions.length; i++) {
-        if (instance === bearer.info.conditions[i].instance) {
-          bearer.info.conditions.splice(i, 1)
-          bearer.mapSelection.conditions.splice(i, 1)
+      for (let i = 0; i < bearer.conditions.length; i++) {
+        if (instance === bearer.conditions[i].instance) {
+          bearer.conditions.splice(i, 1)
           hidden = false
         }
       }
       if (!hidden) {
-        for (let i = 0; i < bearer.info.conditionsHidden.length; i++) {
-          if (instance === bearer.info.conditionsHidden[i].instance) {
-            bearer.info.conditionsHidden.splice(i, 1)
+        for (let i = 0; i < bearer.conditionsHidden.length; i++) {
+          if (instance === bearer.conditionsHidden[i].instance) {
+            bearer.conditionsHidden.splice(i, 1)
             informPlayer = false
           }
         }
       }
 
       await Promise.all([
-        updateRedis(
-          bearerName,
-          ['info', 'mapSelection'],
-          [bearer.info, bearer.mapSelection]
-        ),
+        addToRedis(bearerName, bearer),
         removeFromSet('conditions', instance),
         removeFromRedis(instance)
       ])
@@ -44,12 +39,12 @@ module.exports = async (instance, bearerName) => {
       })
 
       if (
-        (bearer.info.type !== 'lesserSpirit' ||
-        bearer.info.type !== 'greaterSpirit') &&
+        (bearer.type !== 'lesserSpirit' ||
+        bearer.type !== 'greaterSpirit') &&
         informPlayer
       ) {
         await informPlayers(
-          [bearer.info.owner],
+          [bearer.owner],
           {
             command: 'condition_remove',
             instance: instance

@@ -1,25 +1,22 @@
 const timers = require('../../database/timers')
 const getSetFromRedis = require('../utils/getSetFromRedis')
-const getAllFromRedis = require('../utils/getAllFromRedis')
-const portalSpawn = require('../manager/portals/portalSpawn')
+const getInfoFromRedis = require('../utils/getInfoFromRedis')
+const portalSummon = require('../manager/portals/portalSummon')
 const portalExpire = require('../manager/portals/portalExpire')
 
 async function initializePortals() {
   try {
     const portals = await getSetFromRedis('portals')
     if (portals !== []) {
-      for (let i = portals.length - 1; i >= 0; i--) {
-        const currentTime = new Date()
-        const portal = await getAllFromRedis(portals[i])
+      for (let i = 0; i < portals.length; i++) {
+        const currentTime = Date.now()
+        const portal = await getInfoFromRedis(portals[i])
 
-        if (portal.info.summonOn > currentTime && portal.info.ward > 0) {
+        if (portal.summonOn > currentTime && portal.energy > 0) {
           const summonTimer =
-            setTimeout(portalSummon(portals[i], portal), portal.info.summonOn)
+            setTimeout(portalSummon(portals[i], portal), portal.summonOn)
 
-          timers.insert({
-            portals[i],
-            summonTimer
-          })
+          timers.insert({instance: portals[i], summonTimer})
         }
         else {
           portalExpire(portals[i], portal)
@@ -32,4 +29,4 @@ async function initializePortals() {
   }
 }
 
-module.exports = initializeSpirits
+module.exports = initializePortals

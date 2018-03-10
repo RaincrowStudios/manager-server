@@ -1,5 +1,5 @@
 const getNearbyFromGeohashByPoint = require('../../../utils/getNearbyFromGeohashByPoint')
-const getAllFromRedis = require('../../../utils/getAllFromRedis')
+const getInfoFromRedis = require('../../../utils/getInfoFromRedis')
 
 module.exports = (instance, spirit) => {
   return new Promise(async (resolve, reject) => {
@@ -52,7 +52,7 @@ module.exports = (instance, spirit) => {
       for (let i = 0; i < spirit.targets.length; i++) {
         switch (spirit.targets[i]) {
           case 'self':
-            resolve(['self', i])
+            resolve([null, 'self', i])
             break
           case 'collectibles':
             if (nearCollectibles.length !== 0) {
@@ -61,17 +61,9 @@ module.exports = (instance, spirit) => {
                   Math.floor(Math.random() * nearCollectibles.length)
                 ][0]
 
-              const redisInfo = await getAllFromRedis(collectible)
+              const info = await getInfoFromRedis(collectible)
 
-              resolve([
-                {
-                  instance: collectible,
-                  info: redisInfo.info,
-                  mapSelection: redisInfo.mapSelection,
-                  mapToken: redisInfo.mapToken
-                },
-                i
-              ])
+              resolve([collectible, info, i])
             }
             break
           case 'attacker':
@@ -83,17 +75,9 @@ module.exports = (instance, spirit) => {
               if (attackerType.length !== 0) {
                 for (const target of attackerType) {
                   if (target[0] === spirit.lastAttackedBy.instance) {
-                    const redisInfo = await getAllFromRedis(target[0])
-                    if (redisInfo) {
-                      resolve([
-                        {
-                          instance: target[0],
-                          info: redisInfo.info,
-                          mapSelection: redisInfo.mapSelection,
-                          mapToken: redisInfo.mapToken
-                        },
-                        i
-                      ])
+                    const info = await getInfoFromRedis(target[0])
+                    if (info) {
+                      resolve([target[0], info, i])
                     }
                   }
                 }
@@ -109,17 +93,9 @@ module.exports = (instance, spirit) => {
               if (targetType.length !== 0) {
                 for (const target of targetType) {
                   if (target[0] === spirit.previousTarget.instance) {
-                    const redisInfo = await getAllFromRedis(target[0])
-                    if (redisInfo) {
-                      resolve([
-                        {
-                          instance: target[0],
-                          info: redisInfo.info,
-                          mapSelection: redisInfo.mapSelection,
-                          mapToken: redisInfo.mapToken
-                        },
-                        i
-                      ])
+                    const info = await getInfoFromRedis(target[0])
+                    if (info) {
+                      resolve([target[0], info, i])
                     }
                   }
                 }
@@ -135,70 +111,54 @@ module.exports = (instance, spirit) => {
 
               const redisQuery = []
               for (let i = 0; i < nearCharacters.length; i++) {
-                redisQuery.push(getAllFromRedis(nearCharacters[i][0]))
+                redisQuery.push(getInfoFromRedis(nearCharacters[i][0]))
               }
               for (let i = 0; i < nearSpirits.length; i++) {
-                redisQuery.push(getAllFromRedis(nearSpirits[i][0]))
+                redisQuery.push(getInfoFromRedis(nearSpirits[i][0]))
               }
 
-              const redisInfo = await Promise.all(redisQuery)
+              const info = await Promise.all(redisQuery)
 
               if (spirit.targets[i] === 'allies') {
                 const allies = []
                 const alliesInfo = []
                 for (let i = 0; i < nearCharacters.length; i++) {
-                  if (redisInfo[i].info.coven === spirit.ownerCoven) {
+                  if (Math.sign(info[i].degree) === Math.sign(spirit.degree)) {
                     allies.push(nearCharacters[i][0])
-                    alliesInfo.push(redisInfo[i])
+                    alliesInfo.push(info[i])
                   }
                 }
                 for (let i = 0; i < nearSpirits.length; i++) {
-                  if (redisInfo[i].info.ownerCoven === spirit.ownerCoven) {
+                  if (Math.sign(info[i].degree) === Math.sign(spirit.degree)) {
                     allies.push(nearSpirits[i][0])
-                    alliesInfo.push(redisInfo[i])
+                    alliesInfo.push(info[i])
                   }
                 }
 
                 if (allies.length > 0) {
                   const index = Math.floor(Math.random() * allies.length)
-                  resolve([
-                    {
-                      instance: allies[index],
-                      info: alliesInfo[index].info,
-                      mapSelection: alliesInfo[index].mapSelection,
-                      mapToken: alliesInfo[index].mapToken
-                    },
-                    i
-                  ])
+                  resolve([allies[index], alliesInfo[index], i])
                 }
               }
               else {
                 const enemies = []
                 const enemiesInfo = []
                 for (let i = 0; i < nearCharacters.length; i++) {
-                  if (redisInfo[i].info.coven !== spirit.ownerCoven) {
+                  if (Math.sign(info[i].degree) !== Math.sign(spirit.degree)) {
                     enemies.push(nearCharacters[i][0])
-                    enemiesInfo.push(redisInfo[i])
+                    enemiesInfo.push(info[i])
                   }
                 }
                 for (let i = 0; i < nearSpirits.length; i++) {
-                  if (redisInfo[i].info.ownerCoven !== spirit.ownerCoven) {
+                  if (Math.sign(info[i].degree) !== Math.sign(spirit.degree)) {
                     enemies.push(nearSpirits[i][0])
-                    enemiesInfo.push(redisInfo[i])
+                    enemiesInfo.push(info[i])
                   }
                 }
 
                 if (enemies.length > 0) {
                   const index = Math.floor(Math.random() * enemies.length)
-                  resolve([
-                    {
-                      instance: enemies[index],
-                      info: enemiesInfo[index].info,
-                      mapSelection: enemiesInfo[index].mapSelection,
-                      mapToken: enemiesInfo[index].mapToken
-                    },
-                    i
-                  ])
+                  resolve([enemies[index], enemiesInfo[index], i])
                 }
               }
             }
@@ -207,16 +167,8 @@ module.exports = (instance, spirit) => {
             if (nearCharacters.length !== 0) {
               for (const target of nearCharacters) {
                 if (target[0] === spirit.owner) {
-                  const redisInfo = await getAllFromRedis(spirit.owner)
-                  resolve([
-                    {
-                      instance: target[0],
-                      info: redisInfo.info,
-                      mapSelection: redisInfo.mapSelection,
-                      mapToken: redisInfo.mapToken
-                    },
-                    i
-                  ])
+                  const info = await getInfoFromRedis(spirit.owner)
+                  resolve([target[0], info, i])
                 }
               }
             }
@@ -230,17 +182,9 @@ module.exports = (instance, spirit) => {
               const target = nearSpirits[
                 Math.floor(Math.random() * nearSpirits.length)
               ][0]
-              const redisInfo = await getAllFromRedis(target)
-              if (redisInfo) {
-                resolve([
-                  {
-                    instance: target,
-                    info: redisInfo.info,
-                    mapSelection: redisInfo.mapSelection,
-                    mapToken: redisInfo.mapToken
-                  },
-                  i
-                ])
+              const info = await getInfoFromRedis(target)
+              if (info) {
+                resolve([target, info, i])
               }
             }
             break
@@ -249,17 +193,9 @@ module.exports = (instance, spirit) => {
               const target = nearSpirits[
                 Math.floor(Math.random() * nearSpirits.length)
               ][0]
-              const redisInfo = await getAllFromRedis(target)
-              if (redisInfo) {
-                resolve([
-                  {
-                    instance: target,
-                    info: redisInfo.info,
-                    mapSelection: redisInfo.mapSelection,
-                    mapToken: redisInfo.mapToken
-                  },
-                  i
-                ])
+              const info = await getInfoFromRedis(target)
+              if (info) {
+                resolve([target, info, i])
               }
             }
             break
@@ -275,17 +211,9 @@ module.exports = (instance, spirit) => {
                 nearSpirits[
                   Math.floor(Math.random() * nearSpirits.length)
                 ][0]
-              const redisInfo = await getAllFromRedis(target)
-              if (redisInfo) {
-                resolve([
-                  {
-                    instance: target,
-                    info: redisInfo.info,
-                    mapSelection: redisInfo.mapSelection,
-                    mapToken: redisInfo.mapToken
-                  },
-                  i
-                ])
+              const info = await getInfoFromRedis(target)
+              if (info) {
+                resolve([target, info, i])
               }
             }
             break
@@ -297,17 +225,9 @@ module.exports = (instance, spirit) => {
                   Math.floor(Math.random() * nearCharacters.length)
                 const target = nearCharacters[index][0]
 
-                const redisInfo = await getAllFromRedis(target)
-                if (redisInfo.info.type === spirit.targets[i]) {
-                  resolve([
-                    {
-                      instance: target[0],
-                      info: redisInfo.info,
-                      mapSelection: redisInfo.mapSelection,
-                      mapToken: redisInfo.mapToken
-                    },
-                    i
-                  ])
+                const info = await getInfoFromRedis(target)
+                if (info.type === spirit.targets[i]) {
+                  resolve([target[0], info, i])
                 }
                 else {
                   nearCharacters.splice(index, 1)
@@ -320,7 +240,7 @@ module.exports = (instance, spirit) => {
             break
         }
       }
-      resolve([false, false])
+      resolve([false, false, false])
     }
     catch (err) {
       reject(err)

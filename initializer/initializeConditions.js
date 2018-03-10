@@ -1,7 +1,6 @@
 const timers = require('../database/timers')
 const getSetFromRedis = require('../utils/getSetFromRedis')
-const getAllFromRedis = require('../utils/getAllFromRedis')
-const getFromRedis = require('../utils/getFromRedis')
+const getInfoFromRedis = require('../utils/getInfoFromRedis')
 const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
 const deleteCondition = require('../manager/conditions/deleteCondition')
@@ -11,12 +10,12 @@ async function initializeConditions() {
     const conditions = await getSetFromRedis('conditions')
     if (conditions !== []) {
       for (let i = conditions.length - 1; i >= 0; i--) {
-        const currentTime = new Date()
-        const bearerName = await getFromRedis(conditions[i], 'bearer')
-        const bearer = await getAllFromRedis(bearerName)
+        const currentTime = Date.now()
+        const bearerName = await getInfoFromRedis(conditions[i])
+        const bearer = await getInfoFromRedis(bearerName)
 
         if (bearer) {
-          for (const condition of bearer.info.conditions) {
+          for (const condition of bearer.conditions) {
             if (condition.expiresOn > currentTime) {
               const expireTimer =
                 setTimeout(() =>

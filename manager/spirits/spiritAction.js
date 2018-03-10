@@ -6,16 +6,15 @@ async function spiritAction(instance, spirit) {
     const spiritAlive = timers.by('instance', instance)
 
     if (spiritAlive) {
-      const currentTime = new Date()
-      const range = spirit.info.actionFreq.split('-')
+      const currentTime = Date.now()
+      const range = spirit.actionFreq.split('-')
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)
-      spirit.info.actionOn =
-        currentTime +
+      spirit.actionOn = currentTime +
         (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
 
       let silenced = false
-      for (const condition of spirit.info.conditions) {
+      for (const condition of spirit.conditions) {
         if (condition.status === 'silenced') {
           silenced = true
         }
@@ -27,7 +26,7 @@ async function spiritAction(instance, spirit) {
 
       const newTimer =
         setTimeout(() =>
-          spiritAction(instance, spirit), spirit.info.actionOn - currentTime
+          spiritAction(instance, spirit), spirit.actionOn - currentTime
         )
 
       let spiritTimers = timers.by('instance', instance)

@@ -4,7 +4,7 @@ const conditionTrigger = require('./conditionTrigger')
 
 module.exports = (instance, bearerName, condition) => {
   try {
-    const currentTime = new Date()
+    const currentTime = Date.now()
     let timer = {instance}
     const expireTimer =
       setTimeout(() =>

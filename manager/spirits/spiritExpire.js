@@ -1,6 +1,6 @@
 const constants = require('../../constants')
 const timers = require('../../database/timers')
-const getFromRedis = require('../../utils/getFromRedis')
+const getInfoFromRedis = require('../../utils/getInfoFromRedis')
 const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByPoint')
 const informPlayers = require('../../utils/informPlayers')
 const removeFromGeohash = require('../../utils/removeFromGeohash')
@@ -11,15 +11,15 @@ module.exports = async (instance, spirit) => {
   try {
     const charactersNearLocation = await getNearbyFromGeohashByPoint(
       'Characters',
-      spirit.info.latitude,
-      spirit.info.longitude,
-      constants.radiusVisual
+      spirit.latitude,
+      spirit.longitude,
+      constants.maxDisplay
     )
 
     const playersToInform = charactersNearLocation.length !== 0 ?
       await Promise.all(
         charactersNearLocation.map(async (character) => {
-          const characterInfo = await getFromRedis(character[0], 'info')
+          const characterInfo = await getInfoFromRedis(character[0])
           return characterInfo.owner
         })
       ) : []
@@ -36,6 +36,12 @@ module.exports = async (instance, spirit) => {
       removeFromSet('spirits', instance),
       removeFromRedis(instance)
     ])
+
+    console.log({
+      event: 'spirit_expired',
+      spirit: instance,
+      owner: spirit.ownerPlayer,
+    })
 
     const spiritTimers = timers.by('instance', instance)
     if (spiritTimers) {

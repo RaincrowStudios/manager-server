@@ -1,12 +1,8 @@
 const client = require('../redis/client')
 
-module.exports = (key, fields, values) => {
-  let update = []
-  for (let i = 0; i < fields.length; i++) {
-    update.push(fields[i], JSON.stringify(values[i]))
-  }
+module.exports = (key, value) => {
   return new Promise((resolve, reject) => {
-    client.hmset([key, ...update], (err) => {
+    client.set([key, JSON.stringify(value)], (err) => {
       if (err) {
         reject(err)
       }

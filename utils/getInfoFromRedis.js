@@ -1,13 +1,14 @@
 const client = require('../redis/client')
 
-module.exports = (key, instance, latitude, longitude) => {
+module.exports = (key) => {
   return new Promise((resolve, reject) => {
-    client.geoadd([key, longitude, latitude, instance], (err) => {
+    client.get(key, (err, result) => {
       if (err) {
+        err.code = '5300'
         reject(err)
       }
       else {
-        resolve(true)
+        resolve(JSON.parse(result))
       }
     })
   })

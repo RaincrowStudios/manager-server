@@ -1,6 +1,6 @@
 module.exports = (condition) => {
-  if (condition.range.includes('#')) {
-    const range = condition.range.slice(1).split('-')
+  if (condition.overTime.includes('#')) {
+    const range = condition.overTime.slice(1).split('-')
     const min = parseInt(range[0], 10)
     const max = parseInt(range[1], 10)
 
@@ -9,7 +9,7 @@ module.exports = (condition) => {
     return total
   }
   else {
-    const range = condition.range.split('-')
+    const range = condition.overTime.split('-')
     const min = parseInt(range[0], 10)
     const max = parseInt(range[1], 10)
 

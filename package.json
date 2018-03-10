@@ -9,7 +9,7 @@
   },
   "author": "Sean Landis",
   "license": "SEE LICENSE IN LICENSE",
-  "repository": "github:RaincrowStudios/creatrix-server",
+  "repository": "github:RaincrowStudios/manager-server",
   "dependencies": {
     "@google-cloud/datastore": "^1.3.4",
     "lokijs": "^1.5.3",

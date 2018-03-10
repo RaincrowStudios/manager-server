@@ -1,7 +1,7 @@
 const determineCritical = require('./determineCritical')
 const determineResist = require('./determineResist')
 
-module.exports = (spirit, spell, target) => {
+module.exports = (spirit, target, spell) => {
   let critical = false
   let resist = false
   const range = spell.range.split('-')

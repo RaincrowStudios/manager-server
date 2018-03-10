@@ -1,6 +1,6 @@
 const timers = require('../../database/timers')
 const getSetFromRedis = require('../utils/getSetFromRedis')
-const getAllFromRedis = require('../utils/getAllFromRedis')
+const getInfoFromRedis = require('../utils/getInfoFromRedis')
 
 
 async function initializePets() {
@@ -8,12 +8,12 @@ async function initializePets() {
     const pets = await getSetFromRedis('pets')
     if (pets !== []) {
       for (let i = pets.length - 1; i >= 0; i--) {
-        const currentTime = new Date()
-        const pet = await getAllFromRedis(pets[i])
+        const currentTime = Date.now()
+        const pet = await getInfoFromRedis(pets[i])
 
-        if (pet.info.expiresOn > currentTime) {
+        if (pet.expiresOn > currentTime) {
           const expireTimer =
-            setTimeout(petExpire(pets[i], pet), pet.info.expiresOn)
+            setTimeout(petExpire(pets[i], pet), pet.expiresOn)
 
           timers.insert({instance: pets[i], expireTimer})
         }

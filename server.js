@@ -4,7 +4,7 @@ console.log('Starting Manager Server...')
 
 const subscriber = require('./redis/subscriber')
 const initializer = require('./initializer/initializer')
-const clearTimers = require('./manager/utils/clearTimers')
+const clearTimers = require('./utils/clearTimers')
 
 subscriber.on('message', ((channel, message) => {
     const { command, instance } = JSON.parse(message)

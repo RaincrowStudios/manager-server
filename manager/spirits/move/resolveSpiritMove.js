@@ -1,9 +1,10 @@
 const constants = require('../../../constants')
-const getFromRedis = require('../../../utils/getFromRedis')
+const getInfoFromRedis = require('../../../utils/getInfoFromRedis')
 const getNearbyFromGeohashByPoint = require('../../../utils/getNearbyFromGeohashByPoint')
 const informPlayers = require('../../../utils/informPlayers')
-const updateGeohash = require('../../../utils/updateGeohash')
-const updateRedis = require('../../../utils/updateRedis')
+const addToGeohash = require('../../../utils/addToGeohash')
+const addToRedis = require('../../../utils/addToRedis')
+const createMapToken = require('../../../utils/createMapToken')
 const determineSpiritMove = require('./determineSpiritMove')
 
 module.exports = (instance, spirit) => {
@@ -12,44 +13,42 @@ module.exports = (instance, spirit) => {
       const charactersNearOldLocation =
         await getNearbyFromGeohashByPoint(
           'Characters',
-          spirit.info.latitude,
-          spirit.info.longitude,
-          constants.radiusVisual
+          spirit.latitude,
+          spirit.longitude,
+          constants.maxRadius
         )
 
       const playersToRemoveSpirit = charactersNearOldLocation.length !== 0 ?
         await Promise.all(
           charactersNearOldLocation.map(async (character) => {
-            const characterInfo = await getFromRedis(character[0], 'info')
+            const characterInfo = await getInfoFromRedis(character[0])
             return characterInfo.owner
           })
         ) : []
 
-      const newCoords = determineSpiritMove(spirit.info)
-      /*console.log({
+      const newCoords = determineSpiritMove(spirit)
+      console.log({
         'event': 'spirit_move',
         spirit: instance,
-        type: spirit.info.id,
-        owner: spirit.info.ownerPlayer,
+        type: spirit.id,
+        owner: spirit.ownerPlayer,
         to: [newCoords[0], newCoords[1]]
-      })*/
-      spirit.info.latitude = newCoords[0]
-      spirit.info.longitude = newCoords[1]
-      spirit.mapToken.latitude = newCoords[0]
-      spirit.mapToken.longitude = newCoords[1]
+      })
+      spirit.latitude = newCoords[0]
+      spirit.longitude = newCoords[1]
 
       const charactersNearNewLocation =
         await getNearbyFromGeohashByPoint(
           'Characters',
-          spirit.info.latitude,
-          spirit.info.longitude,
-          constants.radiusVisual
+          spirit.latitude,
+          spirit.longitude,
+          constants.maxRadius
         )
 
       const playersToAddSpirit = charactersNearNewLocation.length !== 0 ?
         await Promise.all(
           charactersNearNewLocation.map(async (character) => {
-            const characterInfo = await getFromRedis(character[0], 'info')
+            const characterInfo = await getInfoFromRedis(character[0])
             return characterInfo.owner
           })
         ) : []
@@ -67,30 +66,13 @@ module.exports = (instance, spirit) => {
           playersToAddSpirit,
           {
             command: 'map_spirit_add',
-            instance: instance,
-            type: spirit.info.type,
-            token: spirit.mapToken
+            tokens: [
+              createMapToken(spirit)
+            ]
           }
         ),
-        updateRedis(
-          instance,
-          [
-            'info',
-            'mapSelection',
-            'mapToken'
-          ],
-          [
-            spirit.info,
-            spirit.mapSelection,
-            spirit.mapToken
-          ]
-        ),
-        updateGeohash(
-          'Spirits',
-          instance,
-          spirit.info.latitude,
-          spirit.info.longitude
-        )
+        addToRedis(instance, spirit),
+        addToGeohash('Spirits', instance, newCoords)
       ])
       resolve(true)
     }

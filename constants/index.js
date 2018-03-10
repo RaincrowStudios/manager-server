@@ -1,10 +1,6 @@
 let constants = {
-  radiusCharacters: 30,
-  radiusCollectibles: 30,
-  maxCharacters: 50,
-  maxCollectibles: 100,
-  matchmakingLimit: 4,
-  radiusVisual: 50,
+  maxRadius: 25,
+  maxDisplay: 25,
 }
 
 module.exports = constants

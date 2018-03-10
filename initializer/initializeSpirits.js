@@ -1,6 +1,6 @@
 const timers = require('../database/timers')
 const getSetFromRedis = require('../utils/getSetFromRedis')
-const getAllFromRedis = require('../utils/getAllFromRedis')
+const getInfoFromRedis = require('../utils/getInfoFromRedis')
 const spiritExpire = require('../manager/spirits/spiritExpire')
 const spiritMove = require('../manager/spirits/spiritMove')
 const spiritAction = require('../manager/spirits/spiritAction')
@@ -9,29 +9,29 @@ async function initializeSpirits() {
   try {
     const spirits = await getSetFromRedis('spirits')
     if (spirits !== []) {
-      for (let i = spirits.length - 1; i >= 0; i--) {
-        const currentTime = new Date()
-        const spirit = await getAllFromRedis(spirits[i])
+      for (let i = 0; i < spirits.length; i++) {
+        const currentTime = Date.now()
+        const spirit = await getInfoFromRedis(spirits[i])
 
-        if (spirit.info.expiresOn > currentTime && spirit.info.energy > 0) {
+        if (spirit.expiresOn > currentTime && spirit.energy > 0) {
           const expireTimer =
             setTimeout(() =>
               spiritExpire(spirits[i], spirit),
-              spirit.info.expiresOn - currentTime
+              spirit.expiresOn - currentTime
             )
 
           const moveTimer =
             setTimeout(() =>
               spiritMove(spirits[i], spirit),
-              spirit.info.moveOn > currentTime ?
-                spirit.info.moveOn - currentTime : 0
+              spirit.moveOn > currentTime ?
+                spirit.moveOn - currentTime : 0
             )
 
           const actionTimer =
             setTimeout(() =>
               spiritAction(spirits[i], spirit),
-              spirit.info.actionOn > currentTime ?
-                spirit.info.actionOn - currentTime : 0
+              spirit.actionOn > currentTime ?
+                spirit.actionOn - currentTime : 0
             )
 
           timers.insert({

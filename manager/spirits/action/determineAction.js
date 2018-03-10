@@ -1,4 +1,5 @@
 module.exports = (spirit, index) => {
+  console.log(index)
   const potentialActions = spirit.actions[index]
   if (potentialActions.length <= 1) {
     return potentialActions[0]

@@ -1,26 +1,17 @@
-const getFromRedis = require('../../../utils/getFromRedis')
+const getOneFromRedis = require('../../../utils/getOneFromRedis')
 const determineHeal = require('./determineHeal')
 const determineDamage = require('./determineDamage')
 const addCondition = require('./addCondition')
 
-function resolveSpiritSpell(instance, spirit, action, target) {
+function resolveSpiritSpell(instance, spirit, targetInstance, target, action) {
   return new Promise(async (resolve, reject) => {
     try {
-      const spell = await getFromRedis('spells', action)
+      const spell = await getOneFromRedis('spells', action)
       let result = {}
       if (spell.special) {
         switch (spell.special) {
           case 'greaterHex':
-            spell.id = 'hex'
-            spell.displayName = 'Hex'
-            delete spell.special
-            for (let i = 0; i < 3; i++) {
-              const intermediateResult =
-                resolveSpiritSpell(instance, spirit, spell, target)
-              result.total += intermediateResult.total
-              result.conditions.push(intermediateResult.conditions)
-              result.conditionsHidden.push(intermediateResult.conditionsHidden)
-            }
+            resolveGreaterHex()
             break
           default:
             break
@@ -31,33 +22,33 @@ function resolveSpiritSpell(instance, spirit, action, target) {
           result = determineHeal(spell)
         }
         else {
-          result = determineDamage(spirit, spell, target)
+          result = determineDamage(spirit, target, spell)
         }
-        if (spell.conditions.length > 0) {
-          result.conditions = []
-          result.conditionsHidden = []
-          for (const condition of spell.conditions) {
+        if (spell.condition) {
+          if (spell.condition.maxStack <= 0) {
+            result.condition = addCondition(
+              instance,
+              spirit,
+              targetInstance,
+              target,
+              action,
+              spell
+            )
+          }
+          else {
             let stack = 0
-            for (const condition of target.info.conditions) {
-              if (condition.id === spell.id) {
+            for (const condition of target.conditions) {
+              if (condition.id === action) {
                 stack++
               }
-            }
-            for (const condition of target.info.conditionsHidden) {
-              if (condition.id === spell.id) {
-                stack++
-              }
-            }
-
-            if (stack < condition.maxStack) {
-              if (condition.hidden) {
-                result.conditionsHidden.push(
-                  addCondition(instance, spirit, action, spell, condition, target)
-                )
-              }
-              else {
-                result.conditions.push(
-                  addCondition(instance, spirit, action, spell, condition, target)
+              if (stack < spell.condition.maxStack) {
+                result.condition = addCondition(
+                  instance,
+                  spirit,
+                  targetInstance,
+                  target,
+                  action,
+                  spell
                 )
               }
             }

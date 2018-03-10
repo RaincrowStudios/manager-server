@@ -1,4 +1,4 @@
-const getFromRedis = require('../../../utils/getFromRedis')
+const getInfoFromRedis = require('../../../utils/getInfoFromRedis')
 const calculateDistance = require('./calculateDistance')
 
 function precisionRound(number, precision) {
@@ -39,16 +39,14 @@ module.exports = async (spirit) => {
     let target
     switch (destination) {
       case 'summoner':
-        target = await getFromRedis(spirit.owner, 'info')
+        target = await getInfoFromRedis(spirit.owner)
         break
       case 'attacker':
-        target = await getFromRedis(spirit.lastAttackBy, 'info')
+        target = await getInfoFromRedis(spirit.lastAttackBy)
         break
       case 'summonerAttacker':
-        target = await getFromRedis(
-          await getFromRedis(spirit.owner, 'info').lastAttackedBy,
-          'info'
-        )
+        target = await getInfoFromRedis(
+          await getInfoFromRedis(spirit.owner).lastAttackedBy)
         break
       default:
         break

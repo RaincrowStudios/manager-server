@@ -1,4 +1,4 @@
-const timers = require('../../database/timers')
+const timers = require('../database/timers')
 
 module.exports = (instance) => {
   const instanceTimers = timers.by('instance', instance)

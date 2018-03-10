@@ -6,16 +6,16 @@ async function spiritMove(instance, spirit) {
     const spiritAlive = timers.by('instance', instance)
 
     if (spiritAlive) {
-      const currentTime = new Date()
-      const range = spirit.info.moveFreq.split('-')
+      const currentTime = Date.now()
+      const range = spirit.moveFreq.split('-')
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)
-      spirit.info.moveOn =
+      spirit.moveOn =
         currentTime +
         (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
 
       let bound = false
-      for (const condition of spirit.info.conditions) {
+      for (const condition of spirit.conditions) {
         if (condition.status === 'bound') {
           bound = true
         }
@@ -27,7 +27,7 @@ async function spiritMove(instance, spirit) {
 
       const newTimer =
         setTimeout(() =>
-          spiritMove(instance, spirit), spirit.info.moveOn - currentTime
+          spiritMove(instance, spirit), spirit.moveOn - currentTime
         )
       let spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {

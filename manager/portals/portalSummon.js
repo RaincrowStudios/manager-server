@@ -9,68 +9,71 @@ const addToSet = require('../../utils/addToSet')
 const removeFromGeohash = require('../../utils/removeFromGeohash')
 const removeFromSet = require('../../utils/removeFromSet')
 const removeFromRedis = require('../../utils/removeFromRedis')
+const createMapToken = require('../../utils/createMapToken')
 const spiritAdd = require('../spirits/spiritAdd')
 
 module.exports = async (instance, portal) => {
   try {
-    const currentTime = new Date()
+    const currentTime = Date.now()
     const spiritInstance = uuidv1()
-    let spirit = portal.info.spirit
+    let spirit = portal.spirit
 
     spirit.createdOn = currentTime
     spirit.expiresOn = currentTime
     spirit.moveOn = currentTime
     spirit.actionOn = currentTime
 
-    spirit.summonLat = portal.info.latitude
-    spirit.summonLong = portal.info.longitude
-    spirit.latitude = portal.info.latitude
-    spirit.longitude = portal.info.longitude
+    spirit.summonLat = portal.latitude
+    spirit.summonLong = portal.longitude
+    spirit.latitude = portal.latitude
+    spirit.longitude = portal.longitude
 
     spiritAdd(spiritInstance, spirit)
 
     const charactersNearLocation = await getNearbyFromGeohashByPoint(
       'Characters',
-      portal.info.latitude,
-      portal.info.longitude,
+      portal.latitude,
+      portal.longitude,
       constants.radiusVisual
     )
 
     const playersToInform = charactersNearLocation.length !== 0 ?
       await Promise.all(
         charactersNearLocation.map(async (character) => {
-          const characterInfo = await getFromRedis(character[0], 'info')
+          const characterInfo = await getFromRedis(character[0])
           return characterInfo.owner
         })
       ) : []
+
+    let spiritToken = createMapToken(spirit)
+    spiritToken.instance = spiritInstance
 
     await Promise.all([
       informPlayers(
         playersToInform,
         {
           command: 'map_remove',
-          spirit: instance
+          instance: instance
         }
       ),
       informPlayers(
         playersToInform,
         {
           command: 'map_add',
-          spirit: spiritInstance,
-          token: spirit.mapToken
+          tokens: [spiritToken]
         }
       ),
       informPlayers(
-        [spirit.info.owner],
+        [spirit.owner],
         {
           command: 'player_spirit_summon',
-          spirit: spirit.info.displayName
+          spirit: spirit.displayName
         }
       ),
       addToGeohash(
         'Spirits',
         spiritInstance,
-        [spirit.info.latitude, spirit.info.longitude]
+        [spirit.latitude, spirit.longitude]
       ),
       addToRedis(spiritInstance, spirit),
       addToSet('spirits', spiritInstance),

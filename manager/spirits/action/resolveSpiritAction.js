@@ -1,75 +1,69 @@
 const constants = require('../../../constants')
-const getFromRedis = require('../../../utils/getFromRedis')
+const getInfoFromRedis = require('../../../utils/getInfoFromRedis')
 const getNearbyFromGeohashByPoint = require('../../../utils/getNearbyFromGeohashByPoint')
 const informPlayers = require('../../../utils/informPlayers')
-const updateRedis = require('../../../utils/updateRedis')
-const portalDestroy = require('../../portals/portalDestroy')
+const addToRedis = require('../../../utils/addToRedis')
 const determineTargets = require('./determineTargets')
 const determineAction = require('./determineAction')
 const resolveBasicAttack = require('./resolveBasicAttack')
 const resolveSpiritSpell = require('./resolveSpiritSpell')
 const resolveCharacterDeath = require('./resolveCharacterDeath')
 const spiritDeath = require('../spiritDeath')
+const portalDestroy = require('../../portals/portalDestroy')
 
 module.exports = (instance, spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let target, index
-      [target, index] = await determineTargets(instance, spirit.info)
+      let targetInstance, target, index
+      [targetInstance, target, index] = await determineTargets(instance, spirit)
 
       if (target) {
-        const action = determineAction(spirit.info, index)
+        const action = determineAction(spirit, index)
 
         let result
         switch (action) {
           case 'attack':
-            result = await resolveBasicAttack(spirit.info, target.info)
+            result = await resolveBasicAttack(spirit, target)
             break
           case 'collect':
             break
           default:
             result = await resolveSpiritSpell(
               instance,
-              spirit.info,
-              action,
-              target
+              spirit,
+              targetInstance,
+              target,
+              action
             )
             break
         }
 
-        spirit.info.previousTarget = target.instance
-        target.info.energy += result.total
+        spirit.previousTarget = targetInstance
+        target.energy += result.total
 
-        if (result.conditions && result.conditionsHidden) {
-          target.info.conditions.push(...result.conditions)
-          target.info.conditionsHidden.push(...result.conditionsHidden)
-          target.mapSelection.conditions.push(...result.conditions)
-        }
-
-        target.mapSelection.energy += result.total
         if (result.total < 0) {
-          target.info.lastAttackedBy = { instance, type: 'spirit' }
+          target.lastAttackedBy = { instance, type: 'spirit' }
         }
         else if (result.total > 0) {
-          target.info.lastHealedBy = { instance, type: 'spirit' }
+          target.lastHealedBy = { instance, type: 'spirit' }
         }
 
-        let dead = false
-        if (target.info.energy <= 0) {
-          dead = true
+        if (target.energy <= 0) {
+          target.dead = true
         }
+
         const charactersNearLocation =
           await getNearbyFromGeohashByPoint(
             'Characters',
-            spirit.info.latitude,
-            spirit.info.longitude,
-            constants.radiusVisual
+            spirit.latitude,
+            spirit.longitude,
+            constants.maxRadius
           )
 
         const playersToInform = charactersNearLocation.length !== 0 ?
           await Promise.all(
             charactersNearLocation.map(async (character) => {
-              const characterInfo = await getFromRedis(character[0], 'info')
+              const characterInfo = await getInfoFromRedis(character[0])
               return characterInfo.owner
             })
           ) : []
@@ -77,17 +71,16 @@ module.exports = (instance, spirit) => {
         console.log({
           event: 'spirit_action',
           spirit: instance,
-          owner: spirit.info.ownerPlayer,
-          target: target.instance,
+          owner: spirit.ownerPlayer,
+          target: targetInstance,
           action,
           total: result.total,
-          dead
+          dead: target.dead
         })
 
         if (
-          (target.info.type === 'lesserSpirit' ||
-          target.info.type === 'greaterSpirit') &&
-          dead
+          (target.type === 'lesserSpirit' || target.type === 'greaterSpirit') &&
+          target.dead
         ) {
           await Promise.all([
             informPlayers(
@@ -95,80 +88,83 @@ module.exports = (instance, spirit) => {
               {
                 command: 'map_spirit_action',
                 instance: instance,
-                target: target.instance,
+                target: targetInstance,
                 total: result.total,
-                dead: dead
+                dead: target.dead
               }
             ),
             informPlayers(
-              [spirit.info.ownerPlayer],
+              [spirit.ownerPlayer],
               {
                 command: 'player_spirit_action',
                 instance: instance,
                 displayName: spirit.displayName,
-                target: (target.info.type === 'lesserSpirit' ||
-                target.info.type === 'greaterSpirit') ?
-                  target.info.displayName : target.instance,
+                target: (target.type === 'lesserSpirit' ||
+                target.type === 'greaterSpirit') ?
+                  target.displayName : targetInstance,
                 xp: 'xp_gain'
               }
             ),
-            updateRedis(instance, ['info'], [spirit.info]),
-            spiritDeath(target.instance, target.info, instance)
+            addToRedis(instance, spirit),
+            spiritDeath(targetInstance, target, instance)
           ])
         }
-        else if (target.info.type === 'portal'  && dead) {
+        else if (
+          (target.type === 'lesserPortal' || target.type === 'greaterPortal') &&
+          target.dead
+        ) {
           await Promise.all([
             informPlayers(
               playersToInform,
               {
                 command: 'map_spirit_action',
                 instance: instance,
-                target: target.instance,
+                target: targetInstance,
                 total: result.total,
-                destroyed: dead
+                destroyed: target.dead
               }
             ),
             informPlayers(
-              [spirit.info.ownerPlayer],
+              [spirit.ownerPlayer],
               {
                 command: 'player_spirit_action',
                 instance: instance,
                 displayName: spirit.displayName,
-                target: (target.info.type === 'lesserSpirit' ||
-                target.info.type === 'greaterSpirit') ?
-                  target.info.displayName : target.instance,
+                target: (target.type === 'lesserSpirit' ||
+                target.type === 'greaterSpirit') ?
+                  target.displayName : targetInstance,
                 xp: 'xp_gain'
               }
             ),
-            updateRedis(instance, ['info'], [spirit.info]),
-            portalDestroy(target.instance, target.info, instance)
+            addToRedis(instance, spirit),
+            portalDestroy(targetInstance, target, instance)
           ])
         }
-        else if (dead) {
+        else if (target.dead) {
           await Promise.all([
             informPlayers(
               playersToInform,
               {
                 command: 'map_spirit_action',
                 instance: instance,
-                target: target.instance,
+                target: targetInstance,
                 total: result.total,
-                destroyed: dead
+                destroyed: target.dead
               }
             ),
             informPlayers(
-              [spirit.info.ownerPlayer],
+              [spirit.ownerPlayer],
               {
                 command: 'player_spirit_action',
                 instance: instance,
                 displayName: spirit.displayName,
-                target: (target.info.type === 'lesserSpirit' ||
-                target.info.type === 'greaterSpirit') ?
-                  target.info.displayName : target.instance,
+                target: (target.type === 'lesserSpirit' ||
+                target.type === 'greaterSpirit') ?
+                  target.displayName : targetInstance,
                 xp: 'xp_gain'
               }
             ),
-            updateRedis(instance, ['info'], [spirit.info]),
+            addToRedis(instance, spirit),
             resolveCharacterDeath()
           ])
         }
@@ -179,33 +175,29 @@ module.exports = (instance, spirit) => {
               {
                 command: 'map_spirit_action',
                 instance: instance,
-                target: target.instance,
+                target: targetInstance,
                 total: result.total
               }
             ),
             informPlayers(
-              [spirit.info.ownerPlayer],
+              [spirit.ownerPlayer],
               {
                 command: 'player_spirit_action',
                 instance: instance,
                 displayName: spirit.displayName,
-                target: (target.info.type === 'lesserSpirit' ||
-                target.info.type === 'greaterSpirit') ?
-                  target.info.displayName : target.instance,
+                target: (target.type === 'lesserSpirit' ||
+                target.type === 'greaterSpirit') ?
+                  target.displayName : targetInstance,
                 xp: 'xp_gain'
               }
             ),
-            updateRedis(instance, ['info'], [spirit.info]),
-            updateRedis(
-              target.instance,
-              ['info', 'mapSelection', 'mapToken'],
-              [target.info, target.mapSelection, target.mapToken]
-            )
+            addToRedis(instance, spirit),
+            addToRedis(targetInstance, target)
           ])
         }
       }
       else {
-        await updateRedis(instance, ['info'], [spirit.info])
+        await addToRedis(instance, spirit)
       }
       resolve(true)
     }
