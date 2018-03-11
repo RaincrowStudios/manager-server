@@ -9,48 +9,50 @@ async function initializeConditions() {
   try {
     const conditions = await getSetFromRedis('conditions')
     if (conditions !== []) {
-      for (let i = conditions.length - 1; i >= 0; i--) {
-        const currentTime = Date.now()
-        const bearerName = await getInfoFromRedis(conditions[i])
-        const bearer = await getInfoFromRedis(bearerName)
+      for (let i = 0; i < conditions.length; i++) {
+        if (conditions[i]) {
+          const currentTime = Date.now()
+          const bearerName = await getInfoFromRedis(conditions[i])
+          const bearer = await getInfoFromRedis(bearerName)
 
-        if (bearer) {
-          for (const condition of bearer.conditions) {
-            if (condition.expiresOn > currentTime) {
-              const expireTimer =
-                setTimeout(() =>
-                  conditionExpire(conditions[i], bearerName),
-                  condition.expiresOn - currentTime
-                )
+          if (bearer) {
+            for (const condition of bearer.conditions) {
+              if (condition.expiresOn > currentTime) {
+                const expireTimer =
+                  setTimeout(() =>
+                    conditionExpire(conditions[i], bearerName),
+                    condition.expiresOn - currentTime
+                  )
 
-              const triggerTimer =
-                setTimeout(() =>
-                  conditionTrigger(conditions[i], bearerName),
-                  condition.triggerOn > currentTime ?
-                    condition.triggerOn - currentTime : 0
-                )
+                const triggerTimer =
+                  setTimeout(() =>
+                    conditionTrigger(conditions[i], bearerName),
+                    condition.triggerOn > currentTime ?
+                      condition.triggerOn - currentTime : 0
+                  )
 
-              const previousTimers = timers.by('instance', conditions[i])
-              if (previousTimers) {
-                previousTimers.expireTimer
-                previousTimers.triggerTimer
-                timers.update(previousTimers)
+                const previousTimers = timers.by('instance', conditions[i])
+                if (previousTimers) {
+                  previousTimers.expireTimer
+                  previousTimers.triggerTimer
+                  timers.update(previousTimers)
+                }
+                else {
+                  timers.insert({
+                    instance: conditions[i],
+                    expireTimer,
+                    triggerTimer,
+                  })
+                }
               }
               else {
-                timers.insert({
-                  instance: conditions[i],
-                  expireTimer,
-                  triggerTimer,
-                })
+                conditionExpire(conditions[i], bearerName)
               }
             }
-            else {
-              conditionExpire(conditions[i], bearerName)
-            }
           }
-        }
-        else {
-          deleteCondition(conditions[i])
+          else {
+            deleteCondition(conditions[i])
+          }
         }
       }
     }

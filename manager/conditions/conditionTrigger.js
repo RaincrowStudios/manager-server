@@ -10,20 +10,13 @@ async function conditionTrigger (instance, bearerName) {
   try {
     const currentTime = Date.now()
     const bearer = await getInfoFromRedis(bearerName)
+
     if (bearer) {
       let conditionToUpdate
       for (let i = 0; i < bearer.conditions.length; i++) {
-        if (instance === bearer.conditions[i].instance) {
+        if (bearer.conditions[i] && instance === bearer.conditions[i].instance) {
           conditionToUpdate = bearer.conditions[i]
           bearer.conditions.splice(i, 1)
-        }
-      }
-      if (!conditionToUpdate) {
-        for (let i = 0; i < bearer.conditionsHidden.length; i++) {
-          if (instance === bearer.conditionsHidden[i].instance) {
-            conditionToUpdate = bearer.conditionsHidden[i]
-            bearer.conditionsHidden.splice(i, 1)
-          }
         }
       }
 
@@ -44,7 +37,7 @@ async function conditionTrigger (instance, bearerName) {
           (bearer.type === 'lesserSpirit' ||
           bearer.type === 'greaterSpirit')
         ) {
-          spiritDeath(bearerName, bearer.info, conditionToUpdate.caster)
+          await spiritDeath(bearerName, bearer, conditionToUpdate.caster)
           conditionExpire(instance, bearerName)
         }
         else {

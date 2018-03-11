@@ -6,10 +6,11 @@ module.exports = (instance, bearerName, condition) => {
   try {
     const currentTime = Date.now()
     let timer = {instance}
+
     const expireTimer =
       setTimeout(() =>
         conditionExpire(instance, bearerName),
-        condition.expireOn - currentTime
+        condition.expiresOn - currentTime
       )
 
     timer.expireTimer = expireTimer
@@ -22,6 +23,7 @@ module.exports = (instance, bearerName, condition) => {
         )
 
       timer.triggerTimer = triggerTimer
+
     }
 
     timers.insert(timer)

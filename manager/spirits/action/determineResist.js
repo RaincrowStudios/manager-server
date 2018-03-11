@@ -3,7 +3,7 @@ module.exports = (target) => {
 
   if (target.conditions && target.conditions.length !== 0) {
     for (const condition of target.conditions) {
-      if (condition.resilience) {
+      if (condition && condition.resilience) {
         resistChance += condition.resilience
       }
     }

@@ -24,9 +24,10 @@ function resolveSpiritSpell(instance, spirit, targetInstance, target, action) {
         else {
           result = determineDamage(spirit, target, spell)
         }
+
         if (spell.condition) {
           if (spell.condition.maxStack <= 0) {
-            result.condition = addCondition(
+            result.condition = await addCondition(
               instance,
               spirit,
               targetInstance,
@@ -38,23 +39,23 @@ function resolveSpiritSpell(instance, spirit, targetInstance, target, action) {
           else {
             let stack = 0
             for (const condition of target.conditions) {
-              if (condition.id === action) {
+              if (condition && condition.id === action) {
                 stack++
               }
-              if (stack < spell.condition.maxStack) {
-                result.condition = addCondition(
-                  instance,
-                  spirit,
-                  targetInstance,
-                  target,
-                  action,
-                  spell
-                )
-              }
+            }
+            if (stack < spell.condition.maxStack) {
+              result.condition = await addCondition(
+                instance,
+                spirit,
+                targetInstance,
+                target,
+                spell
+              )
             }
           }
         }
       }
+
       resolve(result)
     }
     catch (err) {

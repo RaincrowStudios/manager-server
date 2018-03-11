@@ -26,7 +26,8 @@ module.exports = (instance, spirit) => {
           })
         ) : []
 
-      const newCoords = determineSpiritMove(spirit)
+      const newCoords = await determineSpiritMove(spirit)
+
       console.log({
         'event': 'spirit_move',
         spirit: instance,

@@ -31,7 +31,7 @@ module.exports = (instance, spirit, killer) => {
         await informPlayers(
           nearPlayers,
           {
-            command: 'map_add',
+            command: 'map_collectible_add',
             tokens: dropTokens,
           }
         )
@@ -41,7 +41,7 @@ module.exports = (instance, spirit, killer) => {
         informPlayers(
           nearPlayers,
           {
-            command: 'map_remove',
+            command: 'map_spirit_remove',
             instance: instance,
           }
         ),
@@ -62,7 +62,7 @@ module.exports = (instance, spirit, killer) => {
       console.log({
         event: 'spirit_death',
         spirit: instance,
-        killedBy: killer,
+        killer: killer,
         type: spirit.type,
         owner: spirit.ownerPlayer
       })

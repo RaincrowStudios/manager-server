@@ -10,39 +10,41 @@ async function initializeSpirits() {
     const spirits = await getSetFromRedis('spirits')
     if (spirits !== []) {
       for (let i = 0; i < spirits.length; i++) {
-        const currentTime = Date.now()
-        const spirit = await getInfoFromRedis(spirits[i])
+        if (spirits[i]) {
+          const currentTime = Date.now()
+          const spirit = await getInfoFromRedis(spirits[i])
+          console.log(spirit)
+          if (spirit && spirit.expiresOn > currentTime && spirit.energy > 0) {
+            const expireTimer =
+              setTimeout(() =>
+                spiritExpire(spirits[i], spirit),
+                spirit.expiresOn - currentTime
+              )
 
-        if (spirit.expiresOn > currentTime && spirit.energy > 0) {
-          const expireTimer =
-            setTimeout(() =>
-              spiritExpire(spirits[i], spirit),
-              spirit.expiresOn - currentTime
-            )
+            const moveTimer =
+              setTimeout(() =>
+                spiritMove(spirits[i], spirit),
+                spirit.moveOn > currentTime ?
+                  spirit.moveOn - currentTime : 0
+              )
 
-          const moveTimer =
-            setTimeout(() =>
-              spiritMove(spirits[i], spirit),
-              spirit.moveOn > currentTime ?
-                spirit.moveOn - currentTime : 0
-            )
+            const actionTimer =
+              setTimeout(() =>
+                spiritAction(spirits[i], spirit),
+                spirit.actionOn > currentTime ?
+                  spirit.actionOn - currentTime : 0
+              )
 
-          const actionTimer =
-            setTimeout(() =>
-              spiritAction(spirits[i], spirit),
-              spirit.actionOn > currentTime ?
-                spirit.actionOn - currentTime : 0
-            )
-
-          timers.insert({
-            instance: spirits[i],
-            expireTimer,
-            moveTimer,
-            actionTimer
-          })
-        }
-        else {
-          spiritExpire(spirits[i], spirit)
+            timers.insert({
+              instance: spirits[i],
+              expireTimer,
+              moveTimer,
+              actionTimer
+            })
+          }
+          else {
+            spiritExpire(spirits[i], spirit)
+          }
         }
       }
     }

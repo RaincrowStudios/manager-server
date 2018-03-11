@@ -9,40 +9,41 @@ const removeFromRedis = require('../../utils/removeFromRedis')
 
 module.exports = async (instance, spirit) => {
   try {
-    const charactersNearLocation = await getNearbyFromGeohashByPoint(
-      'Characters',
-      spirit.latitude,
-      spirit.longitude,
-      constants.maxDisplay
-    )
+    if (instance && spirit) {
+      const charactersNearLocation = await getNearbyFromGeohashByPoint(
+        'Characters',
+        spirit.latitude,
+        spirit.longitude,
+        constants.maxDisplay
+      )
 
-    const playersToInform = charactersNearLocation.length !== 0 ?
-      await Promise.all(
-        charactersNearLocation.map(async (character) => {
-          const characterInfo = await getInfoFromRedis(character[0])
-          return characterInfo.owner
-        })
-      ) : []
+      const playersToInform = charactersNearLocation.length !== 0 ?
+        await Promise.all(
+          charactersNearLocation.map(async (character) => {
+            const characterInfo = await getInfoFromRedis(character[0])
+            return characterInfo.owner
+          })
+        ) : []
 
-    await Promise.all([
-      informPlayers(
-        playersToInform,
-        {
-          command: 'map_spirit_remove',
-          instance: instance
-        }
-      ),
-      removeFromGeohash('Spirits', instance),
-      removeFromSet('spirits', instance),
-      removeFromRedis(instance)
-    ])
+      await Promise.all([
+        informPlayers(
+          playersToInform,
+          {
+            command: 'map_spirit_remove',
+            instance: instance
+          }
+        ),
+        removeFromGeohash('Spirits', instance),
+        removeFromSet('spirits', instance),
+        removeFromRedis(instance)
+      ])
 
-    console.log({
-      event: 'spirit_expired',
-      spirit: instance,
-      owner: spirit.ownerPlayer,
-    })
-
+      console.log({
+        event: 'spirit_expired',
+        spirit: instance,
+        owner: spirit.ownerPlayer,
+      })
+    }
     const spiritTimers = timers.by('instance', instance)
     if (spiritTimers) {
       clearTimeout(spiritTimers.expireTimer)

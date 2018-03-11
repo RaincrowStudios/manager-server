@@ -1,8 +1,7 @@
 module.exports = (info) => {
   let token
   switch (info.type) {
-    case 'lesserSpirit':
-    case 'greaterSpirit':
+    case 'spirit':
       token = {
         displayName: info.displayName,
         type: info.type,
@@ -11,8 +10,7 @@ module.exports = (info) => {
         longitude: info.longitude
       }
       break
-    case 'lesserPortal':
-    case 'greaterPortal':
+    case 'portal':
       token = {
         type: info.type,
         degree: info.degree,
@@ -23,6 +21,7 @@ module.exports = (info) => {
     case 'herb':
     case 'gem':
     case 'tool':
+    case 'silver':
       token = {
         displayName: info.displayName,
         type: info.type,

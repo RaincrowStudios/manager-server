@@ -15,7 +15,7 @@ async function spiritAction(instance, spirit) {
 
       let silenced = false
       for (const condition of spirit.conditions) {
-        if (condition.status === 'silenced') {
+        if (condition && condition.status === 'silenced') {
           silenced = true
         }
       }

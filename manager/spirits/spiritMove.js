@@ -16,7 +16,7 @@ async function spiritMove(instance, spirit) {
 
       let bound = false
       for (const condition of spirit.conditions) {
-        if (condition.status === 'bound') {
+        if (condition && condition.status === 'bound') {
           bound = true
         }
       }

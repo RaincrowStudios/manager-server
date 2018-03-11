@@ -36,7 +36,7 @@ module.exports = (casterName, caster, targetInstance, target, spell) => {
       else {
         duration = spell.condition.duration
       }
-
+      duration = parseInt(duration, 10)
       let result = {
         instance: instance,
         id: spell.id,
@@ -56,35 +56,46 @@ module.exports = (casterName, caster, targetInstance, target, spell) => {
         result.tick = spell.condition.tick
       }
 
-      for (const key of Object.keys(spell.condition)) {
-        if (key !== 'status' && typeof spell.condition[key] === 'string') {
-          const parts = spell.condition[key].split(':')
-          if (parts[1].includes('+')) {
-            const subparts = parts[1].split('+')
-            result[key] = parts[0][subparts[0]] + parseInt(subparts[1])
-          }
-          else if (parts[1].includes('*')) {
-            const subparts = parts[1].split('*')
-            result[key] =
-              Math.round(parts[0][subparts[0]] * parseFloat(subparts[1]))
+      for (const modifier of spell.condition.modifiers) {
+        for (const key of Object.keys(modifier)) {
+          if (key !== 'status' && typeof modifier[key] === 'string') {
+            const parts = modifier[key].split(':')
+            let property
+            if (parts[0] === 'caster') {
+              property = caster
+            }
+            else if (parts[0] === 'target') {
+              property = target
+            }
+            if (parts[1].includes('+')) {
+              const subparts = parts[1].split('+')
+              result[key] = property[subparts[0]] + parseInt(subparts[1])
+            }
+            else if (parts[1].includes('*')) {
+              const subparts = parts[1].split('*')
+              result[key] =
+                Math.round(property[subparts[0]] * parseFloat(subparts[1]))
+            }
+            else {
+              result[key] = property[parts[1]]
+            }
           }
           else {
-            result[key] = parts[0][parts[1]]
+            result[key] = spell.condition[key]
           }
         }
-        else {
-          result[key] = spell.condition[key]
-        }
       }
+
       await Promise.all([
+        conditionAdd(instance, targetInstance, result),
         addToRedis(instance, targetInstance),
         addToSet('conditions', instance)
       ])
-      conditionAdd(instance, targetInstance, result)
-      reject(result)
+
+      resolve(result)
     }
     catch (err) {
-      resolve(err)
+      reject(err)
     }
   })
 }

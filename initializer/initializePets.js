@@ -7,7 +7,7 @@ async function initializePets() {
   try {
     const pets = await getSetFromRedis('pets')
     if (pets !== []) {
-      for (let i = pets.length - 1; i >= 0; i--) {
+      for (let i = 0; i < pets.length; i++) {
         const currentTime = Date.now()
         const pet = await getInfoFromRedis(pets[i])
 

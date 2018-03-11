@@ -9,20 +9,14 @@ module.exports = async (instance, bearerName) => {
   try {
     let bearer = await getInfoFromRedis(bearerName)
     if (bearer) {
-      let hidden = true
-      let informPlayer = true
+      let hidden
       for (let i = 0; i < bearer.conditions.length; i++) {
-        if (instance === bearer.conditions[i].instance) {
+        if (
+          bearer.conditions[i] &&
+          instance === bearer.conditions[i].instance
+        ) {
           bearer.conditions.splice(i, 1)
-          hidden = false
-        }
-      }
-      if (!hidden) {
-        for (let i = 0; i < bearer.conditionsHidden.length; i++) {
-          if (instance === bearer.conditionsHidden[i].instance) {
-            bearer.conditionsHidden.splice(i, 1)
-            informPlayer = false
-          }
+          hidden = bearer.conditions[i].hidden
         }
       }
 
@@ -38,11 +32,7 @@ module.exports = async (instance, bearerName) => {
         bearer: bearerName
       })
 
-      if (
-        (bearer.type !== 'lesserSpirit' ||
-        bearer.type !== 'greaterSpirit') &&
-        informPlayer
-      ) {
+      if (bearer.type !== 'spirit' && !hidden) {
         await informPlayers(
           [bearer.owner],
           {
