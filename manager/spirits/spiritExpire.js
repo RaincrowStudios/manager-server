@@ -1,41 +1,32 @@
-const constants = require('../../constants')
 const timers = require('../../database/timers')
-const getInfoFromRedis = require('../../utils/getInfoFromRedis')
-const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByPoint')
+const getAllFromHash = require('../../redis/getAllFromHash')
+const removeInstance = require('../../redis/removeInstance')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
-const removeFromGeohash = require('../../utils/removeFromGeohash')
-const removeFromSet = require('../../utils/removeFromSet')
-const removeFromRedis = require('../../utils/removeFromRedis')
 
-module.exports = async (instance, spirit) => {
+module.exports = async (instance) => {
   try {
-    if (instance && spirit) {
-      const charactersNearLocation = await getNearbyFromGeohashByPoint(
-        'Characters',
-        spirit.latitude,
-        spirit.longitude,
-        constants.maxDisplay
-      )
+    const spirit = await getAllFromHash(instance)
 
-      const playersToInform = charactersNearLocation.length !== 0 ?
-        await Promise.all(
-          charactersNearLocation.map(async (character) => {
-            const characterInfo = await getInfoFromRedis(character[0])
-            return characterInfo.owner
-          })
-        ) : []
-
+    if (spirit) {
       await Promise.all([
-        informPlayers(
-          playersToInform,
+        informNearbyPlayers(
+          spirit.latitude,
+          spirit.longitude,
           {
             command: 'map_spirit_remove',
             instance: instance
           }
         ),
-        removeFromGeohash('Spirits', instance),
-        removeFromSet('spirits', instance),
-        removeFromRedis(instance)
+        informPlayers(
+          [spirit.ownerPlayer],
+          {
+            command: 'player_spirit_expired',
+            displayName: spirit.displayName,
+            instance: instance
+          }
+        ),
+        removeInstance('spirits', instance)
       ])
 
       console.log({

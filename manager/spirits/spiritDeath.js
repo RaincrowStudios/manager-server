@@ -1,45 +1,28 @@
-const constants = require('../../constants')
 const timers = require('../../database/timers')
+const removeInstance = require('../../redis/removeInstance')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
-const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByPoint')
-const getInfoFromRedis = require('../../utils/getInfoFromRedis')
-const removeFromGeohash = require('../../utils/removeFromGeohash')
-const removeFromSet = require('../../utils/removeFromSet')
-const removeFromRedis = require('../../utils/removeFromRedis')
 const addSpiritDrop = require('./death/addSpiritDrop')
 
 module.exports = (instance, spirit, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const charactersNearLocation = await getNearbyFromGeohashByPoint(
-        'Characters',
-        spirit.latitude,
-        spirit.longitude,
-        constants.maxDisplay
-      )
-
-      const nearPlayers = charactersNearLocation.length !== 0 ?
-        await Promise.all(
-          charactersNearLocation.map(async (character) => {
-            const characterInfo = await getInfoFromRedis(character[0])
-            return characterInfo.owner
-          })
-        ) : []
-
-      if (spirit.drop.length !== 0) {
+      if (spirit.drop.length > 0) {
         const dropTokens = await addSpiritDrop(spirit)
-        await informPlayers(
-          nearPlayers,
+        await informNearbyPlayers(
+          spirit.latitude,
+          spirit.longitude,
           {
-            command: 'map_collectible_add',
+            command: 'map_coll_add',
             tokens: dropTokens,
           }
         )
       }
 
       await Promise.all([
-        informPlayers(
-          nearPlayers,
+        informNearbyPlayers(
+          spirit.latitude,
+          spirit.longitude,
           {
             command: 'map_spirit_remove',
             instance: instance,
@@ -54,9 +37,7 @@ module.exports = (instance, spirit, killer) => {
             displayName: spirit.displayName
           }
         ),
-        removeFromGeohash('Spirits', instance),
-        removeFromSet('spirits', instance),
-        removeFromRedis(instance)
+        removeInstance('spirits', instance)
       ])
 
       console.log({

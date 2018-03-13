@@ -1,16 +1,14 @@
-const client = require('../redis/client')
+const publishToChannel = require('../redis/publishToChannel')
 
 module.exports = (players, payload) => {
   return new Promise(async (resolve, reject) => {
     try {
-      client.publish(
+      publishToChannel(
         'players',
-        JSON.stringify(
-          {
-            players: players,
-            payload: payload
-          }
-        )
+        {
+          players: players,
+          payload: payload
+        }
       )
       resolve(true)
     }

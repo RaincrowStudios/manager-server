@@ -2,6 +2,7 @@
 
 console.log('Starting Manager Server...')
 
+const lua = require('./lua')
 const subscriber = require('./redis/subscriber')
 const initializer = require('./initializer/initializer')
 const clearTimers = require('./utils/clearTimers')
@@ -36,6 +37,7 @@ const server = app.listen(port, function listening() {
   console.log('Server started at http://%s:%d', server.address().address, server.address().port)
 })*/
 
+lua()
 
 initializer()
 

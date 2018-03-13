@@ -2,8 +2,8 @@ const fs = require('fs')
 const redis = require('redis')
 const redisConfigJSON =
   process.env.NODE_ENV === 'development' ?
-    fs.readFileSync('redis-key/test-keys.json') :
-    fs.readFileSync('redis-key/test-keys.json')
+    fs.readFileSync(__dirname + 'redis-key/test-keys.json') :
+    fs.readFileSync(__dirname + 'redis-key/test-keys.json')
 const redisConfig = JSON.parse(redisConfigJSON)
 
 console.log("Connecting to Redis at %s:%d", redisConfig.redisHost, redisConfig.redisPort)
