@@ -1,9 +1,13 @@
-const client = require('../redis/client')
+const client = require('./client')
 
-module.exports = (dominion, instance, score) => {
+module.exports = (category, region, instance, score) => {
   return new Promise((resolve, reject) => {
-    if (!dominion || typeof category !== 'string') {
-      const err = 'Invalid category: ' + dominion
+    if (!category || typeof category !== 'string') {
+      const err = 'Invalid category: ' + category
+      reject(err)
+    }
+    else if (!region || typeof region !== 'string') {
+      const err = 'Invalid region: ' + region
       reject(err)
     }
     else if (!instance || typeof instance !== 'string') {
@@ -11,13 +15,16 @@ module.exports = (dominion, instance, score) => {
       reject(err)
     }
 
-    client.zadd(['leaderboard:character:' + dominion, score, instance], (err) => {
-      if (err) {
-        reject(err)
+    client.zadd(
+      ['set:leaderboard:' + category + ':' + region, score, instance],
+      (err) => {
+        if (err) {
+          reject(err)
+        }
+        else {
+          resolve(true)
+        }
       }
-      else {
-        resolve(true)
-      }
-    })
+    )
   })
 }

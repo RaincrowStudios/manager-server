@@ -1,6 +1,6 @@
-const client = require('../redis/client')
+const client = require('./client')
 
-module.exports = (category, latitude, longitude, radius) => {
+module.exports = (category, latitude, longitude, radius, count = 0) => {
 	return new Promise((resolve, reject) => {
 		if (!category || typeof category !== 'string') {
 			const err = 'Invalid category: ' + category
@@ -12,8 +12,12 @@ module.exports = (category, latitude, longitude, radius) => {
 			reject(err)
 		}
 
-    client.georadius(['geohash:' + category, longitude, latitude, radius, 'km'],
-      (err, results) => {
+    let query = ['geohash:' + category, longitude, latitude, radius, 'km']
+    if (count > 0) {
+      query.push('COUNT')
+      query.push(count)
+    }
+    client.georadius(query, (err, results) => {
       if (err) {
         reject(err)
       }

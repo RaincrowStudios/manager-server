@@ -1,8 +1,12 @@
-const client = require('../redis/client')
+const client = require('./client')
 
-module.exports = (instance, field) => {
+module.exports = (category, instance, field) => {
   return new Promise((resolve, reject) => {
-    if (!instance || typeof instance !== 'string') {
+    if (!category || typeof category !== 'string') {
+      const err = 'Invalid category: ' + category
+      reject(err)
+    }
+    else if (!instance || typeof instance !== 'string') {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
@@ -11,14 +15,17 @@ module.exports = (instance, field) => {
       reject(err)
     }
 
-    client.hget([instance, field], (err, results) => {
-      if (err) {
-        err.code = '5300'
-        reject(err)
+    client.hget(
+      ['hash:' + category + ':' + instance, field],
+      (err, results) => {
+        if (err) {
+          err.code = '5300'
+          reject(err)
+        }
+        else {
+          resolve(JSON.parse(results))
+        }
       }
-      else {
-        resolve(JSON.parse(results))
-      }
-    })
+    )
   })
 }

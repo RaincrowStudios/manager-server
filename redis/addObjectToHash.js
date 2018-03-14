@@ -1,6 +1,6 @@
 const client = require('./client')
 
-module.exports = (category, instance, latitude, longitude) => {
+module.exports = (category, instance, object) => {
   return new Promise((resolve, reject) => {
     if (!category || typeof category !== 'string') {
       const err = 'Invalid category: ' + category
@@ -10,13 +10,19 @@ module.exports = (category, instance, latitude, longitude) => {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
-    else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
-      const err = 'Invalid coords: ' + latitude + ', ' + longitude
+    else if (!object || typeof instance !== 'object') {
+      const err = 'Invalid object: ' + object
       reject(err)
     }
 
-    client.geoadd(
-      ['geohash:' + category, longitude, latitude, instance],
+    const fieldsValues = []
+    const keys = Object.keys(object)
+    for (const key of keys) {
+      fieldsValues.push(key, JSON.stringify(object[key]))
+    }
+
+    client.hmset(
+      ['hash:' + category + ':' + instance, ...fieldsValues],
       (err) => {
         if (err) {
           reject(err)

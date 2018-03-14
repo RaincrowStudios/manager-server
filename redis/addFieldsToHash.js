@@ -1,8 +1,12 @@
 const client = require('./client')
 
-module.exports = (instance, fields, values) => {
+module.exports = (category, instance, fields, values) => {
   return new Promise((resolve, reject) => {
-    if (!instance || typeof instance !== 'string') {
+    if (!category || typeof category !== 'string') {
+      const err = 'Invalid category: ' + category
+      reject(err)
+    }
+    else if (!instance || typeof instance !== 'string') {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
@@ -16,13 +20,16 @@ module.exports = (instance, fields, values) => {
       fieldsValues.push(fields[i], JSON.stringify(values[i]))
     }
 
-    client.hmset([instance, ...fieldsValues], (err) => {
-      if (err) {
-        reject(err)
+    client.hmset(
+      ['hash:' + category + ':' + instance, ...fieldsValues],
+      (err) => {
+        if (err) {
+          reject(err)
+        }
+        else {
+          resolve(true)
+        }
       }
-      else {
-        resolve(true)
-      }
-    })
+    )
   })
 }

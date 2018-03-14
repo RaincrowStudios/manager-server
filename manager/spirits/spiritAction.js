@@ -4,7 +4,7 @@ const resolveSpiritAction = require('./action/resolveSpiritAction')
 
 async function spiritAction(instance) {
   try {
-    const spirit = await getAllFromHash(instance)
+    const spirit = await getAllFromHash('spirits', instance)
 
     if (spirit) {
       const currentTime = Date.now()

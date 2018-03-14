@@ -1,8 +1,12 @@
 const client = require('./client')
 
-module.exports = (instance, field, increment) => {
+module.exports = (category, instance, field, increment) => {
   return new Promise((resolve, reject) => {
-    if (!instance || typeof instance !== 'string') {
+    if (!category || typeof category !== 'string') {
+      const err = 'Invalid category: ' + category
+      reject(err)
+    }
+    else if (!instance || typeof instance !== 'string') {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
@@ -15,13 +19,16 @@ module.exports = (instance, field, increment) => {
       reject(err)
     }
 
-    client.hincrby([instance, field, increment], (err, result) => {
-      if (err) {
-        reject(err)
+    client.hincrby(
+      ['hash:' + category + ':' + instance, field, increment],
+      (err, result) => {
+        if (err) {
+          reject(err)
+        }
+        else {
+          resolve(result)
+        }
       }
-      else {
-        resolve(result)
-      }
-    })
+    )
   })
 }

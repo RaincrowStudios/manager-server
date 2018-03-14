@@ -10,11 +10,11 @@ module.exports = (category, instance) => {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
-    
+
     client.multi()
     .zrem('geohash:' + category, instance)
     .zrem('set:active:' + category, instance)
-    .del(instance)
+    .del('hash:' + category + ':' + instance)
     .exec(err => {
       if (err) {
         reject(err)

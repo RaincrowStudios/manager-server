@@ -6,7 +6,7 @@ const informPlayers = require('../../utils/informPlayers')
 
 module.exports = async (instance) => {
   try {
-    const spirit = await getAllFromHash(instance)
+    const spirit = await getAllFromHash('spirits', instance)
 
     if (spirit) {
       await Promise.all([

@@ -1,4 +1,4 @@
-const client = require('../redis/client')
+const client = require('./client')
 
 module.exports = (category) => {
   return new Promise((resolve, reject) => {
