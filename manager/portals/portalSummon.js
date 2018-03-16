@@ -12,7 +12,7 @@ const removeFromRedis = require('../../utils/removeFromRedis')
 const createMapToken = require('../../utils/createMapToken')
 const spiritAdd = require('../spirits/spiritAdd')
 
-module.exports = async (instance, portal) => {
+module.exports = async (instance) => {
   try {
     const currentTime = Date.now()
     const spiritInstance = uuidv1()
@@ -49,7 +49,7 @@ module.exports = async (instance, portal) => {
     spiritToken.instance = spiritInstance
 
     await Promise.all([
-      informPlayers(
+      informNearbyPlayers(
         playersToInform,
         {
           command: 'map_remove',

@@ -13,8 +13,9 @@ module.exports = (category, instance, field, value) => {
     }
 
     const key = 'hash:' + category + ':' + instance
-    
-    client.evalsha([scripts.updateHashFieldArray.sha, 1, key, field, value],
+
+    client.evalsha(
+      [scripts.updateHashFieldArray.sha, 1, key, field, value],
       (err, result) => {
         if (err) {
           reject(err)

@@ -12,9 +12,9 @@ module.exports = (category, instance) => {
     }
 
     client.multi()
-    .zrem('geohash:' + category, instance)
-    .zrem('set:active:' + category, instance)
-    .del('hash:' + category + ':' + instance)
+    .zrem(['geohash:' + category, instance])
+    .zrem(['set:active:' + category, instance])
+    .del(['hash:' + category + ':' + instance])
     .exec(err => {
       if (err) {
         reject(err)

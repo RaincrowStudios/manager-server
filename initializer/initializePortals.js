@@ -1,25 +1,33 @@
 const timers = require('../../database/timers')
-const getSetFromRedis = require('../utils/getSetFromRedis')
-const getInfoFromRedis = require('../utils/getInfoFromRedis')
+const getActiveSet = require('../redis/getActiveSet')
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const portalSummon = require('../manager/portals/portalSummon')
-const portalExpire = require('../manager/portals/portalExpire')
+const portalDelete = require('../manager/portals/portalDelete')
 
 async function initializePortals() {
   try {
-    const portals = await getSetFromRedis('portals')
-    if (portals !== []) {
+    const portals = await getActiveSet('portals')
+    if (portals.length > 0) {
       for (let i = 0; i < portals.length; i++) {
         const currentTime = Date.now()
-        const portal = await getInfoFromRedis(portals[i])
+        const portal = await getFieldsFromHash(
+          'portals',
+          portals[i],
+          ['energy', 'summonOn']
+        )
 
-        if (portal.summonOn > currentTime && portal.energy > 0) {
+        if (portal && portal.summonOn > currentTime && portal.energy > 0) {
           const summonTimer =
-            setTimeout(portalSummon(portals[i], portal), portal.summonOn)
+            setTimeout(() =>
+              portalSummon(portals[i]),
+              portal.summonOn > currentTime ?
+                portal.summonOn - currentTime : 0
+            )
 
           timers.insert({instance: portals[i], summonTimer})
         }
         else {
-          portalExpire(portals[i], portal)
+          portalDelete(portals[i], portal)
         }
       }
     }

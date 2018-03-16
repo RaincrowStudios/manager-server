@@ -6,7 +6,7 @@ const getInfoFromRedis = require('../utils/getInfoFromRedis')
 async function initializePets() {
   try {
     const pets = await getSetFromRedis('pets')
-    if (pets !== []) {
+    if (pets.length > 0) {
       for (let i = 0; i < pets.length; i++) {
         const currentTime = Date.now()
         const pet = await getInfoFromRedis(pets[i])

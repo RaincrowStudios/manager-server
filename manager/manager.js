@@ -9,9 +9,10 @@ const addTimers = {
 
 async function manager(message) {
   try {
+    let timersToClear
     switch (message.command) {
       case 'remove':
-        const timersToClear = timers.by("instance", message.instance)
+        timersToClear = timers.by('instance', message.instance)
         for (const key of Object.keys(timersToClear)) {
           if (key !== 'instance') {
             clearTimeout(timersToClear[key])

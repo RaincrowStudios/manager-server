@@ -11,7 +11,7 @@ module.exports = (category, instance) => {
       reject(err)
     }
 
-    client.hgetall('hash:' + category + ':' + instance, (err, results) => {
+    client.hgetall(['hash:' + category + ':' + instance], (err, results) => {
       if (err) {
         err.code = '5300'
         reject(err)

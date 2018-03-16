@@ -12,8 +12,8 @@ module.exports = (category, instance) => {
     }
 
     client.multi()
-    .hgetall('hash:' + category + ':' + instance)
-    .del('hash:' + category + ':' + instance)
+    .hgetall(['hash:' + category + ':' + instance])
+    .del(['hash:' + category + ':' + instance])
     .exec((err, results) => {
       if (err) {
         reject(err)
