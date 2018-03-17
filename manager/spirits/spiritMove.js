@@ -1,4 +1,5 @@
 const timers = require('../../database/timers')
+const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const resolveSpiritMove = require('./move/resolveSpiritMove')
 
@@ -12,7 +13,7 @@ async function spiritMove(instance) {
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)
 
-      spirit.moveOn = currentTime +
+      const newMoveOn = currentTime +
         (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
 
       const boundCheck =
@@ -24,8 +25,10 @@ async function spiritMove(instance) {
 
       const newTimer =
         setTimeout(() =>
-          spiritMove(instance), spirit.moveOn - currentTime
+          spiritMove(instance), newMoveOn - currentTime
         )
+
+      await addFieldsToHash('spirits', instance, ['moveOn'], [newMoveOn])
 
       let spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {

@@ -1,4 +1,5 @@
 const timers = require('../../database/timers')
+const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const resolveSpiritAction = require('./action/resolveSpiritAction')
 
@@ -12,7 +13,7 @@ async function spiritAction(instance) {
       const min = parseInt(range[0], 10)
       const max = parseInt(range[1], 10)
 
-      spirit.actionOn = currentTime +
+      const newActionOn = currentTime +
         (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
 
       const silencedCheck =
@@ -24,10 +25,10 @@ async function spiritAction(instance) {
 
       const newTimer =
         setTimeout(() =>
-          spiritAction(instance), spirit.actionOn - currentTime
+          spiritAction(instance), newActionOn - currentTime
         )
 
-      //await addFieldsToHash()
+      await addFieldsToHash('spirits', instance, ['actionOn'], [newActionOn])
 
       let spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {

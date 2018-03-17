@@ -14,62 +14,83 @@ async function conditionTrigger (instance) {
     const currentTime = Date.now()
     const bearer =
       await getAllFromHash('conditions', instance)
-    const conditions = await getOneFromHash(bearer.type, bearer.instance, 'conditions')
+    if (bearer) {
+      const conditions = await getOneFromHash(bearer.type, bearer.instance, 'conditions')
 
-    if (conditions) {
-      let conditionToUpdate, index
-      for (let i = 0; conditions.length; i++) {
-        if (conditions[i].instance === instance) {
-          conditionToUpdate = conditions[i].instance
-          index = i
+      if (conditions.length > 0) {
+        let conditionToUpdate, index
+        for (let i = 0; i < conditions.length; i++) {
+          if (conditions[i].instance === instance) {
+            conditionToUpdate = conditions[i]
+            index = i
+          }
         }
-      }
 
-      if (conditionToUpdate) {
-        const newCondition = conditionToUpdate
-        const total = resolveCondition(newCondition)
+        if (conditionToUpdate) {
+          const newCondition = conditionToUpdate
+          const total = resolveCondition(newCondition)
 
-        let bearerCurrentEnergy, bearerDead
-        [bearerCurrentEnergy, bearerDead] =
-          await adjustEnergy(bearer.type, bearer.instance, total)
+          let bearerCurrentEnergy, bearerDead
+          [bearerCurrentEnergy, bearerDead] =
+            await adjustEnergy(bearer.type, bearer.instance, total)
 
-        console.log({
-          event: 'condition_triggered',
-          bearer: bearer.instance,
-          condition: newCondition.id,
-          total: total,
-          energy: bearerCurrentEnergy
-        })
+          console.log({
+            event: 'condition_triggered',
+            bearer: bearer.instance,
+            condition: newCondition.id,
+            total: total,
+            energy: bearerCurrentEnergy
+          })
 
-        if (bearerDead && bearer.type === 'spirit') {
-          await Promise.all([
-            spiritDeath(bearer.instance, newCondition.caster),
-            conditionExpire(instance)
-          ])
-        }
-        else if (bearerDead) {
-          await Promise.all([
-            informPlayers(
-              [bearer.instance],
-              {
-                command: 'player_death'
-              }
-            ),
-            conditionExpire(instance)
-          ])
-        }
-        else if (bearer.type !== 'spirit') {
-          await Promise.all([
-            informPlayers(
-              [bearer.instance],
-              {
-                command: 'player_condition_trigger',
-                condition: newCondition.id,
-                total: total,
-                energy: bearerCurrentEnergy
-              }
-            ),
-            updateHashFieldArray(
+          if (bearerDead && bearer.type === 'spirit') {
+            await Promise.all([
+              spiritDeath(bearer.instance, newCondition.caster),
+              conditionExpire(instance)
+            ])
+          }
+          else if (bearerDead) {
+            await Promise.all([
+              informPlayers(
+                [bearer.instance],
+                {
+                  command: 'player_death'
+                }
+              ),
+              conditionExpire(instance)
+            ])
+          }
+          else if (bearer.type !== 'spirit') {
+            await Promise.all([
+              informPlayers(
+                [bearer.instance],
+                {
+                  command: 'player_condition_trigger',
+                  condition: newCondition.id,
+                  total: total,
+                  energy: bearerCurrentEnergy
+                }
+              ),
+              updateHashFieldArray(
+                bearer.type,
+                bearer.instance,
+                'replace',
+                'conditions',
+                conditionToUpdate,
+                index
+              )
+            ])
+          }
+          else {
+            newCondition.triggerOn =
+              currentTime + (newCondition.tick * 60000)
+
+            const newTimer =
+              setTimeout(() =>
+                conditionTrigger(instance),
+                newCondition.tick * 60000
+              )
+
+            await updateHashFieldArray(
               bearer.type,
               bearer.instance,
               'replace',
@@ -77,32 +98,16 @@ async function conditionTrigger (instance) {
               conditionToUpdate,
               index
             )
-          ])
+
+            let conditionTimer = timers.by('instance', instance)
+            if (conditionTimer) {
+              conditionTimer.triggerTimer = newTimer
+              timers.update(conditionTimer)
+            }
+          }
         }
         else {
-          newCondition.triggerOn =
-            currentTime + (newCondition.tick * 60000)
-
-          const newTimer =
-            setTimeout(() =>
-              conditionTrigger(instance),
-              newCondition.tick * 60000
-            )
-
-          await updateHashFieldArray(
-            bearer.type,
-            bearer.instance,
-            'replace',
-            'conditions',
-            conditionToUpdate,
-            index
-          )
-
-          let conditionTimer = timers.by('instance', instance)
-          if (conditionTimer) {
-            conditionTimer.triggerTimer = newTimer
-            timers.update(conditionTimer)
-          }
+          deleteCondition(instance)
         }
       }
       else {

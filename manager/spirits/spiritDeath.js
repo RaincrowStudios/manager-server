@@ -10,39 +10,40 @@ module.exports = (instance, killer) => {
     try {
       const spirit = await getAllFromHash('spirits', instance)
 
-      if (spirit.drop.length > 0) {
-        await addSpiritDrop(spirit)
+      if (spirit) {
+        if (spirit.drop.length > 0) {
+          await addSpiritDrop(spirit)
+        }
+
+        await Promise.all([
+          informNearbyPlayers(
+            spirit.latitude,
+            spirit.longitude,
+            {
+              command: 'map_spirit_remove',
+              instance: instance,
+            }
+          ),
+          informPlayers(
+            [spirit.ownerPlayer],
+            {
+              command: 'player_spirit_death',
+              instance: instance,
+              killer: killer,
+              displayName: spirit.displayName
+            }
+          ),
+          removeFromAll('spirits', instance)
+        ])
+
+        console.log({
+          event: 'spirit_death',
+          spirit: instance,
+          killer: killer,
+          type: spirit.type,
+          owner: spirit.ownerPlayer
+        })
       }
-
-      await Promise.all([
-        informNearbyPlayers(
-          spirit.latitude,
-          spirit.longitude,
-          {
-            command: 'map_spirit_remove',
-            instance: instance,
-          }
-        ),
-        informPlayers(
-          [spirit.ownerPlayer],
-          {
-            command: 'player_spirit_death',
-            instance: instance,
-            killer: killer,
-            displayName: spirit.displayName
-          }
-        ),
-        removeFromAll('spirits', instance)
-      ])
-
-      console.log({
-        event: 'spirit_death',
-        spirit: instance,
-        killer: killer,
-        type: spirit.type,
-        owner: spirit.ownerPlayer
-      })
-
       const spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {
         clearTimeout(spiritTimers.expireTimer)

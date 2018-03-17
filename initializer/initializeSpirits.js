@@ -20,21 +20,21 @@ async function initializeSpirits() {
                 spiritExpire(spirits[i]),
                 spirit.expiresOn - currentTime
               )
-            console.log('Spirit expiring in %d minutes...', (spirit.expiresOn - currentTime)/60000)
+
             const moveTimer =
               setTimeout(() =>
                 spiritMove(spirits[i]),
                 spirit.moveOn > currentTime ?
                   spirit.moveOn - currentTime : 0
               )
-            console.log('Spirit moving in %d seconds...', (spirit.moveOn - currentTime)/1000)
+
             const actionTimer =
               setTimeout(() =>
                 spiritAction(spirits[i]),
                 spirit.actionOn > currentTime ?
                   spirit.actionOn - currentTime : 0
               )
-            console.log('Spirit acting in %d seconds...', (spirit.actionOn - currentTime)/1000)
+
             timers.insert({
               instance: spirits[i],
               expireTimer,

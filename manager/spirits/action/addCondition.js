@@ -96,7 +96,7 @@ module.exports = (
 
       await Promise.all([
         conditionAdd(instance, result),
-        addObjectToHash('conditions', instance, {bearer: targetInstance, type: targetCategory}),
+        addObjectToHash('conditions', instance, {instance: targetInstance, type: targetCategory}),
         addToActiveSet('conditions', instance),
         updateHashFieldArray(
           targetCategory,

@@ -51,11 +51,8 @@ module.exports = (instance, spirit, targetInstance, target) => {
 
       let targetCurrentEnergy, targetDead
 
-      [targetCurrentEnergy, targetDead] = await adjustEnergy(
-        targetCategory,
-        targetInstance,
-        result.total
-      )
+      [targetCurrentEnergy, targetDead] =
+        await adjustEnergy(targetCategory, targetInstance, result.total)
 
       const xpGain = determineXP()
 
