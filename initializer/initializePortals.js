@@ -1,6 +1,6 @@
-const timers = require('../../database/timers')
+const timers = require('../database/timers')
 const getActiveSet = require('../redis/getActiveSet')
-const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const getAllFromHash = require('../redis/getAllFromHash')
 const portalSummon = require('../manager/portals/portalSummon')
 const portalDelete = require('../manager/portals/portalDelete')
 
@@ -10,11 +10,7 @@ async function initializePortals() {
     if (portals.length > 0) {
       for (let i = 0; i < portals.length; i++) {
         const currentTime = Date.now()
-        const portal = await getFieldsFromHash(
-          'portals',
-          portals[i],
-          ['energy', 'summonOn']
-        )
+        const portal = await getAllFromHash('portals', portals[i])
 
         if (portal && portal.summonOn > currentTime && portal.energy > 0) {
           const summonTimer =

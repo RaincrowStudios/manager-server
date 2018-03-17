@@ -1,5 +1,5 @@
-const client = ('./client')
-const scripts = ('../lua/scripts')
+const client = require('./client')
+const scripts = require('../lua/scripts')
 
 module.exports = (category, instance, energy) => {
   return new Promise((resolve, reject) => {
@@ -14,12 +14,12 @@ module.exports = (category, instance, energy) => {
 
     const key = 'hash:' + category + ':' + instance
 
-    client.evalsha([scripts.adjustEnergy.sha, 1, key, energy], (err, result) => {
+    client.evalsha([scripts.adjustEnergy.sha, 1, key, energy], (err, results) => {
       if (err) {
         reject(err)
       }
       else {
-        resolve(result)
+        resolve(JSON.parse(results))
       }
     })
   })

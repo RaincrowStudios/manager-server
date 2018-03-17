@@ -1,7 +1,7 @@
-const client = ('./client')
-const scripts = ('../lua/scripts')
+const client = require('./client')
+const scripts = require('../lua/scripts')
 
-module.exports = (category, instance, field, value) => {
+module.exports = (category, instance, command, field, value, index = 0) => {
   return new Promise((resolve, reject) => {
     if (!category || typeof category !== 'string') {
       const err = 'Invalid category: ' + category
@@ -11,17 +11,29 @@ module.exports = (category, instance, field, value) => {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
+    else if (!field || typeof field !== 'string') {
+      const err = 'Invalid field: ' + field
+      reject(err)
+    }
 
     const key = 'hash:' + category + ':' + instance
 
     client.evalsha(
-      [scripts.updateHashFieldArray.sha, 1, key, field, value],
+      [
+        scripts.updateHashFieldArray.sha,
+        1,
+        key,
+        command,
+        field,
+        JSON.stringify(value),
+        index
+      ],
       (err, result) => {
         if (err) {
           reject(err)
         }
         else {
-          resolve(result)
+          resolve(JSON.parse(result))
         }
       }
     )

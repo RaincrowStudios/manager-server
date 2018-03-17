@@ -1,55 +1,102 @@
 const timers = require('../../database/timers')
-const getInfoFromRedis = require('../../utils/getInfoFromRedis')
-const addToRedis = require('../../utils/addToRedis')
+const adjustEnergy = require('../../redis/adjustEnergy')
+const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
+const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const informPlayers = require('../../utils/informPlayers')
 const spiritDeath = require('../spirits/spiritDeath')
 const conditionExpire = require('./conditionExpire')
 const resolveCondition = require('./resolveCondition')
 const deleteCondition = require('./deleteCondition')
 
-async function conditionTrigger (instance, bearerName) {
+async function conditionTrigger (instance) {
   try {
     const currentTime = Date.now()
-    const bearer = await getInfoFromRedis(bearerName)
+    const bearer =
+      await getAllFromHash('conditions', instance)
+    const conditions = await getOneFromHash(bearer.type, bearer.instance, 'conditions')
 
-    if (bearer) {
-      let conditionToUpdate
-      for (let i = 0; i < bearer.conditions.length; i++) {
-        if (bearer.conditions[i] && instance === bearer.conditions[i].instance) {
-          conditionToUpdate = bearer.conditions[i]
-          bearer.conditions.splice(i, 1)
+    if (conditions) {
+      let conditionToUpdate, index
+      for (let i = 0; conditions.length; i++) {
+        if (conditions[i].instance === instance) {
+          conditionToUpdate = conditions[i].instance
+          index = i
         }
       }
 
       if (conditionToUpdate) {
-        const total = resolveCondition(conditionToUpdate)
-        bearer.energy += total
+        const newCondition = conditionToUpdate
+        const total = resolveCondition(newCondition)
+
+        let bearerCurrentEnergy, bearerDead
+        [bearerCurrentEnergy, bearerDead] =
+          await adjustEnergy(bearer.type, bearer.instance, total)
 
         console.log({
           event: 'condition_triggered',
-          bearer: bearerName,
-          condition: conditionToUpdate.id,
+          bearer: bearer.instance,
+          condition: newCondition.id,
           total: total,
-          energy: bearer.energy
+          energy: bearerCurrentEnergy
         })
 
-        if (
-          bearer.energy <= 0 &&
-          (bearer.type === 'lesserSpirit' ||
-          bearer.type === 'greaterSpirit')
-        ) {
-          await spiritDeath(bearerName, bearer, conditionToUpdate.caster)
-          conditionExpire(instance, bearerName)
+        if (bearerDead && bearer.type === 'spirit') {
+          await Promise.all([
+            spiritDeath(bearer.instance, newCondition.caster),
+            conditionExpire(instance)
+          ])
+        }
+        else if (bearerDead) {
+          await Promise.all([
+            informPlayers(
+              [bearer.instance],
+              {
+                command: 'player_death'
+              }
+            ),
+            conditionExpire(instance)
+          ])
+        }
+        else if (bearer.type !== 'spirit') {
+          await Promise.all([
+            informPlayers(
+              [bearer.instance],
+              {
+                command: 'player_condition_trigger',
+                condition: newCondition.id,
+                total: total,
+                energy: bearerCurrentEnergy
+              }
+            ),
+            updateHashFieldArray(
+              bearer.type,
+              bearer.instance,
+              'replace',
+              'conditions',
+              conditionToUpdate,
+              index
+            )
+          ])
         }
         else {
-          conditionToUpdate.triggerOn =
-            currentTime + (conditionToUpdate.tick * 60000)
+          newCondition.triggerOn =
+            currentTime + (newCondition.tick * 60000)
+
           const newTimer =
             setTimeout(() =>
-              conditionTrigger(instance, bearerName),
-              conditionToUpdate.tick * 60000
+              conditionTrigger(instance),
+              newCondition.tick * 60000
             )
 
-          await addToRedis(bearerName, bearer)
+          await updateHashFieldArray(
+            bearer.type,
+            bearer.instance,
+            'replace',
+            'conditions',
+            conditionToUpdate,
+            index
+          )
 
           let conditionTimer = timers.by('instance', instance)
           if (conditionTimer) {

@@ -1,22 +1,17 @@
 const timers = require('../../database/timers')
-const removeInstance = require('../../redis/removeInstance')
+const getAllFromHash = require('../../redis/getAllFromHash')
+const removeFromAll = require('../../redis/removeFromAll')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const addSpiritDrop = require('./death/addSpiritDrop')
 
-module.exports = (instance, spirit, killer) => {
+module.exports = (instance, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const spirit = await getAllFromHash('spirits', instance)
+
       if (spirit.drop.length > 0) {
-        const dropTokens = await addSpiritDrop(spirit)
-        await informNearbyPlayers(
-          spirit.latitude,
-          spirit.longitude,
-          {
-            command: 'map_coll_add',
-            tokens: dropTokens,
-          }
-        )
+        await addSpiritDrop(spirit)
       }
 
       await Promise.all([
@@ -37,7 +32,7 @@ module.exports = (instance, spirit, killer) => {
             displayName: spirit.displayName
           }
         ),
-        removeInstance('spirits', instance)
+        removeFromAll('spirits', instance)
       ])
 
       console.log({

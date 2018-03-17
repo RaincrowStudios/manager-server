@@ -12,7 +12,7 @@ module.exports = (spirit, target, spell) => {
 
   total += spirit.power
 
-  if (spirit.conditions && spirit.conditions.length !== 0) {
+  if (spirit.conditions && spirit.conditions.length > 0) {
     for (const condition of spirit.conditions) {
       if (condition && condition.power) {
         total += condition.power
@@ -25,7 +25,7 @@ module.exports = (spirit, target, spell) => {
 
     total += spirit.power
 
-    if (spirit.conditions && spirit.conditions.length !== 0) {
+    if (spirit.conditions && spirit.conditions.length > 0) {
       for (const condition of spirit.conditions) {
         if (condition && condition.power) {
           total += condition.power

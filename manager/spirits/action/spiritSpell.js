@@ -1,33 +1,56 @@
-const getOneFromHash = require('../../../utils/getOneFromHash')
+const addFieldsToHash = require('../../../redis/addFieldsToHash')
+const addXP = require('../../../redis/addXP')
+const adjustEnergy = require('../../../redis/adjustEnergy')
+const getOneFromHash = require('../../../redis/getOneFromHash')
+const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
+const informPlayers = require('../../../utils/informPlayers')
+const addCondition = require('./addCondition')
 const determineHeal = require('./determineHeal')
 const determineDamage = require('./determineDamage')
-const addCondition = require('./addCondition')
+const determineXP = require('./determineXP')
+const resolveTargetDestruction = require('./resolveTargetDestruction')
 
-function spiritSpell(instance, spirit, targetInstance, target, action) {
+module.exports = (instance, spirit, targetInstance, target, action) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const spell = await getOneFromHash('spells', action)
-      let result = {}
+      let targetCategory
+      switch (target.type) {
+        case 'witch':
+        case 'vampire':
+          targetCategory = 'characters'
+          break
+        default:
+          targetCategory = target.type + 's'
+      }
 
+      const spell = await getOneFromHash('spells', 'all', action)
+      let result = {}
+      let targetCurrentEnergy, targetDead
       if (spell.special) {
-        spiritSpecialSpell()
+        //spiritSpecialSpell()
       }
       else {
         if (spell.range.includes('#')) {
-          result = determineHeal(spell)
+          result = determineHeal(spirit, target, spell)
         }
         else {
           result = determineDamage(spirit, target, spell)
         }
 
-        if (spell.condition) {
+        [targetCurrentEnergy, targetDead] = await adjustEnergy(
+          targetCategory,
+          targetInstance,
+          result.total
+        )
+
+        if (!targetDead && spell.condition) {
           if (spell.condition.maxStack <= 0) {
-            result.condition = await addCondition(
+            await addCondition(
               instance,
               spirit,
               targetInstance,
+              targetCategory,
               target,
-              action,
               spell
             )
           }
@@ -39,10 +62,11 @@ function spiritSpell(instance, spirit, targetInstance, target, action) {
               }
             }
             if (stack < spell.condition.maxStack) {
-              result.condition = await addCondition(
+              await addCondition(
                 instance,
                 spirit,
                 targetInstance,
+                targetCategory,
                 target,
                 spell
               )
@@ -51,105 +75,87 @@ function spiritSpell(instance, spirit, targetInstance, target, action) {
         }
       }
 
+      const xpGain = determineXP()
 
-      spirit.previousTarget = targetInstance
-      target.energy += result.total
-      if (result.condition) {
-        target.conditions.push(result.condition)
+      const award = await addXP('characters', spirit.owner, xpGain)
+
+      let xp
+      if (typeof award === 'number') {
+        xp = award
       }
 
-      if (result.total < 0) {
-        target.lastAttackedBy = { instance, type: 'spirit' }
-      }
-      else if (result.total > 0) {
-        target.lastHealedBy = { instance, type: 'spirit' }
-      }
-
-      if (target.energy <= 0) {
-        target.dead = true
-      }
-
-      const nearCharacters =
-        await getNearbyFromGeohashByPoint(
-          'Characters',
+      await Promise.all([
+        informNearbyPlayers(
           spirit.latitude,
           spirit.longitude,
-          constants.maxRadius
+          {
+            command: 'map_spirit_action',
+            action: spell.id,
+            instance: instance,
+            target: targetInstance,
+            total: result.total,
+          }
+        ),
+        informPlayers(
+          [spirit.ownerPlayer],
+          {
+            command: 'player_spirit_action',
+            action: spell.id,
+            instance: instance,
+            displayName: spirit.displayName,
+            target: target.type === 'spirit' ? target.displayName : targetInstance,
+            targetType: target.type,
+            total: result.total,
+            xpGain: xpGain,
+            xp: xp
+          }
+        ),
+        addFieldsToHash(
+          'spirits',
+          instance,
+          ['previousTarget'],
+          [{ targetInstance, type: 'spirit' }]
+        ),
+        addFieldsToHash(
+          targetCategory,
+          targetInstance,
+          ['lastAttackedBy'],
+          [{ instance, type: 'spirit' }]
         )
+      ])
 
-      const nearCharactersInfo =
-        await Promise.all(
-          nearCharacters.map(character => getInfoFromRedis(character))
+      if (!targetDead && targetCategory === 'characters') {
+        await informPlayers(
+          [target.player],
+          {
+            command: 'player_targeted_spell',
+            attacker: spirit.displayName,
+            owner: spirit.owner,
+            total: result.total,
+            critical: result.critical,
+            resist: result.resist,
+            energy: targetCurrentEnergy
+          }
         )
+      }
+      else if (targetDead) {
+        resolveTargetDestruction(targetInstance, target, instance)
+      }
 
-      const playersToInform =
-        nearCharactersInfo
-        .filter(character => character)
-        .map(character => character.owner)
-
-
-
-                if (target.dead) {
-                  await Promise.all([
-                    informPlayers(
-                      playersToInform,
-                      {
-                        command: 'map_spirit_action',
-                        instance: instance,
-                        target: targetInstance,
-                        total: result.total,
-                        dead: target.dead
-                      }
-                    ),
-                    informPlayers(
-                      [spirit.ownerPlayer],
-                      {
-                        command: 'player_spirit_action',
-                        instance: instance,
-                        displayName: spirit.displayName,
-                        target: target.type === 'spirit' || target.type === 'portal' ?
-                          target.displayName : targetInstance,
-                        xp: 'xp_gain'
-                      }
-                    ),
-                    addToRedis(instance, spirit),
-                    resolveTargetDestruction(targetInstance, target, instance)
-                  ])
-                }
-                else {
-                  await Promise.all([
-                    informPlayers(
-                      playersToInform,
-                      {
-                        command: 'map_spirit_action',
-                        instance: instance,
-                        target: targetInstance,
-                        total: result.total,
-                        dead: target.dead
-                      }
-                    ),
-                    informPlayers(
-                      [spirit.ownerPlayer],
-                      {
-                        command: 'player_spirit_action',
-                        instance: instance,
-                        displayName: spirit.displayName,
-                        target: target.type === 'spirit' || target.type === 'portal' ?
-                          target.displayName : targetInstance,
-                        xp: 'xp_gain'
-                      }
-                    ),
-                    addToRedis(instance, spirit),
-                    addToRedis(targetInstance, target)
-                  ])
-                }
-
-      resolve(result)
+      console.log({
+        event: 'spirit_action',
+        action: spell.id,
+        instance: instance,
+        target: targetInstance,
+        damage: result.total,
+        critical: result.critical,
+        resist: result.resist,
+        targetEnergy: targetCurrentEnergy
+      })
+      resolve(true)
     }
     catch (err) {
       reject(err)
     }
   })
 }
-
-module.exports = spiritSpell

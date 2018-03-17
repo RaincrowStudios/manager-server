@@ -1,42 +1,51 @@
 const timers = require('../../database/timers')
-const getInfoFromRedis = require('../../utils/getInfoFromRedis')
+const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
+const removeFromActiveSet = require('../../redis/removeFromActiveSet')
+const removeHash = require('../../redis/removeHash')
+const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
-const removeFromSet = require('../../utils/removeFromSet')
-const removeFromRedis = require('../../utils/removeFromRedis')
-const addToRedis = require('../../utils/addToRedis')
 
-module.exports = async (instance, bearerName) => {
+module.exports = async (instance) => {
   try {
-    let bearer = await getInfoFromRedis(bearerName)
+    const bearerInstance =
+      await getOneFromHash('conditions', instance, 'bearer')
+    const bearer = await getAllFromHash('characters', bearerInstance)
+    const category = bearer.type === 'spirit' ? 'spirits' : 'characters'
+
     if (bearer) {
-      let hidden
-      for (let i = 0; i < bearer.conditions.length; i++) {
-        if (
-          bearer.conditions[i] &&
-          instance === bearer.conditions[i].instance
-        ) {
-          bearer.conditions.splice(i, 1)
-          hidden = bearer.conditions[i].hidden
+      let conditionToExpire, index
+      for (let i = 0; bearer.conditions.length; i++) {
+        if (bearer.conditions[i].instance === instance) {
+          conditionToExpire = bearer.conditions[i].instance
+          index = i
         }
       }
 
       await Promise.all([
-        addToRedis(bearerName, bearer),
-        removeFromSet('conditions', instance),
-        removeFromRedis(instance)
+        updateHashFieldArray(
+          category,
+          bearerInstance,
+          'remove',
+          'conditions',
+          conditionToExpire,
+          index
+        ),
+        removeFromActiveSet('conditions', instance),
+        removeHash('conditions', instance)
       ])
 
       console.log({
         event: 'condition_expire',
         instance,
-        bearer: bearerName
+        bearer: bearerInstance
       })
 
-      if (bearer.type !== 'spirit' && !hidden) {
+      if (bearer.type !== 'spirit' && !conditionToExpire.hidden) {
         await informPlayers(
-          [bearer.owner],
+          [bearer.player],
           {
-            command: 'condition_remove',
+            command: 'player_condition_remove',
             instance: instance
           }
         )

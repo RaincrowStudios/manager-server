@@ -10,7 +10,7 @@ module.exports = (category, instance, object) => {
       const err = 'Invalid instance: ' + instance
       reject(err)
     }
-    else if (!object || typeof instance !== 'object') {
+    else if (!object || typeof object !== 'object') {
       const err = 'Invalid object: ' + object
       reject(err)
     }

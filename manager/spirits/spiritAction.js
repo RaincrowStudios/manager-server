@@ -27,6 +27,8 @@ async function spiritAction(instance) {
           spiritAction(instance), spirit.actionOn - currentTime
         )
 
+      //await addFieldsToHash()
+
       let spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {
         spiritTimers.actionTimer = newTimer

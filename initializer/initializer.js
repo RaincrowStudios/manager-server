@@ -1,8 +1,8 @@
-const initializePortals = require('./initializePortals')
+//const initializePortals = require('./initializePortals')
 const initializeSpirits = require('./initializeSpirits')
 
 async function initializer() {
-  initializePortals()
+  //initializePortals()
   initializeSpirits()
 }
 

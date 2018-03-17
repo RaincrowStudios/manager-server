@@ -1,5 +1,5 @@
-const client = ('./client')
-const scripts = ('../lua/scripts')
+const client = require('./client')
+const scripts = require('../lua/scripts')
 
 module.exports = (category, instance, xp) => {
   return new Promise((resolve, reject) => {

@@ -1,0 +1,22 @@
+local key = KEYS[1]
+
+local command = ARGV[1]
+local field = ARGV[2]
+local newValue = cjson.decode(ARGV[3])
+local index = ARGV[4] + 1
+
+local array = cjson.decode(redis.call('HGET', key, field))
+
+if command == 'add' then
+  table.insert(array, newValue)
+elseif command == 'remove' then
+  table.remove(array, index)
+elseif command == 'replace' then
+  array[index] = newValue
+else
+  error("invalid command")
+end
+
+redis.call('HSET', key, field, cjson.encode(array))
+
+return cjson.encode(array)

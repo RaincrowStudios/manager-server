@@ -1,9 +1,17 @@
 const uuidv1 = require('uuid/v1')
-const addToRedis = require('../../../utils/addToRedis')
-const addToSet = require('../../../utils/addToSet')
+const addObjectToHash = require('../../../redis/addObjectToHash')
+const addToActiveSet = require('../../../redis/addToActiveSet')
+const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const conditionAdd = require('../../conditions/conditionAdd')
 
-module.exports = (casterName, caster, targetInstance, target, spell) => {
+module.exports = (
+  casterName,
+  caster,
+  targetInstance,
+  targetCategory,
+  target,
+  spell
+) => {
   return new Promise(async (resolve, reject) => {
     try {
       const instance = uuidv1()
@@ -87,12 +95,19 @@ module.exports = (casterName, caster, targetInstance, target, spell) => {
       }
 
       await Promise.all([
-        conditionAdd(instance, targetInstance, result),
-        addToRedis(instance, targetInstance),
-        addToSet('conditions', instance)
+        conditionAdd(instance, result),
+        addObjectToHash('conditions', instance, {bearer: targetInstance, type: targetCategory}),
+        addToActiveSet('conditions', instance),
+        updateHashFieldArray(
+          targetCategory,
+          targetInstance,
+          'add',
+          'conditions',
+          result
+        )
       ])
 
-      resolve(result)
+      resolve(true)
     }
     catch (err) {
       reject(err)
