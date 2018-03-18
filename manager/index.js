@@ -1,10 +1,14 @@
 const timers = require('../database/timers')
+const collectibleAdd = require('./collectibles/collectibleAdd')
 const conditionAdd = require('./conditions/conditionAdd')
 const portalAdd = require('./portals/portalAdd')
+const riftAdd = require('./rifts/riftAdd')
 
 const addTimers = {
+  collectible: collectibleAdd,
   condition: conditionAdd,
-  portal: portalAdd
+  portal: portalAdd,
+  rift: riftAdd,
 }
 
 async function manager(message) {
