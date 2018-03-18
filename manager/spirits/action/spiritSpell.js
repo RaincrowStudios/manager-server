@@ -1,5 +1,5 @@
 const addFieldsToHash = require('../../../redis/addFieldsToHash')
-const addXP = require('../../../redis/addXP')
+const addXp = require('../../../redis/addXp')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const getOneFromHash = require('../../../redis/getOneFromHash')
