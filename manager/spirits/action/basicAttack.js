@@ -48,14 +48,14 @@ module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
         [targetCurrentEnergy, targetDead] =
           await adjustEnergy(targetCategory, targetInstance, result.total)
 
-        const xpGain = determineXP()
+        const xpGain = 5//determineXP()
 
-        const award = await addXP('characters', spirit.owner, xpGain)
+        //const award = await addXP('characters', spirit.owner, xpGain)
 
-        let xp
-        if (typeof award === 'number') {
-          xp = award
-        }
+        let xp = 0
+        //if (typeof award === 'number') {
+        //  xp = award
+      //  }
 
 
         await Promise.all([
