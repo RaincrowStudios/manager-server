@@ -1,8 +1,8 @@
 const fs = require('fs')
 
 const scripts = {
-  addXp: {
-    script: fs.readFileSync(__dirname + '/addXp.lua', {encoding:'utf8'})
+  addExperience: {
+    script: fs.readFileSync(__dirname + '/addExperience.lua', {encoding:'utf8'})
   },
   adjustEnergy: {
     script: fs.readFileSync(__dirname + '/adjustEnergy.lua', {encoding:'utf8'})

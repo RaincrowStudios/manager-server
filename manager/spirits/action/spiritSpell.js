@@ -1,5 +1,5 @@
 const addFieldsToHash = require('../../../redis/addFieldsToHash')
-const addXp = require('../../../redis/addXp')
+const addExperience = require('../../../redis/addExperience')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const getOneFromHash = require('../../../redis/getOneFromHash')
@@ -81,7 +81,7 @@ module.exports = (
 
         const xpGain = determineXP()
 
-        const award = 1//await addXP('characters', spirit.owner, xpGain)
+        const award = 1//await addExperience('characters', spirit.owner, xpGain)
 
         let xp
         if (typeof award === 'number') {

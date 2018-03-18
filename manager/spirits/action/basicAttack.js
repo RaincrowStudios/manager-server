@@ -1,5 +1,5 @@
 const addFieldsToHash = require('../../../redis/addFieldsToHash')
-const addXP = require('../../../redis/addXP')
+const addExperience = require('../../../redis/addExperience')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
@@ -50,7 +50,7 @@ module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
 
         const xpGain = 5//determineXP()
 
-        //const award = await addXP('characters', spirit.owner, xpGain)
+        //const award = await addExperience('characters', spirit.owner, xpGain)
 
         let xp = 0
         //if (typeof award === 'number') {
