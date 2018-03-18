@@ -6,7 +6,7 @@ const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const determineCritical = require('./determineCritical')
 const determineResist = require('./determineResist')
-const determineXP = require('./determineXP')
+const determineXp = require('./determineXp')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
 module.exports = (instance, spirit, targetCategory, targetInstance, target) => {

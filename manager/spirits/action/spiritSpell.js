@@ -8,7 +8,7 @@ const informPlayers = require('../../../utils/informPlayers')
 const addCondition = require('./addCondition')
 const determineHeal = require('./determineHeal')
 const determineDamage = require('./determineDamage')
-const determineXP = require('./determineXP')
+const determineXp = require('./determineXp')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
 module.exports = (

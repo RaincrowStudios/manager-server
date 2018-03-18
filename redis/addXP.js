@@ -14,7 +14,7 @@ module.exports = (category, instance, xp) => {
 
     const key = 'hash:' + category + ':' + instance
 
-    client.evalsha([scripts.addXP.sha, 1, key, xp], (err, result) => {
+    client.evalsha([scripts.addXp.sha, 1, key, xp], (err, result) => {
       if (err) {
         reject(err)
       }
