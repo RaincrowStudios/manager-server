@@ -1,10 +1,12 @@
-module.exports = (info) => {
+module.exports = (instance, info) => {
   let token
   switch (info.type) {
     case 'spirit':
       token = {
+        instance: instance,
         displayName: info.displayName,
         type: info.type,
+        subtype: info.subtype,
         degree: info.degree,
         latitude: info.latitude,
         longitude: info.longitude
@@ -12,7 +14,9 @@ module.exports = (info) => {
       break
     case 'portal':
       token = {
+        instance: instance,
         type: info.type,
+        subtype: info.subtype,
         degree: info.degree,
         latitude: info.latitude,
         longitude: info.longitude
@@ -23,6 +27,7 @@ module.exports = (info) => {
     case 'tool':
     case 'silver':
       token = {
+        instance: instance,
         displayName: info.displayName,
         type: info.type,
         latitude: info.latitude,
@@ -31,6 +36,7 @@ module.exports = (info) => {
       break
     case 'witch':
       token = {
+        instance: instance,
         type: info.type,
         male: info.male,
         degree:  info.degree,

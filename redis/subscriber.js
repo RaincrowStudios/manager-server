@@ -6,6 +6,8 @@ const redisConfigJSON =
     fs.readFileSync('redis-key/keys.json')
 const redisConfig = JSON.parse(redisConfigJSON)
 
+const manager = require('../manager')
+
 const subscriber = redis.createClient(
   redisConfig.redisPort,
   redisConfig.redisHost
@@ -25,23 +27,7 @@ subscriber.on('error', (err) => {
 })
 
 subscriber.on('message', ((channel, message) => {
-    const { command, instance } = JSON.parse(message)
-    switch (command) {
-      case 'clear':
-        clearTimers(instance)
-        break
-      case 'condition':
-        conditionAdd(instance)
-        break
-      case 'portal':
-        portalAdd(instance)
-        break
-      case 'spirit':
-        spiritAdd(instance)
-        break
-      default:
-        break
-    }
+    manager(JSON.parse(message))
   })
 )
 

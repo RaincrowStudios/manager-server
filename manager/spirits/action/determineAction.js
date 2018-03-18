@@ -1,5 +1,5 @@
 module.exports = (actions) => {
-  if (actions.length <= 1) {
+  if (actions.length === 1) {
     return actions[0].id
   }
   else {
@@ -14,6 +14,5 @@ module.exports = (actions) => {
         return actions[i].id
       }
     }
-    return actions[-1].id
   }
 }

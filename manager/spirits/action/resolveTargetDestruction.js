@@ -7,6 +7,7 @@ module.exports = (targetInstance, target, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (target.type === 'spirit') {
+
         const conditionsToExpire = target.conditions.length > 0 ?
           target.conditions.map(
             condition => conditionExpire(condition.instance)

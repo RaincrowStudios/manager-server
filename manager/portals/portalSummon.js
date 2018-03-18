@@ -1,86 +1,80 @@
 const uuidv1 = require('uuid/v1')
-const constants = require('../../constants')
-const getFromRedis = require('../../utils/getFromRedis')
-const getNearbyFromGeohashByPoint = require('../../utils/getNearbyFromGeohashByPoint')
-const informPlayers = require('../../utils/informPlayers')
-const addToGeohash = require('../../utils/addToGeohash')
-const addToRedis = require('../../utils/addToRedis')
-const addToSet = require('../../utils/addToSet')
-const removeFromGeohash = require('../../utils/removeFromGeohash')
-const removeFromSet = require('../../utils/removeFromSet')
-const removeFromRedis = require('../../utils/removeFromRedis')
+const addObjectToHash = require('../../redis/addObjectToHash')
+const addToActiveSet = require('../../redis/addToActiveSet')
+const addToGeohash = require('../../redis/addToGeohash')
+const getAllFromHash = require('../../redis/getAllFromHash')
+const removeFromAll = require('../../redis/removeFromAll')
+const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const createMapToken = require('../../utils/createMapToken')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const informPlayers = require('../../utils/informPlayers')
 const spiritAdd = require('../spirits/spiritAdd')
 
 module.exports = async (instance) => {
   try {
     const currentTime = Date.now()
-    const spiritInstance = uuidv1()
-    let spirit = portal.spirit
 
-    spirit.createdOn = currentTime
-    spirit.expiresOn = currentTime
-    spirit.moveOn = currentTime
-    spirit.actionOn = currentTime
+    const portal = await getAllFromHash('portals', instance)
+    if (portal) {
+      const spiritInstance = uuidv1()
+      const spirit = portal.spirit
 
-    spirit.summonLat = portal.latitude
-    spirit.summonLong = portal.longitude
-    spirit.latitude = portal.latitude
-    spirit.longitude = portal.longitude
+      spirit.createdOn = currentTime
+      spirit.expiresOn = currentTime + spirit.duration
+      spirit.moveOn = currentTime
+      spirit.actionOn = currentTime
 
-    spiritAdd(spiritInstance, spirit)
+      spirit.summonLat = portal.latitude
+      spirit.summonLong = portal.longitude
+      spirit.latitude = portal.latitude
+      spirit.longitude = portal.longitude
 
-    const charactersNearLocation = await getNearbyFromGeohashByPoint(
-      'Characters',
-      portal.latitude,
-      portal.longitude,
-      constants.radiusVisual
-    )
+      await Promise.all([
+        addObjectToHash('spirits', spiritInstance, spirit),
+        addToActiveSet('spirits', spiritInstance),
+        addToGeohash(
+          'spirits',
+          spiritInstance,
+          spirit.latitude,
+          spirit.longitude
+        ),
+        removeFromAll('portals', instance),
+        updateHashFieldArray(
+          'characters',
+          portal.owner,
+          'add',
+          'activeSpirits',
+          spiritInstance
+        ),
+      ])
 
-    const playersToInform = charactersNearLocation.length !== 0 ?
-      await Promise.all(
-        charactersNearLocation.map(async (character) => {
-          const characterInfo = await getFromRedis(character[0])
-          return characterInfo.owner
-        })
-      ) : []
-
-    let spiritToken = createMapToken(spirit)
-    spiritToken.instance = spiritInstance
-
-    await Promise.all([
-      informNearbyPlayers(
-        playersToInform,
-        {
-          command: 'map_remove',
-          instance: instance
-        }
-      ),
-      informPlayers(
-        playersToInform,
-        {
-          command: 'map_add',
-          tokens: [spiritToken]
-        }
-      ),
-      informPlayers(
-        [spirit.owner],
-        {
-          command: 'player_spirit_summon',
-          spirit: spirit.displayName
-        }
-      ),
-      addToGeohash(
-        'Spirits',
-        spiritInstance,
-        [spirit.latitude, spirit.longitude]
-      ),
-      addToRedis(spiritInstance, spirit),
-      addToSet('spirits', spiritInstance),
-      removeFromGeohash('Portals', instance),
-      removeFromRedis(instance),
-      removeFromSet('portals', instance)
-    ])
+      await Promise.all([
+        informNearbyPlayers(
+          portal.latitude,
+          portal.longitude,
+          {
+            command: 'map_portal_remove',
+            instance: instance
+          }
+        ),
+        informNearbyPlayers(
+          portal.latitude,
+          portal.longitude,
+          {
+            command: 'map_spirit_add',
+            tokens: [createMapToken(instance, spirit)]
+          }
+        ),
+        informPlayers(
+          [spirit.owner],
+          {
+            command: 'player_spirit_summon',
+            spirit: spirit.displayName
+          }
+        )
+      ])
+      spiritAdd(spiritInstance, spirit)
+    }
   }
   catch (err) {
     console.error(err)

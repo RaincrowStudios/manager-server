@@ -9,7 +9,6 @@ module.exports = (instance, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
       const spirit = await getAllFromHash('spirits', instance)
-
       if (spirit) {
         if (spirit.drop.length > 0) {
           await addSpiritDrop(spirit)

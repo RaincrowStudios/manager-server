@@ -14,7 +14,7 @@ async function spiritAction(instance) {
       const max = parseInt(range[1], 10)
 
       const newActionOn = currentTime +
-        (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
+        (Math.floor(Math.random() * (max - min + 1)) + min) * 1000
 
       const silencedCheck =
         spirit.conditions.filter(condition => condition.status === 'silenced')

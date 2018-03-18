@@ -14,7 +14,7 @@ async function spiritMove(instance) {
       const max = parseInt(range[1], 10)
 
       const newMoveOn = currentTime +
-        (Math.floor(Math.random() * (max - min + 1)) + min) * 60000
+        (Math.floor(Math.random() * (max - min + 1)) + min) * 1000
 
       const boundCheck =
         spirit.conditions.filter(condition => condition.status === 'bound')

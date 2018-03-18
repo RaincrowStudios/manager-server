@@ -10,7 +10,7 @@ local nextLevel = cjson.decode(redis.call('HGET', key, 'level')) + 1
 
 if newXP >= thresholds[nextLevel] then
   redis.call('HMSET', key, 'level', cjson.encode(nextLevel), 'baseEnergy', cjson.encode(baseEnergyByLevel[nextLevel]), 'unlockedSpells', cjson.encode(spellsByLevel[nextLevel]))
-  return newXP, level, cjson.encode(baseEnergyByLevel[level]), cjson.encode(spellsByLevel[level])
+  return cjson.encode({newXP, nextLevel, baseEnergyByLevel[level], spellsByLevel[level]})
 else
   return newXP
 end

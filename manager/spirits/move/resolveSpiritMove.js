@@ -9,7 +9,7 @@ module.exports = (instance, spirit) => {
     try {
 
       const newCoords = await determineSpiritMove(spirit)
-      /*
+
       console.log({
         'event': 'spirit_move',
         instance: instance,
@@ -26,16 +26,16 @@ module.exports = (instance, spirit) => {
           instance: instance
         }
       )
-      */
+
       await Promise.all([
-        /*informNearbyPlayers(
+        informNearbyPlayers(
           newCoords[0],
           newCoords[1],
           {
             command: 'map_spirit_add',
-            tokens: [createMapToken(spirit)]
+            tokens: [createMapToken(instance, spirit)]
           }
-        ),*/
+        ),
         addFieldsToHash(
           'spirits',
           instance,

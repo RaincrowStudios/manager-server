@@ -2,7 +2,7 @@
 
 console.log('Starting Manager Server...')
 
-const initializer = require('./initializer/initializer')
+const initializer = require('./initializer')
 const lua = require('./lua')
 const subscriber = require('./redis/subscriber')
 

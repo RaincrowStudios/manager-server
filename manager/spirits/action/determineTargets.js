@@ -54,7 +54,7 @@ module.exports = (instance, spirit) => {
 
         switch (targetCategory[0]) {
           case 'self':
-            resolve([false, 'self', spirit.actionTree[i].actions])
+            resolve([instance, 'self', spirit.actionTree[i].actions])
             break
           case 'collectibles':
             if (spirit.carrying.length < spirit.maxCarry) {
