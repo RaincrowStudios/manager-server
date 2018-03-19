@@ -5,14 +5,15 @@ const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash = require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
+const deleteCondition = require('./deleteCondition')
 
 module.exports = async (instance) => {
   try {
     const bearer =
       await getAllFromHash('conditions', instance)
-      
+
     if (bearer) {
-      const conditions = await getOneFromHash(bearer.type, bearer.instance, 'conditions')
+      const conditions = await getOneFromHash(bearer.category, bearer.instance, 'conditions')
 
       if (conditions.length > 0) {
         let conditionToExpire, index
@@ -25,7 +26,7 @@ module.exports = async (instance) => {
 
         await Promise.all([
           updateHashFieldArray(
-            bearer.type,
+            bearer.category,
             bearer.instance,
             'remove',
             'conditions',
@@ -42,7 +43,7 @@ module.exports = async (instance) => {
           bearer: bearer.instance
         })
 
-        if (bearer.type !== 'spirit' && !conditionToExpire.hidden) {
+        if (bearerCategory === 'characters' && !conditionToExpire.hidden) {
           const player =
             await getOneFromHash(bearer.type, bearer.instance, 'player')
           await informPlayers(
@@ -55,11 +56,8 @@ module.exports = async (instance) => {
         }
       }
     }
-    const conditionTimers = timers.by('instance', instance)
-    if (conditionTimers) {
-      clearTimeout(conditionTimers.expireTimer)
-      clearTimeout(conditionTimers.triggerTimer)
-      timers.remove(conditionTimers)
+    else {
+      await deleteCondition(instance)
     }
   }
   catch (err) {

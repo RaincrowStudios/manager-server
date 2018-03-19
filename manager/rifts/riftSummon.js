@@ -14,7 +14,7 @@ module.exports = async (instance) => {
   try {
     const currentTime = Date.now()
     const rift = await getAllFromHash('rifts', instance)
-    
+
     if (rift) {
       const spiritInstance = uuidv1()
       const spirit = rift.spirit
@@ -61,7 +61,7 @@ module.exports = async (instance) => {
 
       await addFieldsToHash('rifts', instance, ['summonOn'], [newSummonOn])
 
-      let riftTimers = timers.by('instance', instance)
+      const riftTimers = timers.by('instance', instance)
       if (riftTimers) {
         riftTimers.summonTimer = newTimer
         timers.update(riftTimers)

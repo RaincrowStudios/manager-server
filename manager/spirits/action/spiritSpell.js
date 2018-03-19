@@ -79,7 +79,7 @@ module.exports = (
         }
 
 
-        const xpGain = determineXP()
+        const xpGain = determineXp()
 
         const award = 1//await addExperience('characters', spirit.owner, xpGain)
 
