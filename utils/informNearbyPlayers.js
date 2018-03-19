@@ -5,13 +5,13 @@ const informPlayers = require('./informPlayers')
 module.exports = (latitude, longitude, message) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const maxDisplay = await getOneFromHash('constants', 'all', 'maxDisplay')
+      const maxRadius = await getOneFromHash('constants', 'all', 'maxRadius')
 
       const nearCharacters = await getNearbyFromGeohash(
         'characters',
         latitude,
         longitude,
-        maxDisplay
+        maxRadius
       )
 
       const playersToInform =
