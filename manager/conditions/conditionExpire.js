@@ -43,7 +43,7 @@ module.exports = async (instance) => {
           bearer: bearer.instance
         })
 
-        if (bearerCategory === 'characters' && !conditionToExpire.hidden) {
+        if (bearer.type === 'characters' && !conditionToExpire.hidden) {
           const player =
             await getOneFromHash(bearer.type, bearer.instance, 'player')
           await informPlayers(
