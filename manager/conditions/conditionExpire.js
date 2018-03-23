@@ -1,4 +1,3 @@
-const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
@@ -43,9 +42,9 @@ module.exports = async (instance) => {
           bearer: bearer.instance
         })
 
-        if (bearer.type === 'characters' && !conditionToExpire.hidden) {
+        if (bearer.category === 'characters' && !conditionToExpire.hidden) {
           const player =
-            await getOneFromHash(bearer.type, bearer.instance, 'player')
+            await getOneFromHash(bearer.category, bearer.instance, 'player')
           await informPlayers(
             [player],
             {

@@ -3,6 +3,7 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
+const deleteAllConditions = require('../conditions/deleteAllConditions')
 const addSpiritDrop = require('./death/addSpiritDrop')
 
 module.exports = (instance, killer) => {
@@ -13,6 +14,8 @@ module.exports = (instance, killer) => {
         if (spirit.drop.length > 0) {
           await addSpiritDrop(spirit)
         }
+
+        await deleteAllConditions(spirit.conditions)
 
         await Promise.all([
           informNearbyPlayers(

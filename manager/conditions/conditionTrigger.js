@@ -15,7 +15,7 @@ async function conditionTrigger (instance) {
     const bearer =
       await getAllFromHash('conditions', instance)
     if (bearer) {
-      const conditions = await getOneFromHash(bearer.type, bearer.instance, 'conditions')
+      const conditions = await getOneFromHash(bearer.category, bearer.instance, 'conditions')
 
       if (conditions.length > 0) {
         let conditionToUpdate, index
@@ -32,7 +32,7 @@ async function conditionTrigger (instance) {
 
           let bearerCurrentEnergy, bearerDead
           [bearerCurrentEnergy, bearerDead] =
-            await adjustEnergy(bearer.type, bearer.instance, total)
+            await adjustEnergy(bearer.category, bearer.instance, total)
 
           console.log({
             event: 'condition_triggered',
@@ -42,7 +42,7 @@ async function conditionTrigger (instance) {
             energy: bearerCurrentEnergy
           })
 
-          if (bearerDead && bearer.type === 'spirit') {
+          if (bearerDead && bearer.category === 'spirits') {
             await Promise.all([
               spiritDeath(bearer.instance, newCondition.caster),
               conditionExpire(instance)
@@ -59,7 +59,7 @@ async function conditionTrigger (instance) {
               conditionExpire(instance)
             ])
           }
-          else if (bearer.type !== 'spirit') {
+          else if (bearer.category !== 'spirits') {
             await Promise.all([
               informPlayers(
                 [bearer.instance],
@@ -71,7 +71,7 @@ async function conditionTrigger (instance) {
                 }
               ),
               updateHashFieldArray(
-                bearer.type,
+                bearer.category,
                 bearer.instance,
                 'replace',
                 'conditions',
@@ -91,7 +91,7 @@ async function conditionTrigger (instance) {
               )
 
             await updateHashFieldArray(
-              bearer.type,
+              bearer.category,
               bearer.instance,
               'replace',
               'conditions',

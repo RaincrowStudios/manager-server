@@ -3,12 +3,14 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
+const deleteAllConditions = require('../conditions/deleteAllConditions')
 
 module.exports = async (instance) => {
   try {
     const spirit = await getAllFromHash('spirits', instance)
 
     if (spirit) {
+      await deleteAllConditions(spirit.conditions)
       await Promise.all([
         informNearbyPlayers(
           spirit.latitude,
