@@ -1,20 +1,13 @@
 const uuidv1 = require('uuid/v1')
-const addObjectToHash = require('../../../redis/addObjectToHash')
+const addFieldsToHash = require('../../../redis/addFieldsToHash')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const conditionAdd = require('../../conditions/conditionAdd')
 
-module.exports = (
-  casterName,
-  caster,
-  targetInstance,
-  targetCategory,
-  target,
-  spell
-) => {
+module.exports = (casterInstance, caster, targetInstance, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const instance = uuidv1()
+      const conditionInstance = uuidv1()
       const currentTime = Date.now()
 
       let duration
@@ -46,16 +39,11 @@ module.exports = (
       }
       duration = parseInt(duration, 10)
       let result = {
-        instance: instance,
-        id: spell.id,
-        spell: spell.displayName,
-        caster: casterName,
+        instance: conditionInstance,
+        spell: spell.id,
+        caster: caster.displayName,
         createdOn: currentTime,
         expiresOn: currentTime + (duration * 60000),
-        overTime: spell.condition.overTime,
-        onExpiration: spell.condition.onExpiration,
-        onDispel: spell.condition.onDispel,
-        dispellable: spell.condition.dispellable,
         hidden: spell.condition.hidden
       }
 
@@ -95,11 +83,10 @@ module.exports = (
       }
 
       await Promise.all([
-        conditionAdd(instance, result),
-        addObjectToHash('conditions', instance, {instance: targetInstance, category: targetCategory}),
-        addToActiveSet('conditions', instance),
+        conditionAdd(conditionInstance, result),
+        addFieldsToHash('list:conditions', [conditionInstance], [targetInstance]),
+        addToActiveSet('conditions', conditionInstance),
         updateHashFieldArray(
-          targetCategory,
           targetInstance,
           'add',
           'conditions',

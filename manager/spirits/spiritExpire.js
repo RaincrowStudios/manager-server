@@ -5,9 +5,9 @@ const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
 
-module.exports = async (instance) => {
+module.exports = async (spiritInstance) => {
   try {
-    const spirit = await getAllFromHash('spirits', instance)
+    const spirit = await getAllFromHash(spiritInstance)
 
     if (spirit) {
       await deleteAllConditions(spirit.conditions)
@@ -16,28 +16,22 @@ module.exports = async (instance) => {
           spirit.latitude,
           spirit.longitude,
           {
-            command: 'map_spirit_remove',
-            instance: instance
+            command: 'map_spirit_expire',
+            instance: spiritInstance
           }
         ),
         informPlayers(
           [spirit.ownerPlayer],
           {
-            command: 'player_spirit_expired',
-            displayName: spirit.displayName,
-            instance: instance
+            command: 'player_spirit_expire',
+            spirit: spiritInstance,
+            displayName: spirit.displayName
           }
         ),
-        removeFromAll('spirits', instance)
+        removeFromAll('spirits', spiritInstance)
       ])
-
-      console.log({
-        event: 'spirit_expired',
-        spirit: instance,
-        owner: spirit.ownerPlayer,
-      })
     }
-    const spiritTimers = timers.by('instance', instance)
+    const spiritTimers = timers.by('instance', spiritInstance)
     if (spiritTimers) {
       clearTimeout(spiritTimers.expireTimer)
       clearTimeout(spiritTimers.moveTimer)

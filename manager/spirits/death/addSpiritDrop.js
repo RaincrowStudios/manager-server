@@ -31,7 +31,7 @@ module.exports = (spirit) => {
             }
           }
           else {
-            collectible = await getOneFromHash('collectibles', 'all', drop.id)
+            collectible = await getOneFromHash('list:collectibles', drop.id)
           }
 
           collectible.latitude = coords[0]
@@ -42,7 +42,7 @@ module.exports = (spirit) => {
           for (let i = 1; i <= count; i++) {
             tokens.push(createMapToken(instance, collectible))
             await Promise.all([
-              addObjectToHash('collectibles', instance, collectible),
+              addObjectToHash(instance, collectible),
               addToActiveSet('collectibles', instance),
               addToGeohash('collectibles', instance, coords[0], coords[1])
             ])

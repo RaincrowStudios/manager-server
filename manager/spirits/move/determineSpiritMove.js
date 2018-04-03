@@ -41,7 +41,7 @@ module.exports = (spirit) => {
         let target
         switch (destination) {
           case 'summoner':
-            target = await getAllFromHash('characters', spirit.owner)
+            target = await getAllFromHash(spirit.owner)
             break
           default:
             break

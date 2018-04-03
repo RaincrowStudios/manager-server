@@ -8,23 +8,14 @@ const spiritSpell = require('./spiritSpell')
 module.exports = (spiritInstance, spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let targetInstance, target, actions, targetCategory
+      let targetInstance, target, actions
       [targetInstance, target, actions] =
         await determineTargets(spiritInstance, spirit)
 
       if (target) {
-        switch (target.type) {
-          case 'witch':
-          case 'vampire':
-            targetCategory = 'characters'
-            break
-          default:
-            targetCategory = target.type + 's'
-        }
-
         const action = determineAction(actions)
 
-        const exists = await checkKeyExistance(targetCategory, targetInstance)
+        const exists = await checkKeyExistance(targetInstance)
 
         if (exists) {
           switch (action) {
@@ -32,7 +23,6 @@ module.exports = (spiritInstance, spirit) => {
               await basicAttack(
                 spiritInstance,
                 spirit,
-                targetCategory,
                 targetInstance,
                 target
               )
@@ -40,17 +30,13 @@ module.exports = (spiritInstance, spirit) => {
             case 'collect':
               await spiritCollect(
                 spiritInstance,
-                spirit,
-                targetCategory,
-                targetInstance,
-                target
+                targetInstance
               )
               break
             default:
               await spiritSpell(
                 spiritInstance,
                 spirit,
-                targetCategory,
                 targetInstance,
                 target,
                 action

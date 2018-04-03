@@ -7,16 +7,15 @@ const determineSpiritMove = require('./determineSpiritMove')
 module.exports = (instance, spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-
       const newCoords = await determineSpiritMove(spirit)
 
-      console.log({
+      /*console.log({
         'event': 'spirit_move',
         instance: instance,
         spirit: spirit.id,
         owner: spirit.ownerPlayer,
         to: [newCoords[0], newCoords[1]]
-      })
+      })*/
 
       await informNearbyPlayers(
         spirit.latitude,
@@ -37,7 +36,6 @@ module.exports = (instance, spirit) => {
           }
         ),
         addFieldsToHash(
-          'spirits',
           instance,
           ['latitude', 'longitude'],
           [newCoords[0], newCoords[1]]

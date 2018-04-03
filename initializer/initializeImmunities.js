@@ -10,17 +10,14 @@ async function initializeImmunities() {
       for (let i = 0; i < immunities.length; i++) {
         if (immunities[i]) {
           const currentTime = Date.now()
-          const characterName = await getFieldsFromHash(
-            'immunities',
+          const characterId = await getFieldsFromHash(
             immunities[i],
             ['bearer']
           )
 
-          const immunity = await getFieldsFromHash(
-            'characters',
-            characterName,
-            ['immunityList']
-          ).filter(immunity => immunity.instance === immunities[i])[0]
+          const immunity =
+            await getFieldsFromHash(characterId, ['immunityList'])
+            .filter(immunity => immunity.instance === immunities[i])[0]
 
           if (immunity) {
             if (immunity.expiresOn > currentTime) {

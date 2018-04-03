@@ -5,7 +5,7 @@ const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 
 module.exports = async (instance) => {
   try {
-    const rift = await getAllFromHash('rifts', instance)
+    const rift = await getAllFromHash(instance)
 
     if (rift) {
       await Promise.all([

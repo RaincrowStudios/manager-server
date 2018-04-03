@@ -6,10 +6,10 @@ const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const determineCritical = require('./determineCritical')
 const determineResist = require('./determineResist')
-const determineXp = require('./determineXp')
+const determineExperience = require('./determineExperience')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
-module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
+module.exports = (instance, spirit, targetInstance, target) => {
   return new Promise(async (resolve, reject) => {
     try {
       const range = spirit.attack.split('-')
@@ -40,13 +40,13 @@ module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
 
       const result = { total: Math.round(total * -1), critical, resist }
 
-      const spiritExists = await checkKeyExistance('spirits', instance)
-      const targetExists = await checkKeyExistance(targetCategory, targetInstance)
+      const spiritExists = await checkKeyExistance(instance)
+      const targetExists = await checkKeyExistance(targetInstance)
 
       if (spiritExists && targetExists) {
         let targetCurrentEnergy, targetDead
         [targetCurrentEnergy, targetDead] =
-          await adjustEnergy(targetCategory, targetInstance, result.total)
+          await adjustEnergy(targetInstance, result.total)
 
         const xpGain = 5//determineXP()
 
@@ -77,7 +77,7 @@ module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
               action: 'attack',
               instance: instance,
               displayName: spirit.displayName,
-              target: target.type === 'spirit' ? target.displayName : targetInstance,
+              target: target.displayName,
               targetType: target.type,
               total: result.total,
               xpGain: xpGain,
@@ -85,13 +85,11 @@ module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
             }
           ),
           addFieldsToHash(
-            'spirits',
             instance,
             ['previousTarget'],
             [{targetInstance, type: 'spirit' }]
           ),
           addFieldsToHash(
-            targetCategory,
             targetInstance,
             ['lastAttackedBy'],
             [{ instance, type: 'spirit' }]
@@ -101,17 +99,6 @@ module.exports = (instance, spirit, targetCategory, targetInstance, target) => {
         if (targetDead) {
           resolveTargetDestruction(targetInstance, target, instance)
         }
-
-        console.log({
-          event: 'spirit_action',
-          action: 'attack',
-          instance: instance,
-          target: targetInstance,
-          damage: result.total,
-          critical: result.critical,
-          resist: result.resist,
-          targetEnergy: targetCurrentEnergy
-        })
       }
       resolve(true)
     }

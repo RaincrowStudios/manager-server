@@ -3,13 +3,9 @@ const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const informNearbyPlayers = require('../redis/informNearbyPlayers')
 const removeFromAll = require('../redis/removeFromAll')
 
-module.exports = async (instance) => {
+module.exports = async (portalInstance) => {
   try {
-    const coords = await getFieldsFromHash(
-      'portals',
-      instance,
-      ['latitude', 'longitude',]
-    )
+    const coords = await getFieldsFromHash(portalInstance, ['latitude', 'longitude'])
 
     await Promise.all([
       informNearbyPlayers(
@@ -17,13 +13,13 @@ module.exports = async (instance) => {
         coords[1],
         {
           command: 'map_portal_remove',
-          instance: instance
+          instance: portalInstance
         }
       ),
-      removeFromAll('portals', instance)
+      removeFromAll('portals', portalInstance)
     ])
 
-    const portalTimers = timers.by('instance', instance)
+    const portalTimers = timers.by('instance', portalInstance)
     timers.remove(portalTimers)
   }
   catch (err) {

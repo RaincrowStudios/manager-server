@@ -10,11 +10,13 @@ const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const spiritAdd = require('../spirits/spiritAdd')
 
-module.exports = async (instance) => {
+module.exports = async (portalInstance) => {
   try {
     const currentTime = Date.now()
 
-    const portal = await getAllFromHash('portals', instance)
+    const portal = await getAllFromHash(portalInstance)
+
+    console.log(portalInstance)
     if (portal) {
       const spiritInstance = uuidv1()
       const spirit = portal.spirit
@@ -30,7 +32,7 @@ module.exports = async (instance) => {
       spirit.longitude = portal.longitude
 
       await Promise.all([
-        addObjectToHash('spirits', spiritInstance, spirit),
+        addObjectToHash(spiritInstance, spirit),
         addToActiveSet('spirits', spiritInstance),
         addToGeohash(
           'spirits',
@@ -38,9 +40,8 @@ module.exports = async (instance) => {
           spirit.latitude,
           spirit.longitude
         ),
-        removeFromAll('portals', instance),
+        removeFromAll('portals', portalInstance),
         updateHashFieldArray(
-          'characters',
           portal.owner,
           'add',
           'activeSpirits',
@@ -54,7 +55,7 @@ module.exports = async (instance) => {
           portal.longitude,
           {
             command: 'map_portal_remove',
-            instance: instance
+            instance: portalInstance
           }
         ),
         informNearbyPlayers(
@@ -62,18 +63,25 @@ module.exports = async (instance) => {
           portal.longitude,
           {
             command: 'map_spirit_add',
-            tokens: [createMapToken(instance, spirit)]
+            tokens: [createMapToken(spiritInstance, spirit)]
           }
         ),
         informPlayers(
-          [spirit.owner],
+          [spirit.ownerPlayer],
           {
             command: 'player_spirit_summon',
-            spirit: spirit.displayName
+            instance: spiritInstance,
+            displayName: spirit.displayName
           }
         )
       ])
       spiritAdd(spiritInstance, spirit)
+      console.log({
+        event: 'spirit_summoned',
+        player: spirit.ownerPlayer,
+        character: spirit.owner,
+        spirit: spirit.id
+      })
     }
   }
   catch (err) {

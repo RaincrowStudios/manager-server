@@ -1,19 +1,34 @@
 const client = require('./client')
 
-module.exports = (category, name, radius, count = 0) => {
-  let query = ['geohash:' + category, name, radius, 'km']
-  if (count > 0) {
-    query.push('COUNT')
-    query.push(count)
-  }
+module.exports = (category, member, radius, count = 0) => {
   return new Promise((resolve, reject) => {
-    client.georadiusbymember(query, (err, results) => {
-      if (err) {
-        reject(err)
+    try {
+      if (!category || typeof category !== 'string') {
+        const err = 'Invalid category: ' + category
+        throw err
       }
-      else {
-        resolve(results)
+      else if (!member || typeof member !== 'string') {
+        const err = 'Invalid member: ' + member
+        throw err
       }
-    })
+
+      let query = ['geo:' + category, member, radius, 'km']
+      if (count > 0) {
+        query.push('COUNT')
+        query.push(count)
+      }
+
+      client.georadiusbymember(query, (err, results) => {
+        if (err) {
+          reject(err)
+        }
+        else {
+          resolve(results)
+        }
+      })
+    }
+    catch (err) {
+      reject(err)
+    }
   })
 }

@@ -7,15 +7,14 @@ module.exports = (spiritInstance, targetInstance) => {
   return new Promise(async (resolve, reject) => {
       try {
         const collectible =
-          await getAndRemoveHash('collectibles', targetInstance)
-          
+          await getAndRemoveHash(targetInstance)
+
         const range = collectible.range.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
         const count = Math.floor(Math.random() * (max - min + 1)) + min
 
         await updateHashFieldArray(
-          'spirits',
           spiritInstance,
           'add',
           'carrying',
@@ -32,7 +31,6 @@ module.exports = (spiritInstance, targetInstance) => {
             }
           ),
           updateHashFieldArray(
-            'spirits',
             spiritInstance,
             'add',
             'carrying',

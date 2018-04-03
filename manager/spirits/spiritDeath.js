@@ -6,10 +6,10 @@ const informPlayers = require('../../utils/informPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
 const addSpiritDrop = require('./death/addSpiritDrop')
 
-module.exports = (instance, killer) => {
+module.exports = (spiritInstance, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const spirit = await getAllFromHash('spirits', instance)
+      const spirit = await getAllFromHash(spiritInstance)
       if (spirit) {
         if (spirit.drop.length > 0) {
           await addSpiritDrop(spirit)
@@ -22,31 +22,25 @@ module.exports = (instance, killer) => {
             spirit.latitude,
             spirit.longitude,
             {
-              command: 'map_spirit_remove',
-              instance: instance,
+              command: 'map_spirit_death',
+              instance: spiritInstance,
             }
           ),
           informPlayers(
             [spirit.ownerPlayer],
             {
               command: 'player_spirit_death',
-              instance: instance,
-              killer: killer,
-              displayName: spirit.displayName
+              instance: spiritInstance,
+              displayName: spirit.displayName,
+              killer: killer.displayName,
+              owner: killer.ownerDisplay
             }
           ),
-          removeFromAll('spirits', instance)
+          removeFromAll('spirits', spiritInstance)
         ])
 
-        console.log({
-          event: 'spirit_death',
-          spirit: instance,
-          killer: killer,
-          type: spirit.type,
-          owner: spirit.ownerPlayer
-        })
       }
-      const spiritTimers = timers.by('instance', instance)
+      const spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {
         clearTimeout(spiritTimers.expireTimer)
         clearTimeout(spiritTimers.moveTimer)

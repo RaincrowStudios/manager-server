@@ -3,30 +3,28 @@ const spiritExpire = require('./spiritExpire')
 const spiritMove = require('./spiritMove')
 const spiritAction = require('./spiritAction')
 
-module.exports = (instance, spirit) => {
+module.exports = (spiritInstance, spirit) => {
   const currentTime = Date.now()
-
-  console.log('Spirit expiring in %d seconds...', (spirit.expiresOn - currentTime) / 1000)
 
   const expireTimer =
     setTimeout(() =>
-      spiritExpire(instance),
+      spiritExpire(spiritInstance),
       spirit.expiresOn - currentTime
     )
 
   const moveTimer =
     setTimeout(() =>
-      spiritMove(instance),
+      spiritMove(spiritInstance),
       0
     )
 
   const actionTimer =
     setTimeout(() =>
-      spiritAction(instance),
+      spiritAction(spiritInstance),
       0
     )
 
-  timers.insert({instance, expireTimer, moveTimer, actionTimer})
+  timers.insert({spiritInstance, expireTimer, moveTimer, actionTimer})
 
   return true
 }

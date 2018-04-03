@@ -5,8 +5,7 @@ const resolveSpiritMove = require('./move/resolveSpiritMove')
 
 async function spiritMove(instance) {
   try {
-    const spirit = await getAllFromHash('spirits', instance)
-
+    const spirit = await getAllFromHash(instance)
     if (spirit) {
       const currentTime = Date.now()
       const range = spirit.moveFreq.split('-')
@@ -28,7 +27,7 @@ async function spiritMove(instance) {
           spiritMove(instance), newMoveOn - currentTime
         )
 
-      await addFieldsToHash('spirits', instance, ['moveOn'], [newMoveOn])
+      await addFieldsToHash(instance, ['moveOn'], [newMoveOn])
 
       let spiritTimers = timers.by('instance', instance)
       if (spiritTimers) {

@@ -8,25 +8,17 @@ const informPlayers = require('../../../utils/informPlayers')
 const addCondition = require('./addCondition')
 const determineHeal = require('./determineHeal')
 const determineDamage = require('./determineDamage')
-const determineXp = require('./determineXp')
+const determineExperience = require('./determineExperience')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
-module.exports = (
-  instance,
-  spirit,
-  targetCategory,
-  targetInstance,
-  target,
-  action
-) => {
+module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const spiritExists = await checkKeyExistance('spirits', instance)
-      const targetExists = await checkKeyExistance(targetCategory, targetInstance)
+      const spiritExists = await checkKeyExistance(spiritInstance)
+      const targetExists = await checkKeyExistance(targetInstance)
 
       if (spiritExists && targetExists) {
-
-        const spell = await getOneFromHash('spells', 'all', action)
+        const spell = await getOneFromHash('list:spells', action)
         let result = {}
         let targetCurrentEnergy, targetDead
         if (spell.special) {
@@ -41,7 +33,6 @@ module.exports = (
           }
 
           [targetCurrentEnergy, targetDead] = await adjustEnergy(
-            targetCategory,
             targetInstance,
             result.total
           )
@@ -49,10 +40,9 @@ module.exports = (
           if (!targetDead && spell.condition) {
             if (spell.condition.maxStack <= 0) {
               await addCondition(
-                instance,
+                spiritInstance,
                 spirit,
                 targetInstance,
-                targetCategory,
                 target,
                 spell
               )
@@ -66,10 +56,9 @@ module.exports = (
               }
               if (stack < spell.condition.maxStack) {
                 await addCondition(
-                  instance,
+                  spiritInstance,
                   spirit,
                   targetInstance,
-                  targetCategory,
                   target,
                   spell
                 )
@@ -79,9 +68,9 @@ module.exports = (
         }
 
 
-        const xpGain = determineXp()
+        const xpGain = determineExperience()
 
-        const award = 1//await addExperience('characters', spirit.owner, xpGain)
+        const award = 1//await addExperience(spirit.owner, xpGain)
 
         let xp
         if (typeof award === 'number') {
@@ -95,7 +84,7 @@ module.exports = (
             {
               command: 'map_spirit_action',
               action: spell.id,
-              instance: instance,
+              instance: spiritInstance,
               target: targetInstance,
               total: result.total,
             }
@@ -105,9 +94,9 @@ module.exports = (
             {
               command: 'player_spirit_action',
               action: spell.id,
-              instance: instance,
+              spirit: spiritInstance,
               displayName: spirit.displayName,
-              target: target.type === 'spirit' ? target.displayName : targetInstance,
+              target: target.displayName,
               targetType: target.type,
               total: result.total,
               xpGain: xpGain,
@@ -115,26 +104,24 @@ module.exports = (
             }
           ),
           addFieldsToHash(
-            'spirits',
-            instance,
+            spiritInstance,
             ['previousTarget'],
             [{ targetInstance, type: 'spirit' }]
           ),
           addFieldsToHash(
-            targetCategory,
             targetInstance,
             ['lastAttackedBy'],
-            [{ instance, type: 'spirit' }]
+            [{ spiritInstance, type: 'spirit' }]
           )
         ])
 
-        if (!targetDead && targetCategory === 'characters') {
+        if (!targetDead && target.type === 'witch') {
           await informPlayers(
             [target.player],
             {
               command: 'player_targeted_spell',
               attacker: spirit.displayName,
-              owner: spirit.owner,
+              owner: spirit.ownerDisplay,
               total: result.total,
               critical: result.critical,
               resist: result.resist,
@@ -143,19 +130,8 @@ module.exports = (
           )
         }
         else if (targetDead) {
-          resolveTargetDestruction(targetInstance, target, instance)
+          resolveTargetDestruction(targetInstance, target, spiritInstance, spirit)
         }
-
-        console.log({
-          event: 'spirit_action',
-          action: spell.id,
-          instance: instance,
-          target: targetInstance,
-          damage: result.total,
-          critical: result.critical,
-          resist: result.resist,
-          targetEnergy: targetCurrentEnergy
-        })
       }
       resolve(true)
     }

@@ -1,78 +1,79 @@
 const timers = require('../../database/timers')
 const adjustEnergy = require('../../redis/adjustEnergy')
-const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
 const spiritDeath = require('../spirits/spiritDeath')
-const conditionExpire = require('./conditionExpire')
 const resolveCondition = require('./resolveCondition')
 const deleteCondition = require('./deleteCondition')
 
-async function conditionTrigger (instance) {
+async function conditionTrigger (conditionInstance) {
   try {
     const currentTime = Date.now()
-    const bearer =
-      await getAllFromHash('conditions', instance)
-    if (bearer) {
-      const conditions = await getOneFromHash(bearer.category, bearer.instance, 'conditions')
+    const bearerInstance =
+      await getOneFromHash('list:conditions', conditionInstance)
+    if (bearerInstance) {
+      let player, type, conditions
+      [player, type, conditions] =
+        await getFieldsFromHash(bearerInstance, ['player', 'type', 'conditions'])
 
       if (conditions.length > 0) {
         let conditionToUpdate, index
         for (let i = 0; i < conditions.length; i++) {
-          if (conditions[i].instance === instance) {
+          if (conditions[i].instance === conditionInstance) {
             conditionToUpdate = conditions[i]
             index = i
           }
         }
 
         if (conditionToUpdate) {
+          const spell =
+            await getOneFromHash('list:spells', conditionToUpdate.spell)
           const newCondition = conditionToUpdate
-          const total = resolveCondition(newCondition)
+          const total = resolveCondition(spell, newCondition)
 
           let bearerCurrentEnergy, bearerDead
           [bearerCurrentEnergy, bearerDead] =
-            await adjustEnergy(bearer.category, bearer.instance, total)
+            await adjustEnergy(bearerInstance, total)
 
           console.log({
             event: 'condition_triggered',
-            bearer: bearer.instance,
-            condition: newCondition.id,
+            player: player,
+            character: bearerInstance,
+            condition: newCondition.spell,
             total: total,
-            energy: bearerCurrentEnergy
           })
 
-          if (bearerDead && bearer.category === 'spirits') {
-            await Promise.all([
-              spiritDeath(bearer.instance, newCondition.caster),
-              conditionExpire(instance)
-            ])
+          if (bearerDead && type === 'spirits') {
+            await spiritDeath(bearerInstance, newCondition.caster)
           }
           else if (bearerDead) {
             await Promise.all([
               informPlayers(
-                [bearer.instance],
+                [player],
                 {
-                  command: 'player_death'
+                  command: 'player_death_condition',
+                  condition: spell.displayName,
+                  caster: newCondition.caster
                 }
               ),
-              conditionExpire(instance)
+              deleteCondition(conditionInstance)
             ])
           }
-          else if (bearer.category !== 'spirits') {
+          else if (type !== 'spirits') {
             await Promise.all([
               informPlayers(
-                [bearer.instance],
+                [bearerInstance],
                 {
                   command: 'player_condition_trigger',
-                  condition: newCondition.id,
+                  condition: newCondition.spell,
                   total: total,
                   energy: bearerCurrentEnergy
                 }
               ),
               updateHashFieldArray(
-                bearer.category,
-                bearer.instance,
+                bearerInstance,
                 'replace',
                 'conditions',
                 conditionToUpdate,
@@ -86,20 +87,19 @@ async function conditionTrigger (instance) {
 
             const newTimer =
               setTimeout(() =>
-                conditionTrigger(instance),
+                conditionTrigger(conditionInstance),
                 newCondition.tick * 60000
               )
 
             await updateHashFieldArray(
-              bearer.category,
-              bearer.instance,
+              bearerInstance,
               'replace',
               'conditions',
               conditionToUpdate,
               index
             )
 
-            let conditionTimer = timers.by('instance', instance)
+            let conditionTimer = timers.by('instance', conditionInstance)
             if (conditionTimer) {
               conditionTimer.triggerTimer = newTimer
               timers.update(conditionTimer)
@@ -107,11 +107,11 @@ async function conditionTrigger (instance) {
           }
         }
         else {
-          deleteCondition(instance)
+          deleteCondition(conditionInstance)
         }
       }
       else {
-        deleteCondition(instance)
+        deleteCondition(conditionInstance)
       }
     }
   }

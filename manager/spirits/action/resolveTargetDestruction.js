@@ -1,5 +1,5 @@
 const informPlayers = require('../../../utils/informPlayers')
-const conditionExpire = require('../../conditions/conditionExpire')
+const deleteAllConditions = require('../../conditions/deleteAllConditions')
 const portalDestroy = require('../../portals/portalDestroy')
 const spiritDeath = require('../spiritDeath')
 
@@ -7,32 +7,22 @@ module.exports = (targetInstance, target, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (target.type === 'spirit') {
-
-        const conditionsToExpire = target.conditions.length > 0 ?
-          target.conditions.map(
-            condition => conditionExpire(condition.instance)
-          ) : []
-
-        await Promise.all([
-          spiritDeath(targetInstance, killer),
-          ...conditionsToExpire
-        ])
+        await spiritDeath(targetInstance, killer)
       }
       else if (target.type === 'portal') {
-        await portalDestroy(targetInstance, target, killer)
+        await portalDestroy(targetInstance, killer)
       }
       else {
-        const conditionsToExpire = target.conditions
-        .map(condition => conditionExpire(condition.instance))
-
         await Promise.all([
           informPlayers(
             [targetInstance],
             {
-              command: 'player_death'
+              command: 'player_death',
+              killer: killer.displayName,
+              owner: killer.ownerDisplay
             }
           ),
-          ...conditionsToExpire
+          deleteAllConditions(target.conditions)
         ])
       }
       resolve(true)

@@ -2,9 +2,9 @@ local key = KEYS[1]
 
 local xpGain = ARGV[1]
 
-local thresholds = cjson.decode(redis.call('HGET', 'hash:constants:all', 'levelThresholds'))
-local baseEnergyByLevel = cjson.decode(redis.call('HGET', 'hash:constants:all', 'baseEnergyByLevel'))
-local spellsByLevel = cjson.decode(redis.call('HGET', 'hash:constants:all', 'spellsByLevel'))
+local thresholds = cjson.decode(redis.call('HGET', 'list:constants', 'levelThresholds'))
+local baseEnergyByLevel = cjson.decode(redis.call('HGET', 'list:constants', 'baseEnergyByLevel'))
+local spellsByLevel = cjson.decode(redis.call('HGET', 'list:constants', 'spellsByLevel'))
 local newXp = redis.call('HINCRBY', key, 'xp', xpGain)
 local nextLevel = cjson.decode(redis.call('HGET', key, 'level')) + 1
 

@@ -13,7 +13,7 @@ const spiritAdd = require('../spirits/spiritAdd')
 module.exports = async (instance) => {
   try {
     const currentTime = Date.now()
-    const rift = await getAllFromHash('rifts', instance)
+    const rift = await getAllFromHash(instance)
 
     if (rift) {
       const spiritInstance = uuidv1()
@@ -30,7 +30,7 @@ module.exports = async (instance) => {
       spirit.longitude = rift.longitude
 
       await Promise.all([
-        addObjectToHash('spirits', spiritInstance, spirit),
+        addObjectToHash(spiritInstance, spirit),
         addToActiveSet('spirits', spiritInstance),
         addToGeohash(
           'spirits',
@@ -59,7 +59,7 @@ module.exports = async (instance) => {
           riftSummon(instance), newSummonOn - currentTime
         )
 
-      await addFieldsToHash('rifts', instance, ['summonOn'], [newSummonOn])
+      await addFieldsToHash(instance, ['summonOn'], [newSummonOn])
 
       const riftTimers = timers.by('instance', instance)
       if (riftTimers) {

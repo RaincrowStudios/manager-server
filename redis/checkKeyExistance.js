@@ -1,23 +1,24 @@
 const client = require('./client')
 
-module.exports = (category, instance) => {
+module.exports = (instance) => {
   return new Promise((resolve, reject) => {
-    if (!category || typeof category !== 'string') {
-      const err = 'Invalid category: ' + category
-      reject(err)
-    }
-    else if (!instance || typeof instance !== 'string') {
-      const err = 'Invalid instance: ' + instance
-      reject(err)
-    }
+    try {
+      if (!instance || typeof instance !== 'string') {
+        const err = 'Invalid instance: ' + instance
+        throw err
+      }
 
-    client.exists(['hash:' + category + ':' + instance], (err, result) => {
-      if (err) {
-        reject(err)
-      }
-      else {
-        resolve(result)
-      }
-    })
+      client.exists([instance], (err, result) => {
+        if (err) {
+          reject(err)
+        }
+        else {
+          resolve(result)
+        }
+      })
+    }
+    catch (err) {
+      reject(err)
+    }
   })
 }

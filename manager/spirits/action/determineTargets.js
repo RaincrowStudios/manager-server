@@ -62,7 +62,7 @@ module.exports = (instance, spirit) => {
                 let instance, info
                 if (targetCategory[1]) {
                   const nearCollectiblesInfo = await Promise.all(
-                    nearCollectibles.map(item => getAllFromHash('collectibles', item))
+                    nearCollectibles.map(item => getAllFromHash(item))
                   )
                   for (let j = 0; j < nearCollectiblesInfo.length; j++) {
                     if (
@@ -80,7 +80,7 @@ module.exports = (instance, spirit) => {
                       Math.floor(Math.random() * nearCollectibles.length)
                     ]
 
-                  info = await getAllFromHash('collectibles', instance)
+                  info = await getAllFromHash(instance)
                 }
                 if (info) {
                   resolve([instance, info, spirit.actionTree[i].actions])
@@ -97,7 +97,7 @@ module.exports = (instance, spirit) => {
               if (attackerType.length > 0) {
                 for (const target of attackerType) {
                   if (target === spirit.lastAttackedBy.instance) {
-                    const info = await getAllFromHash(spirit.lastAttackedBy.type + 's', target)
+                    const info = await getAllFromHash(target)
 
                     if (info) {
                       resolve([target, info, spirit.actionTree[i].actions])
@@ -116,7 +116,7 @@ module.exports = (instance, spirit) => {
               if (targetType.length > 0) {
                 for (const target of targetType) {
                   if (target === spirit.previousTarget.instance) {
-                    const info = await getAllFromHash(spirit.lastAttackedBy.type + 's', target)
+                    const info = await getAllFromHash(target)
 
                     if (info) {
                       resolve([target, info, spirit.actionTree[i].actions])
@@ -135,10 +135,10 @@ module.exports = (instance, spirit) => {
 
               const redisQuery = []
               for (let i = 0; i < nearCharacters.length; i++) {
-                redisQuery.push(getAllFromHash('characters', nearCharacters[i]))
+                redisQuery.push(getAllFromHash(nearCharacters[i]))
               }
               for (let i = 0; i < nearSpirits.length; i++) {
-                redisQuery.push(getAllFromHash('spirits', nearSpirits[i]))
+                redisQuery.push(getAllFromHash(nearSpirits[i]))
               }
 
               const info = await Promise.all(redisQuery)
@@ -206,7 +206,7 @@ module.exports = (instance, spirit) => {
 
               const redisQuery = []
               for (let i = 0; i < nearSpirits.length; i++) {
-                redisQuery.push(getAllFromHash('spirits', nearSpirits[i]))
+                redisQuery.push(getAllFromHash(nearSpirits[i]))
               }
 
               const info = await Promise.all(redisQuery)
@@ -263,7 +263,7 @@ module.exports = (instance, spirit) => {
             if (nearCharacters.length > 0) {
               for (const target of nearCharacters) {
                 if (target === spirit.owner) {
-                  const info = await getAllFromHash('characters', spirit.owner)
+                  const info = await getAllFromHash(spirit.owner)
 
                   if (info) {
                     resolve([target, info, spirit.actionTree[i].actions])
@@ -281,7 +281,7 @@ module.exports = (instance, spirit) => {
               const instance = nearPlaces[
                 Math.floor(Math.random() * nearPlaces.length)
               ]
-              const info = await getAllFromHash('places', instance)
+              const info = await getAllFromHash(instance)
 
               if (info) {
                 resolve([instance, info, spirit.actionTree[i].actions])
@@ -293,7 +293,7 @@ module.exports = (instance, spirit) => {
               const instance = nearPortals[
                 Math.floor(Math.random() * nearPortals.length)
               ]
-              const info = await getAllFromHash('portals', instance)
+              const info = await getAllFromHash(instance)
 
               if (info) {
                 resolve([instance, info, spirit.actionTree[i].actions])
@@ -312,7 +312,7 @@ module.exports = (instance, spirit) => {
                 nearSpirits[
                   Math.floor(Math.random() * nearSpirits.length)
                 ]
-              const info = await getAllFromHash('spirits', instance)
+              const info = await getAllFromHash(instance)
 
               if (info) {
                 resolve([instance, info, spirit.actionTree[i].actions])
@@ -327,7 +327,7 @@ module.exports = (instance, spirit) => {
                   Math.floor(Math.random() * nearCharacters.length)
                 const characterName = nearCharacters[index]
 
-                const info = await getAllFromHash('characters', characterName)
+                const info = await getAllFromHash(characterName)
                 if (info.type === targetCategory) {
                   resolve([characterName, info, spirit.actionTree[i].actions])
                 }

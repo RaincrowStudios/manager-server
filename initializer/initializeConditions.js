@@ -12,7 +12,7 @@ async function initializeConditions() {
       for (let i = 0; i < conditions.length; i++) {
         if (conditions[i]) {
           const currentTime = Date.now()
-          const condition = await getAllFromHash('conditions', conditions[i])
+          const condition = await getAllFromHash(conditions[i])
 
           if (condition) {
             if (condition.expiresOn > currentTime) {

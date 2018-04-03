@@ -1,5 +1,5 @@
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash = require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
@@ -9,10 +9,12 @@ const deleteCondition = require('./deleteCondition')
 module.exports = async (instance) => {
   try {
     const bearer =
-      await getAllFromHash('conditions', instance)
+      await getAllFromHash('list:conditions', instance)
 
     if (bearer) {
-      const conditions = await getOneFromHash(bearer.category, bearer.instance, 'conditions')
+      let player, type, conditions
+      [player, type, conditions] =
+        await getFieldsFromHash(bearer, ['player', 'type', 'conditions'])
 
       if (conditions.length > 0) {
         let conditionToExpire, index
@@ -25,31 +27,29 @@ module.exports = async (instance) => {
 
         await Promise.all([
           updateHashFieldArray(
-            bearer.category,
-            bearer.instance,
+            bearer,
             'remove',
             'conditions',
             conditionToExpire,
             index
           ),
           removeFromActiveSet('conditions', instance),
-          removeHash('conditions', instance)
+          removeHash('list:conditions', instance)
         ])
 
         console.log({
           event: 'condition_expire',
-          instance,
-          bearer: bearer.instance
+          condition: instance,
+          bearer: bearer
         })
 
-        if (bearer.category === 'characters' && !conditionToExpire.hidden) {
-          const player =
-            await getOneFromHash(bearer.category, bearer.instance, 'player')
+        if (type !== 'spirit' && !conditionToExpire.hidden) {
+          await deleteCondition(instance)
           await informPlayers(
             [player],
             {
               command: 'player_condition_remove',
-              instance: instance
+              condition: instance
             }
           )
         }

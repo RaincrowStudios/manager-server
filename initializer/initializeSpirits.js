@@ -12,7 +12,7 @@ async function initializeSpirits() {
       for (let i = 0; i < spirits.length; i++) {
         if (spirits[i]) {
           const currentTime = Date.now()
-          const spirit = await getAllFromHash('spirits', spirits[i])
+          const spirit = await getAllFromHash(spirits[i])
 
           if (spirit && spirit.expiresOn > currentTime && spirit.energy > 0) {
             const expireTimer =

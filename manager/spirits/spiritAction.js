@@ -3,9 +3,9 @@ const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const resolveSpiritAction = require('./action/resolveSpiritAction')
 
-async function spiritAction(instance) {
+async function spiritAction(spiritInstance) {
   try {
-    const spirit = await getAllFromHash('spirits', instance)
+    const spirit = await getAllFromHash(spiritInstance)
 
     if (spirit) {
       const currentTime = Date.now()
@@ -20,17 +20,17 @@ async function spiritAction(instance) {
         spirit.conditions.filter(condition => condition.status === 'silenced')
 
       if (silencedCheck.length <= 0) {
-        await resolveSpiritAction(instance, spirit)
+        await resolveSpiritAction(spiritInstance, spirit)
       }
 
       const newTimer =
         setTimeout(() =>
-          spiritAction(instance), newActionOn - currentTime
+          spiritAction(spiritInstance), newActionOn - currentTime
         )
 
-      await addFieldsToHash('spirits', instance, ['actionOn'], [newActionOn])
+      await addFieldsToHash(spiritInstance, ['actionOn'], [newActionOn])
 
-      let spiritTimers = timers.by('instance', instance)
+      let spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {
         spiritTimers.actionTimer = newTimer
         timers.update(spiritTimers)

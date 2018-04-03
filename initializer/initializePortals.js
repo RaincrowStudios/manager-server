@@ -10,7 +10,7 @@ async function initializePortals() {
     if (portals.length > 0) {
       for (let i = 0; i < portals.length; i++) {
         const currentTime = Date.now()
-        const portal = await getAllFromHash('portals', portals[i])
+        const portal = await getAllFromHash(portals[i])
 
         if (portal && portal.summonOn > currentTime && portal.energy > 0) {
           const summonTimer =
