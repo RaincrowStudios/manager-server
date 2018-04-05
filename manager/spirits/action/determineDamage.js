@@ -37,7 +37,7 @@ module.exports = (spirit, target, spell) => {
   }
 
   if (determineResist(target)) {
-    Math.round(total /= 2)
+    total = Math.round(total / 2)
     resist = true
   }
 

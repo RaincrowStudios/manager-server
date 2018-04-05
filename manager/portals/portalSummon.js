@@ -16,7 +16,6 @@ module.exports = async (portalInstance) => {
 
     const portal = await getAllFromHash(portalInstance)
 
-    console.log(portalInstance)
     if (portal) {
       const spiritInstance = uuidv1()
       const spirit = portal.spirit

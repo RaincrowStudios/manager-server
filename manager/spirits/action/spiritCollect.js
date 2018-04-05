@@ -6,8 +6,7 @@ const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 module.exports = (spiritInstance, targetInstance) => {
   return new Promise(async (resolve, reject) => {
       try {
-        const collectible =
-          await getAndRemoveHash(targetInstance)
+        const collectible = await getAndRemoveHash(targetInstance)
 
         const range = collectible.range.split('-')
         const min = parseInt(range[0], 10)

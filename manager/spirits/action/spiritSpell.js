@@ -11,11 +11,11 @@ const determineDamage = require('./determineDamage')
 const determineExperience = require('./determineExperience')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
-module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
+module.exports = (spirit, target, action) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const spiritExists = await checkKeyExistance(spiritInstance)
-      const targetExists = await checkKeyExistance(targetInstance)
+      const spiritExists = await checkKeyExistance(spirit.instance)
+      const targetExists = await checkKeyExistance(target.instance)
 
       if (spiritExists && targetExists) {
         const spell = await getOneFromHash('list:spells', action)
@@ -32,20 +32,12 @@ module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
             result = determineDamage(spirit, target, spell)
           }
 
-          [targetCurrentEnergy, targetDead] = await adjustEnergy(
-            targetInstance,
-            result.total
-          )
+          [targetCurrentEnergy, targetDead] =
+            await adjustEnergy(target.instance, result.total)
 
           if (!targetDead && spell.condition) {
             if (spell.condition.maxStack <= 0) {
-              await addCondition(
-                spiritInstance,
-                spirit,
-                targetInstance,
-                target,
-                spell
-              )
+              await addCondition(spirit, target, spell)
             }
             else {
               let stack = 0
@@ -55,18 +47,11 @@ module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
                 }
               }
               if (stack < spell.condition.maxStack) {
-                await addCondition(
-                  spiritInstance,
-                  spirit,
-                  targetInstance,
-                  target,
-                  spell
-                )
+                await addCondition(spirit, target, spell)
               }
             }
           }
         }
-
 
         const xpGain = determineExperience()
 
@@ -84,8 +69,8 @@ module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
             {
               command: 'map_spirit_action',
               action: spell.id,
-              instance: spiritInstance,
-              target: targetInstance,
+              instance: spirit.instance,
+              target: target.instance,
               total: result.total,
             }
           ),
@@ -94,24 +79,24 @@ module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
             {
               command: 'player_spirit_action',
               action: spell.id,
-              spirit: spiritInstance,
+              spirit: spirit.instance,
               displayName: spirit.displayName,
               target: target.displayName,
-              targetType: target.type,
+              type: target.type,
               total: result.total,
               xpGain: xpGain,
               xp: xp
             }
           ),
           addFieldsToHash(
-            spiritInstance,
+            spirit.instance,
             ['previousTarget'],
-            [{ targetInstance, type: 'spirit' }]
+            [{ instnace: target.instance, type: 'spirit' }]
           ),
           addFieldsToHash(
-            targetInstance,
+            target.instance,
             ['lastAttackedBy'],
-            [{ spiritInstance, type: 'spirit' }]
+            [{ instance: spirit.instance, type: 'spirit' }]
           )
         ])
 
@@ -130,7 +115,7 @@ module.exports = (spiritInstance, spirit, targetInstance, target, action) => {
           )
         }
         else if (targetDead) {
-          resolveTargetDestruction(targetInstance, target, spiritInstance, spirit)
+          resolveTargetDestruction(target, spirit)
         }
       }
       resolve(true)

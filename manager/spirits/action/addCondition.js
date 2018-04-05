@@ -4,7 +4,7 @@ const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const conditionAdd = require('../../conditions/conditionAdd')
 
-module.exports = (casterInstance, caster, targetInstance, target, spell) => {
+module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
       const conditionInstance = uuidv1()
@@ -84,10 +84,10 @@ module.exports = (casterInstance, caster, targetInstance, target, spell) => {
 
       await Promise.all([
         conditionAdd(conditionInstance, result),
-        addFieldsToHash('list:conditions', [conditionInstance], [targetInstance]),
+        addFieldsToHash('list:conditions', [conditionInstance], [target.instance]),
         addToActiveSet('conditions', conditionInstance),
         updateHashFieldArray(
-          targetInstance,
+          target.instance,
           'add',
           'conditions',
           result

@@ -3,19 +3,19 @@ const deleteAllConditions = require('../../conditions/deleteAllConditions')
 const portalDestroy = require('../../portals/portalDestroy')
 const spiritDeath = require('../spiritDeath')
 
-module.exports = (targetInstance, target, killer) => {
+module.exports = (target, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (target.type === 'spirit') {
-        await spiritDeath(targetInstance, killer)
+        await spiritDeath(target.instance, killer)
       }
       else if (target.type === 'portal') {
-        await portalDestroy(targetInstance, killer)
+        await portalDestroy(target.instance, killer)
       }
       else {
         await Promise.all([
           informPlayers(
-            [targetInstance],
+            [target.instance],
             {
               command: 'player_death',
               killer: killer.displayName,

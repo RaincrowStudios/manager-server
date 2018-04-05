@@ -8,8 +8,7 @@ const deleteCondition = require('./deleteCondition')
 
 module.exports = async (instance) => {
   try {
-    const bearer =
-      await getAllFromHash('list:conditions', instance)
+    const bearer = await getAllFromHash('list:conditions', instance)
 
     if (bearer) {
       let player, type, conditions

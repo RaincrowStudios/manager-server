@@ -1,13 +1,17 @@
 const timers = require('../../database/timers')
 const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const resolveSpiritAction = require('./action/resolveSpiritAction')
+const getOneFromHash = require('../../redis/getOneFromHash')
+const resolveSpiritAction = require('./resolveSpiritAction')
 
 async function spiritAction(spiritInstance) {
   try {
-    const spirit = await getAllFromHash(spiritInstance)
+    const instanceInfo = await getAllFromHash(spiritInstance)
 
-    if (spirit) {
+    if (instanceInfo) {
+      const spititInfo = await getOneFromHash('list:spirits', instanceInfo.id)
+      const spirit = Object.assign({}, instanceInfo, spititInfo)
+      spirit.instance = spiritInstance
       const currentTime = Date.now()
       const range = spirit.actionFreq.split('-')
       const min = parseInt(range[0], 10)
@@ -20,7 +24,7 @@ async function spiritAction(spiritInstance) {
         spirit.conditions.filter(condition => condition.status === 'silenced')
 
       if (silencedCheck.length <= 0) {
-        await resolveSpiritAction(spiritInstance, spirit)
+        await resolveSpiritAction(spirit)
       }
 
       const newTimer =
