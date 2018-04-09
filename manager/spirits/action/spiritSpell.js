@@ -91,7 +91,7 @@ module.exports = (spirit, target, action) => {
           addFieldsToHash(
             spirit.instance,
             ['previousTarget'],
-            [{ instnace: target.instance, type: 'spirit' }]
+            [{ instance: target.instance, type: 'spirit' }]
           ),
           addFieldsToHash(
             target.instance,
