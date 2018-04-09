@@ -20,7 +20,7 @@ module.exports = (spirit, target, action) => {
       if (spiritExists && targetExists) {
         const spell = await getOneFromHash('list:spells', action)
         let result = {}
-        let targetCurrentEnergy, targetDead
+        let targetCurrentEnergy
         if (spell.special) {
           //spiritSpecialSpell()
         }
@@ -32,10 +32,10 @@ module.exports = (spirit, target, action) => {
             result = determineDamage(spirit, target, spell)
           }
 
-          [targetCurrentEnergy, targetDead] =
+          targetCurrentEnergy =
             await adjustEnergy(target.instance, result.total)
 
-          if (!targetDead && spell.condition) {
+          if (targetCurrentEnergy > 0 && spell.condition) {
             if (spell.condition.maxStack <= 0) {
               await addCondition(spirit, target, spell)
             }
@@ -100,7 +100,7 @@ module.exports = (spirit, target, action) => {
           )
         ])
 
-        if (!targetDead && target.type === 'witch') {
+        if (targetCurrentEnergy > 0 && target.type === 'witch') {
           await informPlayers(
             [target.player],
             {
@@ -114,7 +114,7 @@ module.exports = (spirit, target, action) => {
             }
           )
         }
-        else if (targetDead) {
+        else if (targetCurrentEnergy <= 0) {
           resolveTargetDestruction(target, spirit)
         }
       }

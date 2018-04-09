@@ -8,6 +8,11 @@ module.exports = (instance, energy) => {
         const err = 'Invalid instance: ' + instance
         throw err
       }
+      else if (!energy || typeof energy !== 'number') {
+        const err = 'Invalid energy: ' + energy
+        throw err
+      }
+
 
       client.evalsha(
         [scripts.adjustEnergy.sha, 1, instance, energy],
@@ -16,7 +21,7 @@ module.exports = (instance, energy) => {
             reject(err)
           }
           else {
-            resolve(result)
+            resolve(JSON.parse(result))
           }
         }
       )

@@ -1,7 +1,7 @@
 const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
 const getAllFromHash = require('../../../redis/getAllFromHash')
 
-module.exports = (spirit) => {
+module.exports = (spirit, targetCategory) => {
   return new Promise(async (resolve, reject) => {
     try {
      const nearPortals = await getNearbyFromGeohash(
@@ -12,15 +12,47 @@ module.exports = (spirit) => {
       )
 
       if (nearPortals.length > 0) {
-        const index = Math.floor(Math.random() * nearPortals.length)
-        const target = await getAllFromHash(nearPortals[index])
+        if (targetCategory === 'allyPortals') {
+          const nearAllyPortals = nearPortals
+            .filter(portal => portal.summonerCoven === spirit.summonerCoven)
 
-        if (target) {
-          target.instance = nearPortals[index]
-          resolve(target)
+          if (nearAllyPortals.length > 0) {
+            const target = nearAllyPortals[
+                Math.floor(Math.random() * nearAllyPortals.length)
+              ]
+
+            resolve(target)
+          }
+          else {
+            resolve(false)
+          }
+        }
+        else if (targetCategory === 'enemyPortals') {
+          const nearEnemyPortals = nearPortals
+            .filter(portal => portal.summonerCoven !== spirit.summonerCoven)
+
+          if (nearEnemyPortals.length > 0) {
+            const target = nearEnemyPortals[
+                Math.floor(Math.random() * nearEnemyPortals.length)
+              ]
+
+            resolve(target)
+          }
+          else {
+            resolve(false)
+          }
         }
         else {
-          resolve(false)
+          const index = Math.floor(Math.random() * nearPortals.length)
+          const target = await getAllFromHash(nearPortals[index])
+
+          if (target) {
+            target.instance = nearPortals[index]
+            resolve(target)
+          }
+          else {
+            resolve(false)
+          }
         }
       }
       else {

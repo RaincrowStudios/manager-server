@@ -10,7 +10,7 @@ async function spiritAction(spiritInstance) {
 
     if (instanceInfo) {
       const spititInfo = await getOneFromHash('list:spirits', instanceInfo.id)
-      const spirit = Object.assign({}, instanceInfo, spititInfo)
+      const spirit = Object.assign({}, spititInfo, instanceInfo)
       spirit.instance = spiritInstance
       const currentTime = Date.now()
       const range = spirit.actionFreq.split('-')

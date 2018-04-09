@@ -14,7 +14,7 @@ module.exports = (spiritInstance, killer) => {
 
       if (instanceInfo) {
         const spititInfo = await getOneFromHash('list:spirits', instanceInfo.id)
-        const spirit = Object.assign({}, instanceInfo, spititInfo)
+        const spirit = Object.assign({}, spititInfo, instanceInfo)
 
         if (spirit.drop.length > 0) {
           await addSpiritDrop(spirit)

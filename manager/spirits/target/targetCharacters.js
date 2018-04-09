@@ -11,10 +11,11 @@ module.exports = (spirit, targetCategory) => {
         spirit.reach
       )
 
-      const nearCharacters = await Promise.all(
+      const nearInfo = await Promise.all(
           nearInstances.map(instance => getAllFromHash(instance))
         )
-        .map((character, i) => {
+
+      const nearCharacters = nearInfo.map((character, i) => {
           character.instance = nearInstances[i]
           return character
         })

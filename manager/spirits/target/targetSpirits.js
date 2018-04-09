@@ -18,8 +18,6 @@ module.exports = (spirit, targetCategory) => {
           nearInstances.map(instance => getAllFromHash(instance))
         )
 
-      console.log(nearInfo)
-
       const nearSpirits = nearInfo.map((spirit, i) => {
           spirit.instance = nearInstances[i]
           return spirit

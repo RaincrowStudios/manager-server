@@ -22,36 +22,26 @@ async function conditionTrigger (conditionInstance) {
         )
 
       if (conditions.length > 0) {
-        let conditionToUpdate, index
-        for (let i = 0; i < conditions.length; i++) {
-          if (conditions[i].instance === conditionInstance) {
-            conditionToUpdate = conditions[i]
+        let index
+        const conditionToUpdate = conditions.filter((condition, i) => {
+          if (condition.instance === conditionInstance) {
             index = i
+            return true
           }
-        }
+        })
 
         if (conditionToUpdate) {
           const spell =
             await getOneFromHash('list:spells', conditionToUpdate.spell)
           const newCondition = conditionToUpdate
-          const total = resolveCondition(spell, newCondition)
+          const total = resolveCondition(spell.condition, newCondition)
 
-          let bearerCurrentEnergy, bearerDead
-          [bearerCurrentEnergy, bearerDead] =
-            await adjustEnergy(bearerInstance, total)
+          const bearerCurrentEnergy = await adjustEnergy(bearerInstance, total)
 
-          console.log({
-            event: 'condition_triggered',
-            player: player,
-            character: bearerInstance,
-            condition: newCondition.spell,
-            total: total,
-          })
-
-          if (bearerDead && type === 'spirits') {
+          if (bearerCurrentEnergy <= 0 && type === 'spirits') {
             await spiritDeath(bearerInstance, newCondition.caster)
           }
-          else if (bearerDead) {
+          else if (bearerCurrentEnergy <= 0) {
             await Promise.all([
               informPlayers(
                 [player],
@@ -62,6 +52,13 @@ async function conditionTrigger (conditionInstance) {
                 }
               ),
               deleteCondition(conditionInstance)
+              console.log({
+                event: 'condition_triggered',
+                player: player,
+                character: bearerInstance,
+                condition: newCondition.spell,
+                total: total,
+              })
             ])
           }
           else if (type !== 'spirits') {
@@ -83,6 +80,13 @@ async function conditionTrigger (conditionInstance) {
                 index
               )
             ])
+            console.log({
+              event: 'condition_triggered',
+              player: player,
+              character: bearerInstance,
+              condition: newCondition.spell,
+              total: total,
+            })
           }
           else {
             newCondition.triggerOn =

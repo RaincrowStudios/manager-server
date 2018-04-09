@@ -84,7 +84,7 @@ module.exports = (spirit) => {
           case 'summonerPortalAttacker':
             break
           case 'portals':
-            target = await targetPortals(spirit)
+            target = await targetPortals(spirit, targetCategory[1])
 
             if (target) {
               resolve([target, spirit.actionTree[i].actions])
