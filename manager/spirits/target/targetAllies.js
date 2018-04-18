@@ -28,12 +28,11 @@ module.exports = (spirit) => {
           target.instance = nearInstances[i]
           return target
         })
-        .filter((target) => {
-          target.coven === spirit.summonerCoven ||
-          target.summonerCoven === spirit.summonerCoven
-        })
+        .filter(target => (target.instance === spirit.owner ||
+            (spirit.coven && target.coven === spirit.coven))
+          )
 
-      if (nearAllies.length > 0) {
+      if (nearAllies.length) {
         const target = nearAllies[Math.floor(Math.random() * nearAllies.length)]
 
         if (target) {

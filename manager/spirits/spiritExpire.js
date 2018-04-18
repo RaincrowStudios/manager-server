@@ -1,34 +1,46 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
+const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
 
 module.exports = async (spiritInstance) => {
   try {
-    const spirit = await getAllFromHash(spiritInstance)
+    const instanceInfo = await getAllFromHash(spiritInstance)
 
-    if (spirit) {
-      await deleteAllConditions(spirit.conditions)
+    if (instanceInfo) {
+      const activeSpirits = await getOneFromHash(instanceInfo.owner, 'activeSpirits')
+      const index = activeSpirits.indexOf(spiritInstance)
+
       await Promise.all([
+        deleteAllConditions(instanceInfo.conditions),
         informNearbyPlayers(
-          spirit.latitude,
-          spirit.longitude,
+          instanceInfo.latitude,
+          instanceInfo.longitude,
           {
             command: 'map_spirit_expire',
             instance: spiritInstance
           }
         ),
         informPlayers(
-          [spirit.ownerPlayer],
+          [instanceInfo.player],
           {
             command: 'player_spirit_expire',
             spirit: spiritInstance,
-            displayName: spirit.displayName
+            displayName: instanceInfo.displayName
           }
         ),
-        removeFromAll('spirits', spiritInstance)
+        removeFromAll('spirits', spiritInstance),
+        updateHashFieldArray(
+          instanceInfo.owner,
+          'remove',
+          'activeSpirits',
+          spiritInstance,
+          index
+        ),
       ])
     }
     const spiritTimers = timers.by('instance', spiritInstance)

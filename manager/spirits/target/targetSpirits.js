@@ -26,7 +26,7 @@ module.exports = (spirit, targetCategory) => {
       if (nearSpirits.length > 0) {
         if (targetCategory === 'allySpirits') {
           const nearAllies = nearSpirits
-            .filter(target => target.summonerCoven === spirit.summonerCoven)
+            .filter(target => target.coven === spirit.coven)
 
           if (nearAllies.length > 0) {
             const target =
@@ -37,7 +37,7 @@ module.exports = (spirit, targetCategory) => {
         }
         else if (targetCategory === 'enemySpirits') {
           const nearEnemies = nearSpirits
-            .filter(target => target.summonerCoven !== spirit.summonerCoven)
+            .filter(target => target.coven !== spirit.coven)
 
           if (nearEnemies.length > 0) {
             const target =

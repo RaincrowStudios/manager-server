@@ -8,4 +8,4 @@ if currentEnergy <= 0 then
   redis.call('HSET', instance, 'dead', cjson.encode(true))
 end
 
-return cjson.encode({currentEnergy})
+return cjson.encode(currentEnergy)

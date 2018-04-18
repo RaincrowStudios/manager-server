@@ -5,7 +5,8 @@ const removeFromAll = require('../redis/removeFromAll')
 
 module.exports = async (portalInstance) => {
   try {
-    const coords = await getFieldsFromHash(portalInstance, ['latitude', 'longitude'])
+    const coords =
+      await getFieldsFromHash(portalInstance, ['latitude', 'longitude'])
 
     await Promise.all([
       informNearbyPlayers(

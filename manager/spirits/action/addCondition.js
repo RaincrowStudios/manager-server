@@ -12,39 +12,45 @@ module.exports = (caster, target, spell) => {
 
       let duration
       if (typeof spell.condition.duration === 'string') {
-        if (spell.condition.duration.includes(':')) {
-          const parts = spell.condition.duration.split(':')
-          if (parts[1].includes('+')) {
-            const subparts = parts[1].split('+')
-            duration = parts[0][subparts[0]] + parseInt(subparts[1])
-          }
-          else if (parts[1].includes('*')) {
-            const subparts = parts[1].split('*')
-            duration =
-              Math.round(parts[0][subparts[0]] * parseFloat(subparts[1]))
-          }
-          else {
-            duration = parts[0][parts[1]]
-          }
-        }
-        else {
+        if (spell.condition.duration.includes('-')) {
           const range = spell.condition.duration.split('-')
           const min = parseInt(range[0], 10)
           const max = parseInt(range[1], 10)
           duration = Math.floor(Math.random() * (max - min + 1)) + min
         }
+        else {
+          const parts = spell.condition.duration.split('*')
+          const mod = parts[0]
+          const subparts = parts[1].includes(':')
+
+          let property
+          if (subparts[0] === 'caster') {
+            property = caster
+          }
+          else if (subparts[0] === 'target') {
+            property = target
+          }
+
+          duration =
+            Math.round(parseFloat(mod) * parseFloat(property[subparts[1]]))
+        }
       }
       else {
         duration = spell.condition.duration
       }
+
       duration = parseInt(duration, 10)
+
       let result = {
         instance: conditionInstance,
-        spell: spell.id,
+        id: spell.id,
         caster: caster.displayName,
         createdOn: currentTime,
-        expiresOn: currentTime + (duration * 60000),
-        hidden: spell.condition.hidden
+        expiresOn: currentTime + (duration * 60000)
+      }
+
+      if (spell.condition.hidden) {
+        result.hidden = spell.condition.hidden
       }
 
       if (spell.condition.tick) {
@@ -52,40 +58,36 @@ module.exports = (caster, target, spell) => {
         result.tick = spell.condition.tick
       }
 
-      for (const modifier of spell.condition.modifiers) {
-        for (const key of Object.keys(modifier)) {
-          if (key !== 'status' && typeof modifier[key] === 'string') {
-            const parts = modifier[key].split(':')
-            let property
-            if (parts[0] === 'caster') {
-              property = caster
-            }
-            else if (parts[0] === 'target') {
-              property = target
-            }
-            if (parts[1].includes('+')) {
-              const subparts = parts[1].split('+')
-              result[key] = property[subparts[0]] + parseInt(subparts[1])
-            }
-            else if (parts[1].includes('*')) {
-              const subparts = parts[1].split('*')
-              result[key] =
-                Math.round(property[subparts[0]] * parseFloat(subparts[1]))
-            }
-            else {
-              result[key] = property[parts[1]]
-            }
+      for (const keyValue of Object.entries(spell.condition.modifiers)) {
+        if (keyValue[0] !== 'status' && typeof keyValue[1] === 'string') {
+          const parts = keyValue[1].includes('*')
+          const mod = parts[0]
+          const subparts = parts[1].split(':')
+
+          let property
+          if (subparts[0] === 'caster') {
+            property = caster
           }
-          else {
-            result[key] = spell.condition[key]
+          else if (subparts[0] === 'target') {
+            property = target
           }
+
+          result[keyValue[0]] =
+            Math.round(parseFloat(mod) * parseFloat(property[subparts[1]]))
+        }
+        else {
+          result[keyValue[0]] = keyValue[1]
         }
       }
 
       await Promise.all([
-        conditionAdd(conditionInstance, result),
-        addFieldsToHash('list:conditions', [conditionInstance], [target.instance]),
+        addFieldsToHash(
+          'list:conditions',
+          [conditionInstance],
+          [target.instance]
+        ),
         addToActiveSet('conditions', conditionInstance),
+        conditionAdd(conditionInstance, result),
         updateHashFieldArray(
           target.instance,
           'add',

@@ -22,7 +22,11 @@ else
     error("invalid command")
   end
 
-  redis.call('HSET', key, field, cjson.encode(array))
-
-  return cjson.encode(array)
+  if table.getn(array) > 0 then
+    redis.call('HSET', key, field, cjson.encode(array))
+    return cjson.encode(array)
+  else
+    redis.call('HSET', key, field, '[]')
+    return '[]'
+  end
 end

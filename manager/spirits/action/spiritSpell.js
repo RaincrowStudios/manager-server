@@ -75,7 +75,17 @@ module.exports = (spirit, target, action) => {
             }
           ),
           informPlayers(
-            [spirit.ownerPlayer],
+            [target.player],
+            {
+              command: 'player_character_spell',
+              action: 'attack',
+              caster: spirit.instance,
+              displayName: spirit.displayName,
+              total: result.total,
+            }
+          ),
+          informPlayers(
+            [spirit.player],
             {
               command: 'player_spirit_action',
               action: spell.id,

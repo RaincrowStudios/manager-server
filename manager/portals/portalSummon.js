@@ -3,6 +3,7 @@ const addObjectToHash = require('../../redis/addObjectToHash')
 const addToActiveSet = require('../../redis/addToActiveSet')
 const addToGeohash = require('../../redis/addToGeohash')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const createMapToken = require('../../utils/createMapToken')
@@ -30,6 +31,9 @@ module.exports = async (portalInstance) => {
       spirit.latitude = portal.latitude
       spirit.longitude = portal.longitude
 
+      const activePortals = await getOneFromHash(portal.owner, 'activePortals')
+      const index = activePortals.indexOf(portalInstance)
+
       await Promise.all([
         addObjectToHash(spiritInstance, spirit),
         addToActiveSet('spirits', spiritInstance),
@@ -46,9 +50,6 @@ module.exports = async (portalInstance) => {
           'activeSpirits',
           spiritInstance
         ),
-      ])
-
-      await Promise.all([
         informNearbyPlayers(
           portal.latitude,
           portal.longitude,
@@ -66,18 +67,25 @@ module.exports = async (portalInstance) => {
           }
         ),
         informPlayers(
-          [spirit.ownerPlayer],
+          [spirit.player],
           {
             command: 'player_spirit_summon',
             instance: spiritInstance,
             displayName: spirit.displayName
           }
-        )
+        ),
+        updateHashFieldArray(
+          portal.owner,
+          'remove',
+          'activePortals',
+          portalInstance,
+          index
+        ),
       ])
       spiritAdd(spiritInstance, spirit)
       console.log({
         event: 'spirit_summoned',
-        player: spirit.ownerPlayer,
+        player: spirit.player,
         character: spirit.owner,
         spirit: spirit.id
       })

@@ -20,7 +20,9 @@ module.exports = (spirit) => {
       const nearInstances = [...nearCharacters, ...nearSpirits]
 
       const nearTargets = await Promise.all(
-        nearInstances.map(instance => getAllFromHash(instance))
+        nearInstances
+        .filter(instance => instance !== spirit.instance && instance !== spirit.owner)
+        .map(instance => getAllFromHash(instance))
       )
 
       const nearEnemeies = nearTargets
@@ -28,12 +30,9 @@ module.exports = (spirit) => {
           target.instance = nearInstances[i]
           return target
         })
-        .filter((target) => {
-          target.coven !== spirit.summonerCoven ||
-          target.summonerCoven !== spirit.summonerCoven
-        })
+        .filter(target => !spirit.coven || target.coven !== spirit.coven)
 
-      if (nearEnemeies.length > 0) {
+      if (nearEnemeies.length) {
         const target =
           nearEnemeies[Math.floor(Math.random() * nearEnemeies.length)]
 

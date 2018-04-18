@@ -1,20 +1,23 @@
 const client = require('./client')
-const scripts = require('../lua/scripts')
 
-module.exports = (instance, xp) => {
+module.exports = (instance, field) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = { message: 'Invalid instance: ' + instance }
+        const err = 'Invalid instance: ' + instance
+        throw err
+      }
+      else if (!field || typeof field !== 'string') {
+        const err = 'Invalid field: ' + field
         throw err
       }
 
-      client.evalsha([scripts.addExperience.sha, 1, instance, xp], (err, result) => {
+      client.hdel([instance, field], (err) => {
         if (err) {
           reject(err)
         }
         else {
-          resolve(JSON.parse(result))
+          resolve(true)
         }
       })
     }

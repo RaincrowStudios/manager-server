@@ -1,15 +1,15 @@
 const timers = require('../../database/timers')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeHash = require('../../redis/removeHash')
+const removeFromHash = require('../../redis/removeFromHash')
 
-module.exports = async (instance) => {
+module.exports = async (conditionInstance) => {
   try {
     await Promise.all([
-      removeFromActiveSet('conditions', instance),
-      removeHash(instance)
+      removeFromActiveSet('conditions', conditionInstance),
+      removeFromHash('list:conditions', conditionInstance)
     ])
 
-    const conditionTimers = timers.by('instance', instance)
+    const conditionTimers = timers.by('instance', conditionInstance)
     if (conditionTimers) {
       clearTimeout(conditionTimers.expireTimer)
       clearTimeout(conditionTimers.triggerTimer)

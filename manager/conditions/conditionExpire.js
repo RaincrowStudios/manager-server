@@ -1,4 +1,4 @@
-const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash = require('../../redis/removeHash')
@@ -6,56 +6,57 @@ const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
 const deleteCondition = require('./deleteCondition')
 
-module.exports = async (instance) => {
+module.exports = async (conditionInstance) => {
   try {
-    const bearer = await getAllFromHash('list:conditions', instance)
+    const bearerInstance =
+      await getOneFromHash('list:conditions', conditionInstance)
 
-    if (bearer) {
+    if (bearerInstance) {
       let player, type, conditions
       [player, type, conditions] =
-        await getFieldsFromHash(bearer, ['player', 'type', 'conditions'])
+        await getFieldsFromHash(bearerInstance, ['player', 'type', 'conditions'])
 
       if (conditions.length > 0) {
-        let conditionToExpire, index
-        for (let i = 0; i < conditions.length; i++) {
-          if (conditions[i].instance === instance) {
-            conditionToExpire = conditions[i]
+        let index
+        const conditionToExpire = conditions.filter((condition, i) => {
+          if (condition.instance === conditionInstance) {
             index = i
+            return true
           }
-        }
+        })[0]
 
         await Promise.all([
           updateHashFieldArray(
-            bearer,
+            bearerInstance,
             'remove',
             'conditions',
             conditionToExpire,
             index
           ),
-          removeFromActiveSet('conditions', instance),
-          removeHash('list:conditions', instance)
+          removeFromActiveSet('conditions', conditionInstance),
+          removeHash('list:conditions', conditionInstance)
         ])
 
         console.log({
           event: 'condition_expire',
-          condition: instance,
-          bearer: bearer
+          condition: conditionInstance,
+          bearer: bearerInstance
         })
 
         if (type !== 'spirit' && !conditionToExpire.hidden) {
-          await deleteCondition(instance)
+          await deleteCondition(conditionInstance)
           await informPlayers(
             [player],
             {
               command: 'player_condition_remove',
-              condition: instance
+              condition: conditionInstance
             }
           )
         }
       }
     }
     else {
-      await deleteCondition(instance)
+      await deleteCondition(conditionInstance)
     }
   }
   catch (err) {

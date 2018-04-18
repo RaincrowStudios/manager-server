@@ -12,5 +12,5 @@ if newXp >= thresholds[nextLevel] then
   redis.call('HMSET', key, 'level', cjson.encode(nextLevel), 'baseEnergy', cjson.encode(baseEnergyByLevel[nextLevel]), 'unlockedSpells', cjson.encode(spellsByLevel[nextLevel]))
   return cjson.encode({newXp, nextLevel, baseEnergyByLevel[level], spellsByLevel[level]})
 else
-  return newXp
+  return cjson.encode(newXp)
 end

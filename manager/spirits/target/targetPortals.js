@@ -14,7 +14,7 @@ module.exports = (spirit, targetCategory) => {
       if (nearPortals.length > 0) {
         if (targetCategory === 'allyPortals') {
           const nearAllyPortals = nearPortals
-            .filter(portal => portal.summonerCoven === spirit.summonerCoven)
+            .filter(portal => portal.coven === spirit.coven)
 
           if (nearAllyPortals.length > 0) {
             const target = nearAllyPortals[
@@ -29,7 +29,7 @@ module.exports = (spirit, targetCategory) => {
         }
         else if (targetCategory === 'enemyPortals') {
           const nearEnemyPortals = nearPortals
-            .filter(portal => portal.summonerCoven !== spirit.summonerCoven)
+            .filter(portal => portal.coven !== spirit.coven)
 
           if (nearEnemyPortals.length > 0) {
             const target = nearEnemyPortals[

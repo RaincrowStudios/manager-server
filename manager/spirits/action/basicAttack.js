@@ -9,7 +9,7 @@ const determineResist = require('./determineResist')
 const determineExperience = require('./determineExperience')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
-module.exports = (instance, spirit, targetInstance, target) => {
+module.exports = (spirit, target) => {
   return new Promise(async (resolve, reject) => {
     try {
       const range = spirit.attack.split('-')
@@ -40,13 +40,11 @@ module.exports = (instance, spirit, targetInstance, target) => {
 
       const result = { total: Math.round(total * -1), critical, resist }
 
-      const spiritExists = await checkKeyExistance(instance)
-      const targetExists = await checkKeyExistance(targetInstance)
+      const spiritExists = await checkKeyExistance(spirit.instance)
+      const targetExists = await checkKeyExistance(target.instance)
 
       if (spiritExists && targetExists) {
-        let targetCurrentEnergy, targetDead
-        [targetCurrentEnergy, targetDead] =
-          await adjustEnergy(targetInstance, result.total)
+        const targetCurrentEnergy = await adjustEnergy(target.instance, result.total)
 
         const xpGain = 5//determineXP()
 
@@ -57,7 +55,6 @@ module.exports = (instance, spirit, targetInstance, target) => {
         //  xp = award
       //  }
 
-
         await Promise.all([
           informNearbyPlayers(
             spirit.latitude,
@@ -65,17 +62,27 @@ module.exports = (instance, spirit, targetInstance, target) => {
             {
               command: 'map_spirit_action',
               action: 'attack',
-              instance: instance,
-              target: targetInstance,
+              instance: spirit.instance,
+              target: target.instance,
               total: result.total,
             }
           ),
           informPlayers(
-            [spirit.ownerPlayer],
+            [target.player],
+            {
+              command: 'player_character_hit',
+              action: 'attack',
+              caster: spirit.instance,
+              displayName: spirit.displayName,
+              total: result.total,
+            }
+          ),
+          informPlayers(
+            [spirit.player],
             {
               command: 'player_spirit_action',
               action: 'attack',
-              instance: instance,
+              instance: spirit.instance,
               displayName: spirit.displayName,
               target: target.displayName,
               targetType: target.type,
@@ -85,19 +92,19 @@ module.exports = (instance, spirit, targetInstance, target) => {
             }
           ),
           addFieldsToHash(
-            instance,
+            spirit.instance,
             ['previousTarget'],
-            [{targetInstance, type: 'spirit' }]
+            [{ instance: target.instance, type: 'spirit' }]
           ),
           addFieldsToHash(
-            targetInstance,
+            target.instance,
             ['lastAttackedBy'],
-            [{ instance, type: 'spirit' }]
+            [{ instance: spirit.instance, type: 'spirit' }]
           )
         ])
 
-        if (targetDead) {
-          resolveTargetDestruction(targetInstance, target, instance)
+        if (targetCurrentEnergy <= 0) {
+          resolveTargetDestruction(target, spirit.instance)
         }
       }
       resolve(true)

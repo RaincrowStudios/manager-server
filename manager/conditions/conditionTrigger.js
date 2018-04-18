@@ -21,27 +21,39 @@ async function conditionTrigger (conditionInstance) {
           bearerInstance, ['player', 'type', 'conditions']
         )
 
-      if (conditions.length > 0) {
+      if (conditions.length) {
         let index
         const conditionToUpdate = conditions.filter((condition, i) => {
           if (condition.instance === conditionInstance) {
             index = i
             return true
           }
-        })
+        })[0]
 
         if (conditionToUpdate) {
-          const spell =
-            await getOneFromHash('list:spells', conditionToUpdate.spell)
+          let spellId, conditionIndex
+          [spellId, conditionIndex] = conditionToUpdate.id.split('-')
+
+          const spell = await getOneFromHash('list:spells', spellId)
           const newCondition = conditionToUpdate
-          const total = resolveCondition(spell.condition, newCondition)
+          const total = resolveCondition(
+            spell.conditions[conditionIndex],
+            newCondition
+          )
+          const bearerNewEnergy = await adjustEnergy(bearerInstance, total)
 
-          const bearerCurrentEnergy = await adjustEnergy(bearerInstance, total)
+          console.log({
+            event: 'condition_triggered',
+            player: player,
+            character: bearerInstance,
+            condition: newCondition.id,
+            total: total,
+          })
 
-          if (bearerCurrentEnergy <= 0 && type === 'spirits') {
+          if (bearerNewEnergy <= 0 && type === 'spirits') {
             await spiritDeath(bearerInstance, newCondition.caster)
           }
-          else if (bearerCurrentEnergy <= 0) {
+          else if (bearerNewEnergy <= 0) {
             await Promise.all([
               informPlayers(
                 [player],
@@ -52,26 +64,26 @@ async function conditionTrigger (conditionInstance) {
                 }
               ),
               deleteCondition(conditionInstance)
-              console.log({
-                event: 'condition_triggered',
-                player: player,
-                character: bearerInstance,
-                condition: newCondition.spell,
-                total: total,
-              })
             ])
           }
-          else if (type !== 'spirits') {
-            await Promise.all([
-              informPlayers(
-                [bearerInstance],
-                {
-                  command: 'player_condition_trigger',
-                  condition: newCondition.spell,
-                  total: total,
-                  energy: bearerCurrentEnergy
-                }
-              ),
+          else {
+            let update = []
+            if (type !== 'spirits') {
+              update.push(
+                informPlayers(
+                  [player],
+                  {
+                    command: 'player_condition_trigger',
+                    condition: conditionInstance,
+                    displayName: spell.displayName,
+                    total: total,
+                    energy: bearerNewEnergy
+                  }
+                )
+              )
+            }
+
+            update.push(
               updateHashFieldArray(
                 bearerInstance,
                 'replace',
@@ -79,16 +91,10 @@ async function conditionTrigger (conditionInstance) {
                 conditionToUpdate,
                 index
               )
-            ])
-            console.log({
-              event: 'condition_triggered',
-              player: player,
-              character: bearerInstance,
-              condition: newCondition.spell,
-              total: total,
-            })
-          }
-          else {
+            )
+
+            await Promise.all(update)
+
             newCondition.triggerOn =
               currentTime + (newCondition.tick * 60000)
 
@@ -97,14 +103,6 @@ async function conditionTrigger (conditionInstance) {
                 conditionTrigger(conditionInstance),
                 newCondition.tick * 60000
               )
-
-            await updateHashFieldArray(
-              bearerInstance,
-              'replace',
-              'conditions',
-              conditionToUpdate,
-              index
-            )
 
             let conditionTimer = timers.by('instance', conditionInstance)
             if (conditionTimer) {

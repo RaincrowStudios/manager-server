@@ -1,6 +1,6 @@
 const timers = require('../database/timers')
 const getActiveSet = require('../redis/getActiveSet')
-const getAllFromHash = require('../redis/getAllFromHash')
+const getOneFromHash = require('../redis/getOneFromHash')
 const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
 const deleteCondition = require('../manager/conditions/deleteCondition')
@@ -8,11 +8,19 @@ const deleteCondition = require('../manager/conditions/deleteCondition')
 async function initializeConditions() {
   try {
     const conditions = await getActiveSet('conditions')
+
     if (conditions.length > 0) {
       for (let i = 0; i < conditions.length; i++) {
         if (conditions[i]) {
           const currentTime = Date.now()
-          const condition = await getAllFromHash(conditions[i])
+          const bearerInstance =
+            await getOneFromHash('list:conditions', conditions[i])
+
+          const conditionsArray =
+            await getOneFromHash(bearerInstance, 'conditions')
+
+          const condition = conditionsArray
+            .filter(condition => condition.instance === conditions[i])[0]
 
           if (condition) {
             if (condition.expiresOn > currentTime) {
