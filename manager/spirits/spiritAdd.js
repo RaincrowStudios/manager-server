@@ -15,13 +15,13 @@ module.exports = (spiritInstance, spirit) => {
   const moveTimer =
     setTimeout(() =>
       spiritMove(spiritInstance),
-      0
+      spirit.moveOn - currentTime
     )
 
   const actionTimer =
     setTimeout(() =>
       spiritAction(spiritInstance),
-      0
+      spirit.actionOn - currentTime
     )
 
   timers.insert({spiritInstance, expireTimer, moveTimer, actionTimer})

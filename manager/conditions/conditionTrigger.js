@@ -31,15 +31,9 @@ async function conditionTrigger (conditionInstance) {
         })[0]
 
         if (conditionToUpdate) {
-          let spellId, conditionIndex
-          [spellId, conditionIndex] = conditionToUpdate.id.split('-')
-
-          const spell = await getOneFromHash('list:spells', spellId)
+          const spell = await getOneFromHash('list:spells', conditionToUpdate.id)
           const newCondition = conditionToUpdate
-          const total = resolveCondition(
-            spell.conditions[conditionIndex],
-            newCondition
-          )
+          const total = resolveCondition(spell.condition, newCondition)
           const bearerNewEnergy = await adjustEnergy(bearerInstance, total)
 
           console.log({
