@@ -5,6 +5,7 @@ const spiritAction = require('./spiritAction')
 
 module.exports = (spiritInstance, spirit) => {
   const currentTime = Date.now()
+  const timer = {instance: spiritInstance}
 
   const expireTimer =
     setTimeout(() =>
@@ -12,19 +13,25 @@ module.exports = (spiritInstance, spirit) => {
       spirit.expiresOn - currentTime
     )
 
+  timer.expireTimer = expireTimer
+
+
   const moveTimer =
     setTimeout(() =>
       spiritMove(spiritInstance),
       spirit.moveOn - currentTime
     )
 
+  timer.moveTimer = moveTimer
+
   const actionTimer =
     setTimeout(() =>
       spiritAction(spiritInstance),
       spirit.actionOn - currentTime
     )
+    
+  timer.actionTimer = actionTimer
 
-  timers.insert({spiritInstance, expireTimer, moveTimer, actionTimer})
-
+  timers.insert(timer)
   return true
 }

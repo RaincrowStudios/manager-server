@@ -4,12 +4,10 @@ module.exports = (instance, fields) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!fields || !Array.isArray(fields)) {
-        const err = 'Invalid fields: ' + fields
-        throw err
+        throw new Error('Invalid fields: ' + fields)
       }
 
       client.hmget([instance, ...fields], (err, results) => {

@@ -5,8 +5,7 @@ module.exports = (instance, xp) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = { message: 'Invalid instance: ' + instance }
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
 
       client.evalsha([scripts.addExperience.sha, 1, instance, xp], (err, result) => {

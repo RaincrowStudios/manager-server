@@ -5,12 +5,10 @@ module.exports = (instance, command, field, value, index = 0) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!field || typeof field !== 'string') {
-        const err = 'Invalid field: ' + field
-        throw err
+        throw new Error('Invalid field: ' + field)
       }
 
       client.evalsha(

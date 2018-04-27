@@ -4,21 +4,21 @@ module.exports = (instance) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
 
       client.multi()
-      .hgetall([instance])
-      .del([instance])
-      .exec((err, results) => {
-        if (err) {
-          reject(err)
+        .hgetall([instance])
+        .del([instance])
+        .exec((err, results) => {
+          if (err) {
+            reject(err)
+          }
+          else {
+            resolve(results[0])
+          }
         }
-        else {
-          resolve(results[0])
-        }
-      })
+      )
     }
     catch (err) {
       reject(err)

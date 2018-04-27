@@ -1,23 +1,17 @@
 const timers = require('../database/timers')
 const getActiveSet = require('../redis/getActiveSet')
-const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const getOneFromHash = require('../redis/getOneFromHash')
 const immunityExpire = require('../manager/immunities/immunityExpire')
 
 async function initializeImmunities() {
   try {
     const immunities = await getActiveSet('immunities')
-    if (immunities.length > 0) {
+
+    if (immunities.length) {
       for (let i = 0; i < immunities.length; i++) {
         if (immunities[i]) {
           const currentTime = Date.now()
-          const characterId = await getFieldsFromHash(
-            immunities[i],
-            ['bearer']
-          )
-
-          const immunity =
-            await getFieldsFromHash(characterId, ['immunityList'])
-            .filter(immunity => immunity.instance === immunities[i])[0]
+          const immunity = await getOneFromHash('list:immunities', immunities[i])
 
           if (immunity) {
             if (immunity.expiresOn > currentTime) {
@@ -34,19 +28,13 @@ async function initializeImmunities() {
                 timers.update(previousTimers)
               }
               else {
-                timers.insert({
-                  instance: immunities[i],
-                  expireTimer
-                })
+                timers.insert({instance: immunities[i], expireTimer})
               }
             }
             else {
               immunityExpire(immunities[i])
             }
           }
-        }
-        else {
-          deleteCondition(immunities[i])
         }
       }
     }

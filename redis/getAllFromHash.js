@@ -4,14 +4,12 @@ module.exports = (instance) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
 
       client.hgetall([instance], (err, results) => {
         if (err) {
-          err.code = '5300'
-          reject(err)
+          throw new Error('5300')
         }
         else {
           if (!results) {

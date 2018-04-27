@@ -4,12 +4,10 @@ module.exports = (category, member, radius, count = 0) => {
   return new Promise((resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
-        const err = 'Invalid category: ' + category
-        throw err
+        throw new Error('Invalid category: ' + category)
       }
       else if (!member || typeof member !== 'string') {
-        const err = 'Invalid member: ' + member
-        throw err
+        throw new Error('Invalid member: ' + member)
       }
 
       let query = ['geo:' + category, member, radius, 'km']

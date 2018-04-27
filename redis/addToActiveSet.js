@@ -4,12 +4,10 @@ module.exports = (category, instance) => {
   return new Promise((resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
-        const err = 'Invalid category: ' + category
-        throw err
+        throw new Error('Invalid category: ' + category)
       }
       else if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
 
       client.zadd(['set:active:' + category, Date.now(), instance], (err) => {

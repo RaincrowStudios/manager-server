@@ -4,20 +4,16 @@ module.exports = (instance, fields, values) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!fields || !Array.isArray(fields)) {
-        const err = 'Invalid fields: ' + fields
-        throw err
+        throw new Error('Invalid fields: ' + fields)
       }
       else if (!values || !Array.isArray(values)) {
-        const err = 'Invalid values: ' + values
-        throw err
+        throw new Error('Invalid values: ' + values)
       }
       else if (fields.length !== values.length) {
-        const err = 'Fields and values must be the same length'
-        throw err
+        throw new Error('Fields and values must be the same length')
       }
 
       const fieldsValues = []

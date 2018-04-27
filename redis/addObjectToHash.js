@@ -4,12 +4,10 @@ module.exports = (instance, object) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!object || typeof object !== 'object') {
-        const err = 'Invalid object: ' + object
-        throw err
+        throw new Error('Invalid object: ' + object)
       }
 
       const fieldsValues = []

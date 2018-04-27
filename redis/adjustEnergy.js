@@ -5,12 +5,10 @@ module.exports = (instance, energy) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!energy || typeof energy !== 'number') {
-        const err = 'Invalid energy: ' + energy
-        throw err
+        throw new Error('Invalid energy: ' + energy)
       }
 
 

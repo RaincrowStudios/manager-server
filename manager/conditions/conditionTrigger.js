@@ -90,12 +90,12 @@ async function conditionTrigger (conditionInstance) {
             await Promise.all(update)
 
             newCondition.triggerOn =
-              currentTime + (newCondition.tick * 60000)
+              currentTime + (newCondition.tick * 1000)
 
             const newTimer =
               setTimeout(() =>
                 conditionTrigger(conditionInstance),
-                newCondition.tick * 60000
+                newCondition.tick * 1000
               )
 
             let conditionTimer = timers.by('instance', conditionInstance)

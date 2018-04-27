@@ -4,26 +4,26 @@ module.exports = (category, instance) => {
   return new Promise((resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
-        const err = 'Invalid category: ' + category
-        throw err
+        throw new Error('Invalid category: ' + category)
       }
       else if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
 
-      client.multi()
-      .zrem(['geo:' + category, instance])
-      .zrem(['set:active:' + category, instance])
-      .del([instance])
-      .exec(err => {
-        if (err) {
-          reject(err)
+      client
+        .multi()
+        .zrem(['geo:' + category, instance])
+        .zrem(['set:active:' + category, instance])
+        .del([instance])
+        .exec(err => {
+          if (err) {
+            reject(err)
+          }
+          else {
+            resolve(true)
+          }
         }
-        else {
-          resolve(true)
-        }
-      })
+      )
     }
     catch (err) {
       reject(err)

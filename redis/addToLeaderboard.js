@@ -4,16 +4,13 @@ module.exports = (category, region, instance, score) => {
   return new Promise((resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
-        const err = 'Invalid category: ' + category
-        throw err
+        throw new Error('Invalid category: ' + category)
       }
       else if (!region || typeof region !== 'string') {
-        const err = 'Invalid region: ' + region
-        throw err
+        throw new Error('Invalid region: ' + region)
       }
       else if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
 
       client.zadd(

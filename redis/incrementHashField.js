@@ -4,16 +4,13 @@ module.exports = (instance, field, increment) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!field || typeof field !== 'string') {
-        const err = 'Invalid field: ' + field
-        throw err
+        throw new Error('Invalid field: ' + field)
       }
       else if (!increment || typeof increment !== 'number') {
-        const err = 'Invalid increment: ' + increment
-        throw err
+        throw new Error('Invalid increment: ' + increment)
       }
 
       client.hincrby([instance, field, increment], (err, result) => {

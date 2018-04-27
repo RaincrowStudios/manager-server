@@ -4,13 +4,11 @@ module.exports = (category, latitude, longitude, radius, count = 0) => {
 	return new Promise((resolve, reject) => {
 		try {
 			if (!category || typeof category !== 'string') {
-				const err = 'Invalid category: ' + category
-				throw err
+				throw new Error('Invalid category: ' + category)
 			}
 
 			else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
-				const err = 'Invalid coords: ' + latitude + ', ' + longitude
-				throw err
+				throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
 			}
 
 			let query = ['geo:' + category, longitude, latitude, radius, 'km']

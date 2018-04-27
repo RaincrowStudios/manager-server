@@ -1,7 +1,7 @@
 const getOneFromHash = require('../../redis/getOneFromHash')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeHash = require('../../redis/removeHash')
+const removeFromHash = require('../../redis/removeFromHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
 const deleteCondition = require('./deleteCondition')
@@ -16,7 +16,7 @@ module.exports = async (conditionInstance) => {
       [player, type, conditions] =
         await getFieldsFromHash(bearerInstance, ['player', 'type', 'conditions'])
 
-      if (conditions.length > 0) {
+      if (conditions.length) {
         let index
         const conditionToExpire = conditions.filter((condition, i) => {
           if (condition.instance === conditionInstance) {
@@ -34,7 +34,7 @@ module.exports = async (conditionInstance) => {
             index
           ),
           removeFromActiveSet('conditions', conditionInstance),
-          removeHash('list:conditions', conditionInstance)
+          removeFromHash('list:conditions', conditionInstance)
         ])
 
         console.log({

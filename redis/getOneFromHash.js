@@ -4,18 +4,15 @@ module.exports = (instance, field) => {
   return new Promise((resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
-        const err = 'Invalid instance: ' + instance
-        throw err
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!field || typeof field !== 'string') {
-        const err = 'Invalid field: ' + field
-        throw err
+        throw new Error('Invalid field: ' + field)
       }
 
       client.hget([instance, field], (err, results) => {
         if (err) {
-          err.code = '5300'
-          reject(err)
+          throw new Error('5300')
         }
         else {
           resolve(JSON.parse(results))
