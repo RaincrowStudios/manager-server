@@ -22,7 +22,7 @@ module.exports = (spirit, target, action) => {
         let result = {}
         let targetCurrentEnergy
         if (spell.special) {
-          //spiritSpecialSpell()
+          spiritSpecialSpell()
         }
         else {
           if (spell.range.includes('#')) {
@@ -110,7 +110,7 @@ module.exports = (spirit, target, action) => {
           )
         ])
 
-        if (targetCurrentEnergy > 0 && target.type === 'witch') {
+        if (target.type === 'witch') {
           await informPlayers(
             [target.player],
             {
@@ -124,7 +124,8 @@ module.exports = (spirit, target, action) => {
             }
           )
         }
-        else if (targetCurrentEnergy <= 0) {
+
+        if (targetCurrentEnergy <= 0) {
           resolveTargetDestruction(target, spirit)
         }
       }

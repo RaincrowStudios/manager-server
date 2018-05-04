@@ -1,7 +1,7 @@
 const timers = require('../../database/timers')
-const getFieldsFromHash = require('../redis/getFieldsFromHash')
-const informNearbyPlayers = require('../redis/informNearbyPlayers')
-const removeFromAll = require('../redis/removeFromAll')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
+const removeFromAll = require('../../redis/removeFromAll')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 
 module.exports = async (portalInstance) => {
   try {
@@ -21,7 +21,10 @@ module.exports = async (portalInstance) => {
     ])
 
     const portalTimers = timers.by('instance', portalInstance)
-    timers.remove(portalTimers)
+    if (portalTimers) {
+      clearTimeout(portalTimers.summonTimer)
+      timers.remove(portalTimers)
+    }
   }
   catch (err) {
     console.error(err)

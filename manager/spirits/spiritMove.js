@@ -9,32 +9,41 @@ async function spiritMove(spiritInstance) {
     const instanceInfo = await getAllFromHash(spiritInstance)
 
     if (instanceInfo) {
-      const spititInfo = await getOneFromHash('list:spirits', instanceInfo.id)
-      const spirit = Object.assign({}, spititInfo, instanceInfo)
+      const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
+
+      const spirit = Object.assign(
+        {}, spiritInfo, instanceInfo, {instance: spiritInstance}
+      )
+
+      if (
+        !spirit.conditions.map(condition => condition.status).includes('bound')
+      ) {
+        await resolveSpiritMove(spirit)
+      }
 
       const currentTime = Date.now()
-      const range = spirit.moveFreq.split('-')
-      const min = parseInt(range[0], 10)
-      const max = parseInt(range[1], 10)
 
-      const newMoveOn = currentTime +
-        (Math.floor(Math.random() * (max - min + 1)) + min) * 1000
+      let newMoveOn
+      if (spirit.moveFreq.includes('-')) {
+        const range = spirit.moveFreq.split('-')
+        const min = parseInt(range[0], 10)
+        const max = parseInt(range[1], 10)
 
-      const boundCheck =
-        spirit.conditions.filter(condition => condition.status === 'bound')
-
-      if (boundCheck.length <= 0) {
-        await resolveSpiritMove(spiritInstance, spirit)
+        newMoveOn = currentTime +
+          ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
       }
+      else {
+        newMoveOn = parseInt(spirit.moveFreq, 10)
+      }
+
+      await addFieldsToHash(spirit.instance, ['moveOn'], [newMoveOn])
 
       const newTimer =
         setTimeout(() =>
-          spiritMove(spiritInstance), newMoveOn - currentTime
+          spiritMove(spirit.instance), newMoveOn - currentTime
         )
 
-      await addFieldsToHash(spiritInstance, ['moveOn'], [newMoveOn])
-
-      let spiritTimers = timers.by('instance', spiritInstance)
+      const spiritTimers = timers.by('instance', spirit.instance)
       if (spiritTimers) {
         spiritTimers.moveTimer = newTimer
         timers.update(spiritTimers)

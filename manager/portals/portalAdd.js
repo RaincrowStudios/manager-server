@@ -10,8 +10,8 @@ module.exports = (portalInstance, portal) => {
         portalSummon(portalInstance), portal.summonOn - currentTime
       )
 
-    console.log('portal added, summoning in %d seconds...', (portal.summonOn - currentTime) / 1000)
     timers.insert({portalInstance, summonTimer})
+    return true
   }
   catch (err) {
     console.error(err)

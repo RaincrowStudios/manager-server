@@ -22,7 +22,8 @@ module.exports = async (portalInstance) => {
       const spirit = portal.spirit
 
       spirit.createdOn = currentTime
-      spirit.expiresOn = currentTime + spirit.duration
+      spirit.expireOn = spirit.duration > 0 ?
+        currentTime + (spirit.duration * 60000) : 0
       spirit.moveOn = currentTime
       spirit.actionOn = currentTime
 
@@ -90,6 +91,7 @@ module.exports = async (portalInstance) => {
         spirit: spirit.id
       })
     }
+    return true
   }
   catch (err) {
     console.error(err)

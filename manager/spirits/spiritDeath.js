@@ -15,47 +15,53 @@ module.exports = (spiritInstance, killer) => {
 
       if (instanceInfo) {
         const spititInfo = await getOneFromHash('list:spirits', instanceInfo.id)
-        const spirit = Object.assign({}, spititInfo, instanceInfo)
+        const spirit = Object.assign(
+          {}, spititInfo, instanceInfo, {instance: spiritInstance}
+        )
 
-        const activeSpirits = await getOneFromHash(spirit.owner, 'activeSpirits')
-        const index = activeSpirits.indexOf(spiritInstance)
+        const activeSpirits =
+          await getOneFromHash(spirit.owner, 'activeSpirits')
+        const index = activeSpirits.indexOf(spirit.instance)
 
         if (spirit.drop.length) {
           await addSpiritDrop(spirit)
         }
 
-        await deleteAllConditions(spirit.conditions)
-
         await Promise.all([
+          deleteAllConditions(spirit.conditions),
           informNearbyPlayers(
             spirit.latitude,
             spirit.longitude,
             {
               command: 'map_spirit_death',
-              instance: spiritInstance,
+              instance: spirit.instance,
             }
           ),
           informPlayers(
             [spirit.player],
             {
               command: 'player_spirit_death',
-              instance: spiritInstance,
+              instance: spirit.instance,
               displayName: spirit.displayName,
-              killer: killer.displayName,
-              owner: killer.ownerDisplay
+              killer: {
+                displayName: killer.displayName,
+                type: killer.type,
+                degree: killer.degree,
+                owner: killer.type === 'spirit' ? killer.ownerDisplay : false
+              }
             }
           ),
-          removeFromAll('spirits', spiritInstance),
+          removeFromAll('spirits', spirit.instance),
           updateHashFieldArray(
             spirit.owner,
             'remove',
             'activeSpirits',
-            spiritInstance,
+            spirit.instance,
             index
           ),
         ])
-
       }
+
       const spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {
         clearTimeout(spiritTimers.expireTimer)

@@ -10,9 +10,8 @@ module.exports = (actions) => {
       if (roll < weight) {
         return actions[i].id
       }
-      else if (i === actions.length - 1) {
-        return actions[i].id
-      }
     }
+    
+    return false
   }
 }

@@ -25,7 +25,7 @@ module.exports = async (conditionInstance) => {
           }
         })[0]
 
-        await Promise.all([
+        const update = [
           updateHashFieldArray(
             bearerInstance,
             'remove',
@@ -35,7 +35,20 @@ module.exports = async (conditionInstance) => {
           ),
           removeFromActiveSet('conditions', conditionInstance),
           removeFromHash('list:conditions', conditionInstance)
-        ])
+        ]
+
+        if (type !== 'spirit' && !conditionToExpire.hidden) {
+          update.push(
+            deleteCondition(conditionInstance),
+            informPlayers(
+              [player],
+              {
+                command: 'player_condition_remove',
+                condition: conditionInstance
+              }
+            )
+          )
+        }
 
         console.log({
           event: 'condition_expire',
@@ -43,16 +56,7 @@ module.exports = async (conditionInstance) => {
           bearer: bearerInstance
         })
 
-        if (type !== 'spirit' && !conditionToExpire.hidden) {
-          await deleteCondition(conditionInstance)
-          await informPlayers(
-            [player],
-            {
-              command: 'player_condition_remove',
-              condition: conditionInstance
-            }
-          )
-        }
+        await Promise.all(update)
       }
     }
     else {

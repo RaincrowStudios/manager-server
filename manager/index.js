@@ -5,6 +5,8 @@ const conditionAdd = require('./conditions/conditionAdd')
 const immunityAdd = require('./immunities/immunityAdd')
 const portalAdd = require('./portals/portalAdd')
 const riftAdd = require('./rifts/riftAdd')
+const spiritAdd = require('./spirits/spiritAdd')
+const spiritDeath = require('./spirits/spiritDeath')
 
 const addTimers = {
   collectible: collectibleAdd,
@@ -13,6 +15,11 @@ const addTimers = {
   immunity: immunityAdd,
   portal: portalAdd,
   rift: riftAdd,
+  spirit: spiritAdd
+}
+
+const deathTimers = {
+  spirit: spiritDeath
 }
 
 async function manager(message) {
@@ -33,9 +40,13 @@ async function manager(message) {
       case 'add':
         addTimers[message.type](message.instance, message[message.type])
         break
+      case 'death':
+        deathTimers[message.type](message.instance, message.killer)
+        break
       default:
         break
     }
+    return true
   }
   catch (err) {
     console.error(err)

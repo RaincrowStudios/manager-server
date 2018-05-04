@@ -2,7 +2,7 @@ const timers = require('../../database/timers')
 const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
-const resolveSpiritAction = require('./resolveSpiritAction')
+const resolveSpiritAction = require('./action/resolveSpiritAction')
 
 async function spiritAction(spiritInstance) {
   try {
@@ -10,31 +10,42 @@ async function spiritAction(spiritInstance) {
 
     if (instanceInfo) {
       const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
-      const spirit = Object.assign({}, spiritInfo, instanceInfo)
-      spirit.instance = spiritInstance
-      const currentTime = Date.now()
-      const range = spirit.actionFreq.split('-')
-      const min = parseInt(range[0], 10)
-      const max = parseInt(range[1], 10)
 
-      const newActionOn = currentTime +
-        (Math.floor(Math.random() * (max - min + 1)) + min) * 1000
+      const spirit = Object.assign(
+        {}, spiritInfo, instanceInfo, {instance: spiritInstance}
+      )
 
-      const silencedCheck =
-        spirit.conditions.filter(condition => condition.status === 'silenced')
-
-      if (silencedCheck.length <= 0) {
+      if (
+        !spirit.conditions
+          .map(condition => condition.status)
+          .includes('silenced')
+      ) {
         await resolveSpiritAction(spirit)
       }
 
+      const currentTime = Date.now()
+
+      let newActionOn
+      if (spirit.actionFreq.includes('-')) {
+        const range = spirit.actionFreq.split('-')
+        const min = parseInt(range[0], 10)
+        const max = parseInt(range[1], 10)
+
+        newActionOn = currentTime +
+          ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
+      }
+      else {
+        newActionOn = parseInt(spirit.actionFreq, 10)
+      }
+
+      await addFieldsToHash(spirit.instance, ['actionOn'], [newActionOn])
+
       const newTimer =
         setTimeout(() =>
-          spiritAction(spiritInstance), newActionOn - currentTime
+          spiritAction(spirit.instance), newActionOn - currentTime
         )
 
-      await addFieldsToHash(spiritInstance, ['actionOn'], [newActionOn])
-
-      let spiritTimers = timers.by('instance', spiritInstance)
+      let spiritTimers = timers.by('instance', spirit.instance)
       if (spiritTimers) {
         spiritTimers.actionTimer = newTimer
         timers.update(spiritTimers)

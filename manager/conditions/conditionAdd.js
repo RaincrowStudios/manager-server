@@ -6,7 +6,7 @@ module.exports = (conditionInstance, condition) => {
   try {
     const currentTime = Date.now()
     const timer = {instance: conditionInstance}
-    console.log('adding condition')
+
     const expireTimer =
       setTimeout(() =>
         conditionExpire(conditionInstance),

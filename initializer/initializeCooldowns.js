@@ -3,12 +3,10 @@ const getActiveSet = require('../redis/getActiveSet')
 const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const cooldownExpire = require('../manager/cooldowns/cooldownExpire')
 
-const getAllFromHash = require('../redis/getAllFromHash')
-
 async function initializeCooldowns() {
   try {
     const cooldowns = await getActiveSet('cooldowns')
-    console.log(await getAllFromHash('list:cooldowns'))
+
     if (cooldowns.length) {
       for (let i = 0; i < cooldowns.length; i++) {
         const currentTime = Date.now()

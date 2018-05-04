@@ -6,10 +6,12 @@ const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 module.exports = async (immunityInstance) => {
   try {
     const immunity = await getOneFromHash('list:immunities', immunityInstance)
+
     if (immunity) {
-      console.log('Expiring immunity: %s', immunityInstance)
       const immunityList = await getOneFromHash(immunity.bearer, 'immunityList')
-      const index = immunityList.map(item => item.caster).indexOf(immunity.caster)
+      const index = immunityList
+        .map(item => item.caster)
+        .indexOf(immunity.caster)
 
       await Promise.all([
         removeFromActiveSet('immunities', immunityInstance),
