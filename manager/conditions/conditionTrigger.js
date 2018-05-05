@@ -15,8 +15,7 @@ async function conditionTrigger (conditionInstance) {
       await getOneFromHash('list:conditions', conditionInstance)
 
     if (bearerInstance) {
-      let player, type, conditions
-      [player, type, conditions] =
+      let [player, type, conditions] =
         await getFieldsFromHash(
           bearerInstance, ['player', 'type', 'conditions']
         )
@@ -32,6 +31,11 @@ async function conditionTrigger (conditionInstance) {
 
         if (conditionToUpdate) {
           const spell = await getOneFromHash('list:spells', conditionToUpdate.id)
+          let [killerDisplayName, killerType, killerDegree] =
+            await getFieldsFromHash(
+              conditionToUpdate.caster, ['displayName', 'type', 'degree']
+            )
+
           const newCondition = conditionToUpdate
           const total = resolveCondition(spell.condition, newCondition)
           const bearerNewEnergy = await adjustEnergy(bearerInstance, total)
@@ -40,7 +44,7 @@ async function conditionTrigger (conditionInstance) {
             event: 'condition_triggered',
             player: player,
             character: bearerInstance,
-            condition: newCondition.id,
+            condition: newCondition.spell,
             total: total,
           })
 
@@ -52,9 +56,11 @@ async function conditionTrigger (conditionInstance) {
               informPlayers(
                 [player],
                 {
-                  command: 'player_death_condition',
-                  condition: spell.displayName,
-                  caster: newCondition.caster
+                  command: 'character_condition_death',
+                  killer: killerDisplayName,
+                  type: killerType,
+                  degree: killerDegree,
+                  spell: spell.displayName
                 }
               ),
               deleteCondition(conditionInstance)
@@ -67,9 +73,9 @@ async function conditionTrigger (conditionInstance) {
                 informPlayers(
                   [player],
                   {
-                    command: 'player_condition_trigger',
+                    command: 'character_condition_trigger',
                     condition: conditionInstance,
-                    displayName: spell.displayName,
+                    spell: spell.displayName,
                     total: total,
                     energy: bearerNewEnergy
                   }

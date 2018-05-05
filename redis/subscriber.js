@@ -6,7 +6,7 @@ const redisConfigJSON =
     fs.readFileSync('redis-key/keys.json')
 const redisConfig = JSON.parse(redisConfigJSON)
 
-const manager = require('../manager')
+const manager = require('../manager/manager')
 
 const subscriber = redis.createClient(
   redisConfig.redisPort,

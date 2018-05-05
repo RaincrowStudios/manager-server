@@ -21,7 +21,7 @@ module.exports = (caster, target, spell) => {
         else {
           const parts = spell.condition.duration.split('*')
           const mod = parts[0]
-          const subparts = parts[1].includes(':')
+          const subparts = parts[1].split(':')
 
           let property
           if (subparts[0] === 'caster') {
@@ -42,11 +42,12 @@ module.exports = (caster, target, spell) => {
       duration = parseInt(duration, 10)
 
       let result = {
-        instance: conditionInstance,
         id: spell.id,
-        caster: caster.displayName,
+        displayName: spell.displayName,
+        instance: conditionInstance,
+        caster: caster.instance,
         createdOn: currentTime,
-        expiresOn: currentTime + (duration * 60000)
+        expiresOn: currentTime + (duration * 1000)
       }
 
       if (spell.condition.hidden) {
@@ -54,33 +55,67 @@ module.exports = (caster, target, spell) => {
       }
 
       if (spell.condition.tick) {
-        result.triggerOn = currentTime + (spell.condition.tick * 60000)
+        result.triggerOn = currentTime + (spell.condition.tick * 1000)
         result.tick = spell.condition.tick
       }
 
-      for (const keyValue of Object.entries(spell.condition.modifiers)) {
-        if (keyValue[0] !== 'status' && typeof keyValue[1] === 'string') {
-          const parts = keyValue[1].includes('*')
-          const mod = parts[0]
-          const subparts = parts[1].split(':')
+      for (const modifier of spell.condition.modifiers) {
+        for (const keyValue of Object.entries(modifier)) {
+          if (keyValue[0] !== 'status' && typeof keyValue[1] === 'string') {
+            const parts = keyValue[1].split('*')
+            const mod = parts[0]
+            const subparts = parts[1].split(':')
 
-          let property
-          if (subparts[0] === 'caster') {
-            property = caster
-          }
-          else if (subparts[0] === 'target') {
-            property = target
-          }
+            let property
+            if (subparts[0] === 'caster') {
+              property = caster
+            }
+            else if (subparts[0] === 'target') {
+              property = target
+            }
 
-          result[keyValue[0]] =
-            Math.round(parseFloat(mod) * parseFloat(property[subparts[1]]))
-        }
-        else {
-          result[keyValue[0]] = keyValue[1]
+            result[keyValue[0]] = mod * property[subparts[1]]
+          }
+          else {
+            result[keyValue[0]] = keyValue[1]
+          }
         }
       }
 
-      await Promise.all([
+      let indexes = []
+      const oldCondition = target.conditions.filter((condition, i) => {
+        if (spell.condition.id === spell.id) {
+          indexes.push(i)
+          return true
+        }
+        else {
+          return false
+        }
+      })
+
+      if (
+        (oldCondition.length && !spell.condition.stackable) ||
+        (spell.condition.stackable && oldCondition.length >= spell.condition.stackable)
+      ) {
+        await Promise.all([
+          informManager(
+            {
+              command: 'remove',
+              type: 'condition',
+              instance: oldCondition[0].instance,
+            }
+          ),
+          updateHashFieldArray(
+            target.instance,
+            'remove',
+            'conditions',
+            result,
+            indexes[0]
+          )
+        ])
+      }
+
+      const update = [
         addFieldsToHash(
           'list:conditions',
           [conditionInstance],
@@ -94,9 +129,29 @@ module.exports = (caster, target, spell) => {
           'conditions',
           result
         )
-      ])
+      ]
 
-      resolve(true)
+      if (!spell.condition.hidden) {
+        update.push(
+          informPlayers(
+            [target.player],
+            {
+              command: 'character_condition_add',
+              condition: {
+                instance: result.instance,
+                id: result.id,
+                displayName: result.displayName,
+                caster: caster.displayName,
+                expiresOn: result.expiresOn
+              }
+            }
+          )
+        )
+      }
+
+      await Promise.all(update)
+
+      resolve(result.displayName)
     }
     catch (err) {
       reject(err)

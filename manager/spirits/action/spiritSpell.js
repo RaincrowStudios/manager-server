@@ -53,80 +53,65 @@ module.exports = (spirit, target, action) => {
           }
         }
 
-        const xpGain = determineExperience()
+        const xp = 1//determineExperience()
 
-        const award = 1//await addExperience(spirit.owner, xpGain)
+        const levelUp = 1//await addExperience(spirit.owner, xp)
 
-        let xp
-        if (typeof award === 'number') {
-          xp = award
-        }
-
-        await Promise.all([
+        const inform = [
           informNearbyPlayers(
             spirit.latitude,
             spirit.longitude,
             {
               command: 'map_spirit_action',
-              action: spell.id,
               instance: spirit.instance,
               target: target.instance,
-              total: result.total,
-            }
-          ),
-          informPlayers(
-            [target.player],
-            {
-              command: 'player_character_spell',
-              action: 'attack',
-              caster: spirit.instance,
-              displayName: spirit.displayName,
-              total: result.total,
+              action: spell.displayName
             }
           ),
           informPlayers(
             [spirit.player],
             {
-              command: 'player_spirit_action',
-              action: spell.id,
-              spirit: spirit.instance,
-              displayName: spirit.displayName,
+              command: 'character_spirit_action',
+              spirit: spirit.displayName,
+              action: spell.displayName,
               target: target.displayName,
               type: target.type,
-              total: result.total,
-              xpGain: xpGain,
               xp: xp
             }
           ),
           addFieldsToHash(
             spirit.instance,
             ['previousTarget'],
-            [{ instance: target.instance, type: 'spirit' }]
+            [{ instance: target.instance, type: target.type }]
           ),
           addFieldsToHash(
             target.instance,
             ['lastAttackedBy'],
             [{ instance: spirit.instance, type: 'spirit' }]
           )
-        ])
+        ]
 
         if (target.type === 'witch') {
-          await informPlayers(
-            [target.player],
-            {
-              command: 'player_targeted_spell',
-              attacker: spirit.displayName,
-              owner: spirit.ownerDisplay,
-              total: result.total,
-              critical: result.critical,
-              resist: result.resist,
-              energy: targetCurrentEnergy
-            }
+          inform.push(
+            informPlayers(
+              [target.player],
+              {
+                command: 'character_spell_hit',
+                caster: spirit.displayName,
+                type: spirit.type,
+                degree: spirit.degree,
+                spell: spell.displayName,
+                school: spell.school,
+                result: result,
+              }
+            )
           )
         }
 
+        await Promise.all(inform)
+
         if (targetCurrentEnergy <= 0) {
-          resolveTargetDestruction(target, spirit)
+          resolveTargetDestruction(spirit, target, spell)
         }
       }
       resolve(true)

@@ -44,16 +44,12 @@ module.exports = (spirit, target) => {
       const targetExists = await checkKeyExistance(target.instance)
 
       if (spiritExists && targetExists) {
-        const targetCurrentEnergy = await adjustEnergy(target.instance, result.total)
+        const targetCurrentEnergy =
+          await adjustEnergy(target.instance, result.total ? result.total : 1)
 
-        const xpGain = 5//determineXP()
+        const xp= 5//determineXP()
 
         //const award = await addExperience('characters', spirit.owner, xpGain)
-
-        let xp = 0
-        //if (typeof award === 'number') {
-        //  xp = award
-      //  }
 
         await Promise.all([
           informNearbyPlayers(
@@ -61,33 +57,31 @@ module.exports = (spirit, target) => {
             spirit.longitude,
             {
               command: 'map_spirit_action',
-              action: 'attack',
               instance: spirit.instance,
               target: target.instance,
-              total: result.total,
+              action: 'Attack'
             }
           ),
           informPlayers(
             [target.player],
             {
-              command: 'player_character_hit',
-              action: 'attack',
-              caster: spirit.instance,
-              displayName: spirit.displayName,
-              total: result.total,
+              command: 'character_spell_hit',
+              caster: spirit.displayName,
+              type: spirit.type,
+              degree: spirit.degree,
+              spell: 'Attack',
+              school: spirit.degree,
+              result: result,
             }
           ),
           informPlayers(
             [spirit.player],
             {
-              command: 'player_spirit_action',
-              action: 'attack',
-              instance: spirit.instance,
-              displayName: spirit.displayName,
+              command: 'character_spirit_action',
+              spirit: spirit.displayName,
+              action: 'Attack',
               target: target.displayName,
               targetType: target.type,
-              total: result.total,
-              xpGain: xpGain,
               xp: xp
             }
           ),
@@ -104,7 +98,7 @@ module.exports = (spirit, target) => {
         ])
 
         if (targetCurrentEnergy <= 0) {
-          resolveTargetDestruction(target, spirit.instance)
+          resolveTargetDestruction(spirit, target, 'Attack')
         }
       }
       resolve(true)

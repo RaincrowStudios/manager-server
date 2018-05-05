@@ -12,8 +12,7 @@ module.exports = async (conditionInstance) => {
       await getOneFromHash('list:conditions', conditionInstance)
 
     if (bearerInstance) {
-      let player, type, conditions
-      [player, type, conditions] =
+      let [player, type, conditions] =
         await getFieldsFromHash(bearerInstance, ['player', 'type', 'conditions'])
 
       if (conditions.length) {
@@ -43,7 +42,7 @@ module.exports = async (conditionInstance) => {
             informPlayers(
               [player],
               {
-                command: 'player_condition_remove',
+                command: 'character_condition_remove',
                 condition: conditionInstance
               }
             )

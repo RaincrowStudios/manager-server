@@ -4,7 +4,7 @@ const deleteAllConditions = require('../../conditions/deleteAllConditions')
 const portalDestroy = require('../../portals/portalDestroy')
 const spiritDeath = require('../spiritDeath')
 
-module.exports = (target, killer) => {
+module.exports = (killer, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
       const update = []
@@ -29,15 +29,15 @@ module.exports = (target, killer) => {
 
         update.push(
           informPlayers(
-            [target.instance],
+            [target.player],
             {
-              command: 'player_character_death',
+              command: 'character_spell_death',
               killer: {
                 displayName: killer.displayName,
                 type: killer.type,
                 degree: killer.degree,
-                owner: killer.ownerDisplay
-              }
+                spell: spell.displayName ? spell.displayName : spell
+              },
             }
           ),
           deleteAllConditions(target.conditions)

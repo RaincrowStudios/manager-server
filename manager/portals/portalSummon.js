@@ -35,6 +35,15 @@ module.exports = async (portalInstance) => {
       const activePortals = await getOneFromHash(portal.owner, 'activePortals')
       const index = activePortals.indexOf(portalInstance)
 
+      await informNearbyPlayers(
+        portal.latitude,
+        portal.longitude,
+        {
+          command: 'map_portal_remove',
+          instance: portalInstance
+        }
+      )
+
       await Promise.all([
         addObjectToHash(spiritInstance, spirit),
         addToActiveSet('spirits', spiritInstance),
@@ -55,24 +64,16 @@ module.exports = async (portalInstance) => {
           portal.latitude,
           portal.longitude,
           {
-            command: 'map_portal_remove',
-            instance: portalInstance
-          }
-        ),
-        informNearbyPlayers(
-          portal.latitude,
-          portal.longitude,
-          {
-            command: 'map_spirit_add',
-            tokens: [createMapToken(spiritInstance, spirit)]
+            command: 'map_spirit_summon',
+            token: createMapToken(spiritInstance, spirit)
           }
         ),
         informPlayers(
           [spirit.player],
           {
-            command: 'player_spirit_summon',
+            command: 'character_portal_summon',
             instance: spiritInstance,
-            displayName: spirit.displayName
+            spirit: spirit.displayName
           }
         ),
         updateHashFieldArray(
