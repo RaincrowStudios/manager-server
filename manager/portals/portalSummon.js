@@ -14,7 +14,6 @@ const spiritAdd = require('../spirits/spiritAdd')
 module.exports = async (portalInstance) => {
   try {
     const currentTime = Date.now()
-
     const portal = await getAllFromHash(portalInstance)
 
     if (portal) {

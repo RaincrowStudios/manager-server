@@ -5,7 +5,7 @@ module.exports = (instance, info) => {
       token = {
         instance: instance,
         type: info.type,
-        subtype: info.subtype,
+        subtype: info.tier > 0 ? 'greater' : 'lesser',
         degree: info.degree,
         latitude: info.latitude,
         longitude: info.longitude
@@ -28,11 +28,10 @@ module.exports = (instance, info) => {
         instance: instance,
         displayName: info.displayName,
         type: info.type,
-        subtype: info.subtype,
+        subtype: info.tier > 0 ? 'greater' : 'lesser',
         degree: info.degree,
         latitude: info.latitude,
-        longitude: info.longitude,
-        engaged: info.engaged
+        longitude: info.longitude
       }
       break
     case 'witch':
@@ -44,8 +43,7 @@ module.exports = (instance, info) => {
         degree:  info.degree,
         latitude: info.fuzzyLatitude,
         longitude: info.fuzzyLongitude,
-        distance: info.distance,
-        engaged: info.engaged
+        distance: info.distance
       }
       break
     default:

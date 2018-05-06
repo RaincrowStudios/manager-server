@@ -6,6 +6,7 @@ const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
+const addSpiritBounty = require('./death/addSpiritBounty')
 const addSpiritDrop = require('./death/addSpiritDrop')
 
 module.exports = (spiritInstance, killer) => {
@@ -23,11 +24,7 @@ module.exports = (spiritInstance, killer) => {
           await getOneFromHash(spirit.owner, 'activeSpirits')
         const index = activeSpirits.indexOf(spirit.instance)
 
-        if (spirit.drop.length) {
-          await addSpiritDrop(spirit)
-        }
-
-        await Promise.all([
+        const update = [
           deleteAllConditions(spirit.conditions),
           informNearbyPlayers(
             spirit.latitude,
@@ -59,9 +56,18 @@ module.exports = (spiritInstance, killer) => {
             spirit.instance,
             index
           ),
-        ])
-      }
+        ]
 
+        if (spirit.drop.length) {
+          update.push(addSpiritDrop(spirit))
+        }
+  
+        if (!spirit.owner) {
+          update.push(addSpiritBounty(spirit, killer))
+        }
+
+        await Promise.all(update)
+      }
       const spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {
         clearTimeout(spiritTimers.expireTimer)

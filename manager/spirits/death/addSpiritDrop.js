@@ -14,7 +14,7 @@ module.exports = (spirit) => {
         spirit.drop = spirit.carrying
       }
 
-      if (spirit.drop.length > 0) {
+      if (spirit.drop.length) {
         const collectibles = spirit.drop.map(async drop => {
           const instance = uuidv1()
           const range = drop.range.split('-')
