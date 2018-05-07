@@ -1,15 +1,13 @@
-const uuidv1 = require('uuid/v1')
 const getOneFromHash = require('../../../redis/getOneFromHash')
-const addToActiveSet = require('../../../redis/addToActiveSet')
-const addToGeohash = require('../../../redis/addToGeohash')
-const addObjectToHash = require('../../../redis/addObjectToHash')
-const createMapToken = require('../../../utils/createMapToken')
+const incrementHashField = require('../../../redis/incrementHashField')
+const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const informPlayers = require('../../../utils/informPlayers')
 
-module.exports = (spirit) => {
+module.exports = (spirit, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (spirit.bounty.length) {
+        const update = []
         const rewards = spirit.bounty.map(async item => {
           let count
           if (item.amount.includes('-')) {
@@ -22,46 +20,80 @@ module.exports = (spirit) => {
             count = item.count
           }
 
-          let reward
           if (item.id === 'silver') {
-            reward = silver
+            update.push(
+              incrementHashField(
+                killer.instance,
+                'silver',
+                count
+              )
+            )
+            return {displayName: 'silver', count: count}
           }
           else {
-            reward = await getOneFromHash('list:collectibles', item.id)
-          }
+            const { type, range, ...rest } =
+              await getOneFromHash('list:collectibles', item.id)
+            const collectible = rest
+            collectible.count = count
 
-          const tokens = []
-          for (let i = 1; i <= count; i++) {
-            tokens.push(createMapToken(instance, collectible))
-            await Promise.all([
-              addObjectToHash(instance, collectible),
-              addToActiveSet('collectibles', instance),
-              addToGeohash('collectibles', instance, coords[0], coords[1])
-            ])
+            if (type === 'herb') {
+              collectible.perserved = false
+            }
+
+            const firstPickUp =
+              killer.unlockedCollectibles.includes(collectible.id) ?
+                false : true
+
+            let command, oldCollectible, oldCollectibleIndex
+            if (firstPickUp) {
+              command = 'add'
+
+              update.push(
+                addFieldsToHash(
+                  killer.instance,
+                  ['unlockedCollectibles'],
+                  [killer.unlockedCollectibles.push(collectible.id)]
+                )
+              )
+            }
+            else {
+              command = 'replace'
+
+              oldCollectible = killer[type + 's']
+                .filter((old, i) => {
+                  if (old.id === collectible.id) {
+                    oldCollectibleIndex = i
+                    return true
+                  }
+                })[0]
+
+              collectible.count += oldCollectible.count
+            }
+
+            update.push(
+              updateHashFieldArray(
+                killer.instance,
+                command,
+                type + 's',
+                collectible,
+                oldCollectibleIndex
+              )
+            )
+            return {displayName: collectible.displayName, count: count}
           }
-          return tokens
         })
 
-        let dropTokens = []
-
-        for (const array of collectibles) {
-          dropTokens.push(...array)
-        }
-
-        await informPlayers(
-          updateHashFieldArray(
-            req.body.characterId,
-            command,
-            type + 's',
-            collectible,
-            oldCollectibleIndex
-          ),
-          [killer.player],
-          {
-            command: 'character_reward',
-            rewards: rewards
-          }
+        update.push(
+          informPlayers(
+            [killer.player],
+            {
+              command: 'character_reward',
+              rewards: rewards
+            }
+          )
         )
+
+        await Promise.all(update)
       }
       resolve(true)
     }

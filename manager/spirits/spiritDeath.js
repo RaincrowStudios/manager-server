@@ -61,8 +61,8 @@ module.exports = (spiritInstance, killer) => {
         if (spirit.drop.length) {
           update.push(addSpiritDrop(spirit))
         }
-  
-        if (!spirit.owner) {
+
+        if (!spirit.owner && !killer.type === 'spirit') {
           update.push(addSpiritBounty(spirit, killer))
         }
 

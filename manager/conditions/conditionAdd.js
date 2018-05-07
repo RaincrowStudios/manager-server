@@ -7,13 +7,15 @@ module.exports = (conditionInstance, condition) => {
     const currentTime = Date.now()
     const timer = {instance: conditionInstance}
 
-    const expireTimer =
-      setTimeout(() =>
-        conditionExpire(conditionInstance),
-        condition.expiresOn - currentTime
-      )
+    if (condition.expiresOn) {
+      const expireTimer =
+        setTimeout(() =>
+          conditionExpire(conditionInstance),
+          condition.expiresOn - currentTime
+        )
 
-    timer.expireTimer = expireTimer
+      timer.expireTimer = expireTimer
+    }
 
     if (condition.triggerOn) {
       const triggerTimer =

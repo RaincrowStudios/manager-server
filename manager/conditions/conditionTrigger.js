@@ -44,7 +44,7 @@ async function conditionTrigger (conditionInstance) {
             event: 'condition_triggered',
             player: player,
             character: bearerInstance,
-            condition: newCondition.spell,
+            condition: spell.id,
             total: total,
           })
 
@@ -68,7 +68,7 @@ async function conditionTrigger (conditionInstance) {
           }
           else {
             let update = []
-            if (type !== 'spirits') {
+            if (type !== 'spirit') {
               update.push(
                 informPlayers(
                   [player],

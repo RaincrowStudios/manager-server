@@ -1,7 +1,7 @@
 const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
 const getAllFromHash = require('../../../redis/getAllFromHash')
 
-module.exports = (spirit) => {
+module.exports = (spirit, targetCategory) => {
   return new Promise(async (resolve, reject) => {
     try {
      const nearCharacters = await getNearbyFromGeohash(
@@ -25,12 +25,16 @@ module.exports = (spirit) => {
         .map(instance => getAllFromHash(instance))
       )
 
-      const nearEnemeies = nearTargets
+      let nearEnemeies = nearTargets
         .map((target, i) => {
           target.instance = nearInstances[i]
           return target
         })
         .filter(target => !spirit.coven || target.coven !== spirit.coven)
+
+      if (targetCategory === 'vulnerableEnemies') {
+        nearEnemeies = nearEnemeies.filter(enemy => enemy.status === 'vulnerable')
+      }
 
       if (nearEnemeies.length) {
         const target =

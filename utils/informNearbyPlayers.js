@@ -2,7 +2,7 @@ const getOneFromHash = require('../redis/getOneFromHash')
 const getNearbyFromGeohash = require('../redis/getNearbyFromGeohash')
 const informPlayers = require('./informPlayers')
 
-module.exports = (latitude, longitude, message) => {
+module.exports = (latitude, longitude, message, exclude = []) => {
   return new Promise(async (resolve, reject) => {
     try {
       const displayRadius = await getOneFromHash('list:constants', 'displayRadius')
@@ -15,10 +15,9 @@ module.exports = (latitude, longitude, message) => {
       )
 
       const playersToInform =
-        await Promise.all(
-          nearCharacters.map(instance =>
-            getOneFromHash(instance, 'player')
-          )
+        await Promise.all(nearCharacters
+          .filter(instance => !exclude.includes(instance))
+          .map(instance => getOneFromHash(instance, 'player'))
         )
 
       await informPlayers(playersToInform, message)

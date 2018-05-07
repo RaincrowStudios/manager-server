@@ -23,7 +23,7 @@ module.exports = (instance, fields, values) => {
 
       client.hmset([instance, ...fieldsValues], (err) => {
         if (err) {
-          reject(err)
+          throw err
         }
         else {
           resolve(true)

@@ -20,8 +20,8 @@ module.exports = (spirit) => {
             if (spirit.lastAttackedBy) {
               const target =
                 spirit.lastAttackedBy.type === 'spirit' ?
-                  await targetSpirits(spirit, targetCategory[1]) :
-                  await targetCharacters(spirit, targetCategory[1])
+                  await targetSpirits(spirit, targetCategory[0]) :
+                  await targetCharacters(spirit, targetCategory[0])
 
               if (target) {
                 resolve([target, spirit.actionTree[i].actions])
@@ -32,8 +32,8 @@ module.exports = (spirit) => {
             if (spirit.previousTarget) {
               const target =
                 spirit.previousTarget.type === 'spirit' ?
-                  await targetSpirits(spirit, targetCategory[1]) :
-                  await targetCharacters(spirit, targetCategory[1])
+                  await targetSpirits(spirit, targetCategory[0]) :
+                  await targetCharacters(spirit, targetCategory[0])
 
               if (target) {
                 resolve([target, spirit.actionTree[i].actions])
@@ -50,14 +50,16 @@ module.exports = (spirit) => {
             }
             break
           case 'allies':
-            target = await targetAllies(spirit)
+          case 'vulnerableAllies':
+            target = await targetAllies(spirit, targetCategory[0])
 
             if (target) {
               resolve([target, spirit.actionTree[i].actions])
             }
             break
           case 'enemies':
-            target = await targetEnemies(spirit)
+          case 'vulnerableEnemies':
+            target = await targetEnemies(spirit, targetCategory[0])
 
             if (target) {
               resolve([target, spirit.actionTree[i].actions])
@@ -66,7 +68,7 @@ module.exports = (spirit) => {
           case 'spirits':
           case 'allySpirits':
           case 'enemySpirits':
-            target = await targetSpirits(spirit, targetCategory[1])
+            target = await targetSpirits(spirit, targetCategory[0])
 
             if (target) {
               resolve([target, spirit.actionTree[i].actions])
@@ -84,7 +86,7 @@ module.exports = (spirit) => {
           case 'summonerPortalAttacker':
             break
           case 'portals':
-            target = await targetPortals(spirit, targetCategory[1])
+            target = await targetPortals(spirit, targetCategory[0])
 
             if (target) {
               resolve([target, spirit.actionTree[i].actions])
@@ -92,7 +94,7 @@ module.exports = (spirit) => {
             break
           case 'vampires':
           case 'witches':
-            target = await targetCharacters(spirit, targetCategory[1])
+            target = await targetCharacters(spirit, targetCategory[0])
 
             if (target) {
               resolve([target, spirit.actionTree[i].actions])

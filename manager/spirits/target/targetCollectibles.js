@@ -11,7 +11,7 @@ module.exports = (spirit, targetCategory) => {
         spirit.reach
       )
 
-      if (nearInstances.length > 0) {
+      if (nearInstances.length) {
         let nearCollectibles = await Promise.all(
           nearInstances.map(instance => getAllFromHash(instance))
         )
