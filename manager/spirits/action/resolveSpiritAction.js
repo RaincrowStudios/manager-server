@@ -1,4 +1,5 @@
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
+const getOneFromHash = require('../../../redis/getOneFromHash')
 const determineTargets = require('../target/determineTargets')
 const determineAction = require('./determineAction')
 const basicAttack = require('./basicAttack')
@@ -9,8 +10,12 @@ const spiritSpell = require('./spiritSpell')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let target, actions
-      [target, actions] = await determineTargets(spirit)
+      let [target, actions] = await determineTargets(spirit)
+
+      if (target.type === 'spirit') {
+        const spiritInfo = await getOneFromHash('list:spirits', target.id)
+        target = Object.assign({}, spiritInfo, target)
+      }
 
       if (target) {
         const action = determineAction(actions)
@@ -23,10 +28,10 @@ module.exports = (spirit) => {
               await basicAttack(spirit, target)
               break
             case 'collect':
-              await spiritCollect(spirit.instance, target.instance)
+              await spiritCollect(spirit, target)
               break
             case 'discover':
-              await spiritDiscover(spirit.instance, target.instance)
+              await spiritDiscover(spirit, target)
               break
             default:
               await spiritSpell(spirit, target, action)

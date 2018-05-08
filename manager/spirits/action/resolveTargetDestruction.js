@@ -15,16 +15,18 @@ module.exports = (killer, target, spell) => {
         update.push(portalDestroy(target.instance, killer))
       }
       else {
-        for (let i = 0; i < target.conditions.length; i++) {
-          update.push(
-            updateHashFieldArray(
-              target.instance,
-              'remove',
-              'conditions',
-              target.conditions[i],
-              i
+        if (target.conditions) {
+          for (let i = 0; i < target.conditions.length; i++) {
+            update.push(
+              updateHashFieldArray(
+                target.instance,
+                'remove',
+                'conditions',
+                target.conditions[i],
+                i
+              )
             )
-          )
+          }
         }
 
         update.push(

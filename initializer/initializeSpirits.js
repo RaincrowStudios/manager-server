@@ -8,18 +8,27 @@ const spiritAction = require('../manager/spirits/spiritAction')
 async function initializeSpirits() {
   try {
     const spirits = await getActiveSet('spirits')
-    if (spirits.length > 0) {
+    if (spirits.length) {
       for (let i = 0; i < spirits.length; i++) {
         if (spirits[i]) {
           const currentTime = Date.now()
           const spirit = await getAllFromHash(spirits[i])
 
-          if (spirit && spirit.expiresOn > currentTime && spirit.energy > 0) {
-            const expireTimer =
-              setTimeout(() =>
-                spiritExpire(spirits[i]),
-                spirit.expiresOn - currentTime
-              )
+          if (spirit.expiresOn === 0 && spirit.expiresOn < currentTime) {
+            spiritExpire(spirits[i])
+          }
+          else if (spirit.energy <= 0) {
+            spiritExpire(spirits[i])
+          }
+          else {
+            let expireTimer
+            if (spirit.expiresOn) {
+              expireTimer =
+                setTimeout(() =>
+                  spiritExpire(spirits[i]),
+                  spirit.expiresOn - currentTime
+                )
+            }
 
             const moveTimer =
               setTimeout(() =>
@@ -41,9 +50,6 @@ async function initializeSpirits() {
               moveTimer,
               actionTimer
             })
-          }
-          else {
-            spiritExpire(spirits[i])
           }
         }
       }

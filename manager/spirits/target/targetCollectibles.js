@@ -22,8 +22,12 @@ module.exports = (spirit, targetCategory) => {
               return collectible
             })
             .filter(collectible => {
-              collectible.id === targetCategory ||
-              collectible.type === targetCategory
+              if (
+                collectible.id === targetCategory ||
+                collectible.type === targetCategory
+              ) {
+                return collectible
+              }
             })
         }
         const target =

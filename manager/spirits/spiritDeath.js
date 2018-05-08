@@ -37,7 +37,7 @@ module.exports = (spiritInstance, killer) => {
           informPlayers(
             [spirit.player],
             {
-              command: 'player_spirit_death',
+              command: 'character_spirit_death',
               instance: spirit.instance,
               displayName: spirit.displayName,
               killer: {

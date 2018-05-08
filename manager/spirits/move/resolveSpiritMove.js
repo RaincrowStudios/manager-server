@@ -2,12 +2,14 @@ const addFieldsToHash = require('../../../redis/addFieldsToHash')
 const addToGeohash = require('../../../redis/addToGeohash')
 const informNearbyPlayersUnion = require('../../../utils/informNearbyPlayersUnion')
 const createMapToken = require('../../../utils/createMapToken')
+const determineDirection = require('./determineDirection')
 const determineSpiritMove = require('./determineSpiritMove')
 
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const newCoords = await determineSpiritMove(spirit)
+      const direction = await determineDirection(spirit)
+      const newCoords = await determineSpiritMove(spirit, direction)
 
       await Promise.all([
         informNearbyPlayersUnion(
@@ -16,7 +18,6 @@ module.exports = (spirit) => {
           {
             command: 'map_spirit_move',
             token: createMapToken(spirit.instance, spirit)
-
           }
         ),
         addFieldsToHash(

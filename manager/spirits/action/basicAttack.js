@@ -12,46 +12,46 @@ const resolveTargetDestruction = require('./resolveTargetDestruction')
 module.exports = (spirit, target) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const range = spirit.attack.split('-')
-      const min = parseInt(range[0], 10)
-      const max = parseInt(range[1], 10)
-      let critical = false
-      let resist = false
-
-      let total = Math.floor(Math.random() * (max - min + 1)) + min
-
-      if (determineCritical(spirit, target)) {
-        total += Math.floor(Math.random() * (max - min + 1)) + min
-
-        if (spirit.conditions && spirit.conditions.length !== 0) {
-          for (const condition of spirit.conditions.conditions) {
-            if (condition.beCrit) {
-              total += condition.power
-            }
-          }
-        }
-        critical = true
-      }
-
-      if (determineResist(target)) {
-        Math.round(total /= 2)
-        resist = true
-      }
-
-      const result = { total: Math.round(total * -1), critical, resist }
-
       const spiritExists = await checkKeyExistance(spirit.instance)
       const targetExists = await checkKeyExistance(target.instance)
-
       if (spiritExists && targetExists) {
-        const targetCurrentEnergy =
-          await adjustEnergy(target.instance, result.total ? result.total : 1)
+        const range = spirit.attack.split('-')
+        const min = parseInt(range[0], 10)
+        const max = parseInt(range[1], 10)
+        let critical = false
+        let resist = false
 
-        const xp= 5//determineXP()
+        let total = Math.floor(Math.random() * (max - min + 1)) + min
+
+        if (determineCritical(spirit, target)) {
+          total += Math.floor(Math.random() * (max - min + 1)) + min
+
+          if (spirit.conditions && spirit.conditions.length !== 0) {
+            for (const condition of spirit.conditions.conditions) {
+              if (condition.beCrit) {
+                total += condition.power
+              }
+            }
+          }
+          critical = true
+        }
+
+        if (determineResist(target)) {
+          total = Math.round(total / 2)
+          resist = true
+        }
+
+        const resolution = { total: parseInt(total * -1, 10), critical, resist }
+
+        let [targetEnergy, targetStatus] =
+          await adjustEnergy(target.instance, resolution.total)
+
+        console.log(targetEnergy, targetStatus)
+
+        const xp = 1//determineXP()
 
         //const award = await addExperience('characters', spirit.owner, xpGain)
-
-        await Promise.all([
+        const update = [
           informNearbyPlayers(
             spirit.latitude,
             spirit.longitude,
@@ -60,18 +60,6 @@ module.exports = (spirit, target) => {
               instance: spirit.instance,
               target: target.instance,
               action: 'Attack'
-            }
-          ),
-          informPlayers(
-            [target.player],
-            {
-              command: 'character_spell_hit',
-              caster: spirit.displayName,
-              type: spirit.type,
-              degree: spirit.degree,
-              spell: 'Attack',
-              school: spirit.degree,
-              result: result,
             }
           ),
           informPlayers(
@@ -95,11 +83,32 @@ module.exports = (spirit, target) => {
             ['lastAttackedBy'],
             [{ instance: spirit.instance, type: 'spirit' }]
           )
-        ])
+        ]
 
-        if (targetCurrentEnergy <= 0) {
-          resolveTargetDestruction(spirit, target, 'Attack')
+        if (target.type !== 'spirit') {
+          update.push(
+            informPlayers(
+              [target.player],
+              {
+                command: 'character_spell_hit',
+                caster: spirit.displayName,
+                type: spirit.type,
+                degree: spirit.degree,
+                spell: 'Attack',
+                school: spirit.school,
+                result: resolution,
+                energy: targetEnergy,
+                status: targetStatus
+              }
+            )
+          )
         }
+
+        if (targetStatus === 'dead') {
+          update.push(resolveTargetDestruction(spirit, target, 'Attack'))
+        }
+
+        await Promise.all(update)
       }
       resolve(true)
     }

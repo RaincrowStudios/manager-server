@@ -15,55 +15,62 @@ module.exports = (spirit) => {
       }
 
       if (spirit.drop.length) {
-        const collectibles = spirit.drop.map(async drop => {
-          const instance = uuidv1()
-          const range = drop.range.split('-')
-          const min = parseInt(range[0], 10)
-          const max = parseInt(range[1], 10)
-          const count = Math.floor(Math.random() * (max - min + 1)) + min
-          const coords = generateDropCoords(spirit.latitude, spirit.longitude)
+        const update = []
 
-          let collectible
-          if (drop === 'silver') {
-            collectible = {
-              type: 'silver',
-              displayName: 'Silver',
-            }
+        const collectibles = await Promise.all(spirit.drop.map(drop => {
+          if (drop) {
+            return new Promise((resolve) => {
+              resolve({type: 'silver', displayName: 'Silver'})
+            })
           }
           else {
-            collectible = await getOneFromHash('list:collectibles', drop.id)
+            return getOneFromHash('list:collectibles', drop.id)
           }
+        }))
 
-          collectible.latitude = coords[0]
-          collectible.longitude = coords[1]
-          collectible.range = '1-1'
+        for (const collectible of collectibles) {
+          if (collectible) {
+            const instance = uuidv1()
+            let count
+            if (collectible.range) {
+              if (collectible.range.includes('-')) {
+                const range = collectible.range.split('-')
+                const min = parseInt(range[0], 10)
+                const max = parseInt(range[1], 10)
+                count = Math.floor(Math.random() * (max - min + 1)) + min
+              }
+              else {
+                count = parseInt(collectible.range, 10)
+              }
+            }
+            else {
+              count = 1
+            }
 
-          const tokens = []
-          for (let i = 1; i <= count; i++) {
-            tokens.push(createMapToken(instance, collectible))
-            await Promise.all([
-              addObjectToHash(instance, collectible),
-              addToActiveSet('collectibles', instance),
-              addToGeohash('collectibles', instance, coords[0], coords[1])
-            ])
+            const coords = generateDropCoords(spirit.latitude, spirit.longitude)
+            collectible.latitude = coords[0]
+            collectible.longitude = coords[1]
+            collectible.range = '1-1'
+
+            for (let i = 1; i <= count; i++) {
+              update.push(
+                addObjectToHash(instance, collectible),
+                addToActiveSet('collectibles', instance),
+                addToGeohash('collectibles', instance, coords[0], coords[1]),
+                informNearbyPlayers(
+                  spirit.latitude,
+                  spirit.longitude,
+                  {
+                    command: 'map_collectible_add',
+                    token: createMapToken(instance, collectible),
+                  }
+                )
+              )
+            }
           }
-          return tokens
-        })
-
-        let dropTokens = []
-
-        for (const array of collectibles) {
-          dropTokens.push(...array)
         }
 
-        await informNearbyPlayers(
-          spirit.latitude,
-          spirit.longitude,
-          {
-            command: 'map_collectible_add',
-            tokens: dropTokens,
-          }
-        )
+        await Promise.all(update)
       }
       resolve(true)
     }

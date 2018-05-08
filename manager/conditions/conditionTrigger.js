@@ -3,6 +3,7 @@ const adjustEnergy = require('../../redis/adjustEnergy')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const spiritDeath = require('../spirits/spiritDeath')
 const resolveCondition = require('./resolveCondition')
@@ -15,9 +16,10 @@ async function conditionTrigger (conditionInstance) {
       await getOneFromHash('list:conditions', conditionInstance)
 
     if (bearerInstance) {
-      let [player, type, conditions] =
+      let [player, type, conditions, latitude, longitude, fuzzyLatitude, fuzzyLongitude] =
         await getFieldsFromHash(
-          bearerInstance, ['player', 'type', 'conditions']
+          bearerInstance,
+          ['player', 'type', 'conditions', 'latitude', 'longitude', 'fuzzyLatitude', 'fuzzyLongitude']
         )
 
       if (conditions.length) {
@@ -48,11 +50,20 @@ async function conditionTrigger (conditionInstance) {
             total: total,
           })
 
-          if (bearerNewEnergy <= 0 && type === 'spirits') {
+          if (bearerNewEnergy <= 0 && type === 'spirit') {
             await spiritDeath(bearerInstance, newCondition.caster)
           }
           else if (bearerNewEnergy <= 0) {
             await Promise.all([
+              informNearbyPlayers(
+                fuzzyLatitude,
+                fuzzyLongitude,
+                {
+                  command: 'map_condition_death',
+                  instance: bearerInstance
+                },
+                [player]
+              ),
               informPlayers(
                 [player],
                 {
@@ -76,9 +87,31 @@ async function conditionTrigger (conditionInstance) {
                     command: 'character_condition_trigger',
                     condition: conditionInstance,
                     spell: spell.displayName,
-                    total: total,
                     energy: bearerNewEnergy
                   }
+                )
+              ),
+              informNearbyPlayers(
+                fuzzyLatitude,
+                fuzzyLongitude,
+                {
+                  command: 'map_condition_trigger',
+                  spell: spell.displayName,
+                  energy: bearerNewEnergy
+                },
+                [player]
+              )
+            }
+            else {
+              update.push(
+                informNearbyPlayers(
+                  latitude,
+                  longitude,
+                  {
+                    command: 'map_condition_trigger',
+                    spell: spell.displayName,
+                    energy: bearerNewEnergy
+                  },
                 )
               )
             }

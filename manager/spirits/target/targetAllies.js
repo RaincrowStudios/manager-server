@@ -28,9 +28,10 @@ module.exports = (spirit, targetCategory) => {
           target.instance = nearInstances[i]
           return target
         })
+        .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
         .filter(target => (target.instance === spirit.owner ||
-            (spirit.coven && target.coven === spirit.coven))
-          )
+          (spirit.coven && target.coven === spirit.coven)
+        ))
 
       if (targetCategory === 'vulnerableAllies') {
         nearAllies = nearAllies.filter(ally => ally.status === 'vulnerable')

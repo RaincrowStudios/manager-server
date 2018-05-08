@@ -18,27 +18,25 @@ module.exports = (spirit, targetCategory) => {
        )
 
       const nearInstances = [...nearCharacters, ...nearSpirits]
+        .filter(instance => instance !== spirit.instance)
 
-      const nearTargets = await Promise.all(
+      const nearInfo = await Promise.all(
         nearInstances.map(instance => getAllFromHash(instance))
       )
 
-      let nearEnemeies = nearTargets
-        .map((target, i) => {
-          target.instance = nearInstances[i]
-          return target
-        })
-        .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
-        .filter(target => !spirit.coven || target.coven !== spirit.coven)
+      let nearTargets = nearInfo.map((target, i) => {
+        target.instance = nearInstances[i]
+        return target
+      })
 
-      if (targetCategory === 'vulnerableEnemies') {
-        nearEnemeies = nearEnemeies.filter(enemy => enemy.status === 'vulnerable')
+      if (targetCategory === 'vulnerableAll') {
+        nearTargets = nearTargets
+          .filter(target => target.status === 'vulnerable')
       }
 
-      if (nearEnemeies.length) {
+      if (nearTargets.length) {
         const target =
-          nearEnemeies[Math.floor(Math.random() * nearEnemeies.length)]
-
+          nearTargets[Math.floor(Math.random() * nearTargets.length)]
         if (target) {
           resolve(target)
         }

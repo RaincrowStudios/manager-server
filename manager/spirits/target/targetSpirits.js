@@ -23,7 +23,7 @@ module.exports = (spirit, targetCategory) => {
           return spirit
         })
 
-      if (nearSpirits.length > 0) {
+      if (nearSpirits.length) {
         if (targetCategory === 'allySpirits') {
           const nearAllies = nearSpirits
             .filter(target => target.coven === spirit.coven)
@@ -39,7 +39,7 @@ module.exports = (spirit, targetCategory) => {
           const nearEnemies = nearSpirits
             .filter(target => target.coven !== spirit.coven)
 
-          if (nearEnemies.length > 0) {
+          if (nearEnemies.length) {
             const target =
               nearEnemies[Math.floor(Math.random() * nearEnemies.length)]
 
@@ -50,7 +50,7 @@ module.exports = (spirit, targetCategory) => {
           const targets = nearSpirits
             .filter(target => target.instance === spirit.lastAttackedBy)
 
-          if (targets.length > 0) {
+          if (targets.length) {
             resolve(targets[0])
           }
         }
@@ -58,7 +58,7 @@ module.exports = (spirit, targetCategory) => {
           const targets = nearSpirits
             .filter(target => target.instance === spirit.previousTarget)
 
-          if (targets.length > 0) {
+          if (targets.length) {
             resolve(targets[0])
           }
         }

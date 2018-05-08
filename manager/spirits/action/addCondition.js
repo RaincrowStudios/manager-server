@@ -2,7 +2,10 @@ const uuidv1 = require('uuid/v1')
 const addFieldsToHash = require('../../../redis/addFieldsToHash')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
+const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
+const informPlayers = require('../../../utils/informPlayers')
 const conditionAdd = require('../../conditions/conditionAdd')
+const deleteCondition = require('../../conditions/deleteCondition')
 
 module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
@@ -98,13 +101,7 @@ module.exports = (caster, target, spell) => {
         (spell.condition.stackable && oldCondition.length >= spell.condition.stackable)
       ) {
         await Promise.all([
-          informManager(
-            {
-              command: 'remove',
-              type: 'condition',
-              instance: oldCondition[0].instance,
-            }
-          ),
+          deleteCondition(oldCondition[0].instance),
           updateHashFieldArray(
             target.instance,
             'remove',
@@ -132,21 +129,46 @@ module.exports = (caster, target, spell) => {
       ]
 
       if (!spell.condition.hidden) {
-        update.push(
-          informPlayers(
-            [target.player],
-            {
-              command: 'character_condition_add',
-              condition: {
-                instance: result.instance,
-                id: result.id,
-                displayName: result.displayName,
-                caster: caster.displayName,
-                expiresOn: result.expiresOn
+        if (target.type !== 'spirit') {
+          update.push(
+            informNearbyPlayers(
+              target.fuzzyLatitude,
+              target.fuzzyLongitude,
+              {
+                command: 'map_condition_add',
+                condition: result.displayName
+              },
+              [target.player]
+            ),
+            informPlayers(
+              [target.player],
+              {
+                command: 'character_condition_add',
+                condition: {
+                  instance: result.instance,
+                  id: result.id,
+                  displayName: result.displayName,
+                  caster: caster.displayName,
+                  expiresOn: result.expiresOn
+                }
               }
-            }
+            )
           )
-        )
+        }
+        else {
+          update.push(
+            informNearbyPlayers(
+              target.latitude,
+              target.longitude,
+              {
+                command: 'map_condition_add',
+                condition: {
+                  displayName: result.displayName,
+                }
+              }
+            )
+          )
+        }
       }
 
       await Promise.all(update)

@@ -1,61 +1,45 @@
-const getAllFromHash = require('../../../redis/getAllFromHash')
-const calculateDistance = require('./calculateDistance')
+const getFieldsFromHash = require('../../../redis/getFieldsFromHash')
 
 function precisionRound(number, precision) {
   const factor = Math.pow(10, precision)
   return Math.round(number * factor) / factor
 }
 
-module.exports = (spirit) => {
+module.exports = (spirit, direction) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let newLat = 0
-      let newLong = 0
+      let northSouth, eastWest, oldLat, oldLong
+      const range = spirit.moveRange.split('-')
+      const min = parseInt(range[0], 10)
+      const max = parseInt(range[1], 10)
 
-      if (spirit.moveRange.includes('-')) {
-        const range = spirit.moveRange.split('-')
-        const min = parseInt(range[0], 10)
-        const max = parseInt(range[1], 10)
+      if (direction === 'summoner') {
+        [oldLat, oldLong] =
+          await getFieldsFromHash(spirit.owner, ['latitude', 'longitude'])
+          northSouth = (Math.random() < 0.5 ? 1 : -1)
+          eastWest = (Math.random() < 0.5 ? 1 : -1)
+      }
 
-        do {
-          newLat = spirit.latitude +
-            (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001) *
-            (Math.random() < 0.5 ? 1 : -1))
-
-          newLong = spirit.longitude +
-            (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001 *
-            Math.cos(spirit.latitude * (Math.PI / 180)))  *
-            (Math.random() < 0.5 ? 1 : -1))
-        }
-        while (
-          spirit.maxDistance !== 0 &&
-          spirit.maxDistance <
-          calculateDistance(spirit.summonLat, spirit.summonLong, newLat, newLong)
-        )
+      else if (direction) {
+        oldLat = spirit.latitude
+        oldLong = spirit.longitude
+        northSouth = direction[0]
+        eastWest = direction[1]
       }
       else {
-        const parts = spirit.moveRange.split(':')
-        const destination = parts[0]
-        const distance = parseInt(parts[1], 10)
+        oldLat = spirit.latitude
+        oldLong = spirit.longitude
+        northSouth = (Math.random() < 0.5 ? 1 : -1)
+        eastWest = (Math.random() < 0.5 ? 1 : -1)
+      }
 
-        let target
-        switch (destination) {
-          case 'summoner':
-            target = await getAllFromHash(spirit.owner)
-            break
-          default:
-            break
-        }
+      const newLat = oldLat +
+        (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001) *
+        northSouth)
 
-        newLat = target.latitude +
-          (((Math.floor(Math.random() * (distance - 1 + 1)) + 1) * 0.00001) *
-          (Math.random() < 0.5 ? 1 : -1))
-
-        newLong = target.longitude +
-          (((Math.floor(Math.random() * (distance - 1 + 1)) + 1) * 0.00001 *
-          Math.cos(spirit.latitude * (Math.PI / 180)))  *
-          (Math.random() < 0.5 ? 1 : -1))
-        }
+      const newLong = oldLong +
+        (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001 *
+        Math.cos(oldLat * (Math.PI / 180)))  * eastWest)
 
       resolve([precisionRound(newLat, 6), precisionRound(newLong, 6)])
     }

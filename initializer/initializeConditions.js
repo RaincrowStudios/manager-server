@@ -31,12 +31,15 @@ async function initializeConditions() {
           continue
         }
 
-        if (condition.expiresOn > currentTime) {
-          const expireTimer =
-            setTimeout(() =>
-              conditionExpire(conditions[i]),
-              condition.expiresOn - currentTime
-            )
+        if (condition.expiresOn === 0 || condition.expiresOn > currentTime) {
+          let expireTimer
+          if (condition.expiresOn) {
+            expireTimer =
+              setTimeout(() =>
+                conditionExpire(conditions[i]),
+                condition.expiresOn - currentTime
+              )
+            }
 
           const triggerTimer =
             setTimeout(() =>

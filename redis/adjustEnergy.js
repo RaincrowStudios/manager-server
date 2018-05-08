@@ -7,10 +7,9 @@ module.exports = (instance, energy) => {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
       }
-      else if (!energy || typeof energy !== 'number') {
+      else if (typeof energy !== 'number' || !energy) {
         throw new Error('Invalid energy: ' + energy)
       }
-
 
       client.evalsha(
         [scripts.adjustEnergy.sha, 1, instance, energy],

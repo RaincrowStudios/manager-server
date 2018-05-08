@@ -18,6 +18,7 @@ module.exports = (spirit, target) => {
   }
 
   const roll = Math.floor((Math.random() * 100) + 1)
+  critChance = 50
   if (roll <= critChance) {
     return true
   }
