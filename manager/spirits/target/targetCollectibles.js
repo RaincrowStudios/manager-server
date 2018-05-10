@@ -15,12 +15,18 @@ module.exports = (spirit, targetCategory) => {
         let nearCollectibles = await Promise.all(
           nearInstances.map(instance => getAllFromHash(instance))
         )
-        if (targetCategory) {
-          nearCollectibles = nearCollectibles
-            .map((collectible, i) => {
+
+        nearCollectibles = nearCollectibles
+          .map((collectible, i) => {
+            if (collectible) {
               collectible.instance = nearInstances[i]
               return collectible
-            })
+            }
+          })
+          .filter(collectible => collectible)
+
+        if (targetCategory) {
+          nearCollectibles = nearCollectibles
             .filter(collectible => {
               if (
                 collectible.id === targetCategory ||
@@ -36,13 +42,9 @@ module.exports = (spirit, targetCategory) => {
         if (target) {
           resolve(target)
         }
-        else {
-          resolve(false)
-        }
       }
-      else {
-        resolve(false)
-      }
+
+      resolve(false)
     }
     catch (err) {
       reject(err)

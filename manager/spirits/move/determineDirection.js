@@ -25,6 +25,17 @@ module.exports = (spirit) => {
         }
       }
 
+      if (spirit.attributes && spirit.attributes.includes('cowardly')) {
+        destination = await determineFlee(spirit)
+
+        if (destination) {
+          direction = [
+            Math.sign(destination.latitude - spirit.latitude),
+            Math.sign(destination.longitude - spirit.longitude),
+          ]
+        }
+      }
+
       for (let i = 0; i < spirit.moveTree.length; i++) {
         const directionCategory = spirit.moveTree[i].split(':')
         switch (directionCategory[0]) {
@@ -59,6 +70,7 @@ module.exports = (spirit) => {
                 spirit.previousTarget.type === 'spirit' ?
                   await targetSpirits(spirit, directionCategory[0]) :
                   await targetCharacters(spirit, directionCategory[0])
+
               if (destination) {
                 direction = [
                   Math.sign(destination.latitude - spirit.latitude),

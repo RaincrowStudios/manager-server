@@ -12,12 +12,13 @@ module.exports = async (spiritInstance) => {
     const instanceInfo = await getAllFromHash(spiritInstance)
 
     if (instanceInfo) {
+
       let activeSpirits
       if (instanceInfo.owner) {
         activeSpirits = await getOneFromHash(instanceInfo.owner, 'activeSpirits')
       }
+
       const update = [
-        deleteAllConditions(instanceInfo.conditions),
         informNearbyPlayers(
           instanceInfo.latitude,
           instanceInfo.longitude,
@@ -28,6 +29,10 @@ module.exports = async (spiritInstance) => {
         ),
         removeFromAll('spirits', spiritInstance),
       ]
+
+      if (instanceInfo.conditions) {
+        update.push(deleteAllConditions(instanceInfo.conditions))
+      }
 
       if (activeSpirits) {
         const index = activeSpirits.indexOf(spiritInstance)

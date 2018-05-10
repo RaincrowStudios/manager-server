@@ -2,6 +2,7 @@ const timers = require('../../database/timers')
 const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
+const removeFromAll = require('../../redis/removeFromAll')
 const resolveSpiritMove = require('./move/resolveSpiritMove')
 
 async function spiritMove(spiritInstance) {
@@ -9,6 +10,11 @@ async function spiritMove(spiritInstance) {
     const instanceInfo = await getAllFromHash(spiritInstance)
 
     if (instanceInfo) {
+      if (!instanceInfo.id) {
+        await removeFromAll('spirits', spiritInstance)
+        return true
+      }
+
       const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
 
       const spirit = Object.assign(
@@ -18,6 +24,7 @@ async function spiritMove(spiritInstance) {
       if (
         !spirit.conditions.map(condition => condition.status).includes('bound')
       ) {
+        
         await resolveSpiritMove(spirit)
       }
 
@@ -35,7 +42,7 @@ async function spiritMove(spiritInstance) {
       else {
         newMoveOn = parseInt(spirit.moveFreq, 10)
       }
-
+      console.log('%s moving in %d seconds', spirit.displayName, (newMoveOn - currentTime) / 1000)
       await addFieldsToHash(spirit.instance, ['moveOn'], [newMoveOn])
 
       const newTimer =
@@ -49,6 +56,7 @@ async function spiritMove(spiritInstance) {
         timers.update(spiritTimers)
       }
     }
+    return true
   }
   catch (err) {
     console.error(err)

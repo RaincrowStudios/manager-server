@@ -16,9 +16,14 @@ module.exports = (spirit, targetCategory) => {
         )
 
       const nearCharacters = nearInfo.map((character, i) => {
-          character.instance = nearInstances[i]
-          return character
+          if (character) {
+            character.instance = nearInstances[i]
+            return character
+          }
         })
+        .filter(character => character.status !== 'dead')
+
+      console.log(nearCharacters)
 
       if (nearCharacters.length > 0) {
         if (targetCategory === 'allyWitch') {
@@ -45,7 +50,7 @@ module.exports = (spirit, targetCategory) => {
         }
         else if (targetCategory === 'attacker') {
           const targets = nearCharacters
-            .filter(target => target.instance === spirit.lastAttackedBy)
+            .filter(target => target.instance === spirit.lastAttackedBy.instance)
 
           if (targets.length > 0) {
             resolve(targets[0])
@@ -53,7 +58,7 @@ module.exports = (spirit, targetCategory) => {
         }
         else if (targetCategory === 'previousTarget') {
           const targets = nearCharacters
-            .filter(target => target.instance === spirit.previousTarget)
+            .filter(target => target.instance === spirit.previousTarget.instance)
 
           if (targets.length > 0) {
             resolve(targets[0])
@@ -66,14 +71,10 @@ module.exports = (spirit, targetCategory) => {
           if (target) {
             resolve(target)
           }
-          else {
-            resolve(false)
-          }
         }
       }
-      else {
-        resolve(false)
-      }
+
+      resolve(false)
     }
     catch (err) {
       reject(err)

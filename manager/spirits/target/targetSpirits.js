@@ -22,6 +22,7 @@ module.exports = (spirit, targetCategory) => {
           spirit.instance = nearInstances[i]
           return spirit
         })
+        .filter(spirit => spirit.status !== 'dead')
 
       if (nearSpirits.length) {
         if (targetCategory === 'allySpirits') {
@@ -48,7 +49,7 @@ module.exports = (spirit, targetCategory) => {
         }
         else if (targetCategory === 'attacker') {
           const targets = nearSpirits
-            .filter(target => target.instance === spirit.lastAttackedBy)
+            .filter(target => target.instance === spirit.lastAttackedBy.instance)
 
           if (targets.length) {
             resolve(targets[0])
@@ -56,7 +57,7 @@ module.exports = (spirit, targetCategory) => {
         }
         else if (targetCategory === 'previousTarget') {
           const targets = nearSpirits
-            .filter(target => target.instance === spirit.previousTarget)
+            .filter(target => target.instance === spirit.previousTarget.instance)
 
           if (targets.length) {
             resolve(targets[0])
@@ -69,14 +70,10 @@ module.exports = (spirit, targetCategory) => {
           if (target) {
             resolve(target)
           }
-          else {
-            resolve(false)
-          }
         }
       }
-      else {
-        resolve(false)
-      }
+
+      resolve(false)
     }
     catch (err) {
       reject(err)

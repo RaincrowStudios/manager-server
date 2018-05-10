@@ -25,9 +25,12 @@ module.exports = (spirit, targetCategory) => {
       )
 
       let nearTargets = nearInfo.map((target, i) => {
-        target.instance = nearInstances[i]
-        return target
+        if (target) {
+          target.instance = nearInstances[i]
+          return target
+        }
       })
+      .filter(target => target && target.status !== 'dead')
 
       if (targetCategory === 'vulnerableAll') {
         nearTargets = nearTargets
@@ -40,13 +43,8 @@ module.exports = (spirit, targetCategory) => {
         if (target) {
           resolve(target)
         }
-        else {
-          resolve(false)
-        }
       }
-      else {
-        resolve(false)
-      }
+      resolve(false)
     }
     catch (err) {
       reject(err)

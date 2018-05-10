@@ -1,14 +1,17 @@
 const deleteCondition = require('./deleteCondition')
 
-module.exports = async (conditions) => {
-  try {
-    if (conditions && conditions.length > 0) {
-      for (const condition of conditions) {
-        await deleteCondition(condition.instance)
+module.exports = (conditions) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (conditions && conditions.length) {
+        const conditionsToDelete =
+          conditions.map(condition => deleteCondition(condition.instance))
+        await Promise.all(conditionsToDelete)
       }
+      resolve(true)
     }
-  }
-  catch (err) {
-    console.error(err)
-  }
+    catch (err) {
+      reject(err)
+    }
+  })
 }

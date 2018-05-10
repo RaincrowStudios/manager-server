@@ -50,14 +50,10 @@ module.exports = (spirit, targetCategory) => {
             target.instance = nearPortals[index]
             resolve(target)
           }
-          else {
-            resolve(false)
-          }
         }
       }
-      else {
-        resolve(false)
-      }
+
+      resolve(false)
     }
     catch (err) {
       reject(err)

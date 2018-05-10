@@ -25,9 +25,12 @@ module.exports = (spirit, targetCategory) => {
 
       let nearEnemeies = nearTargets
         .map((target, i) => {
-          target.instance = nearInstances[i]
-          return target
+          if (target) {
+            target.instance = nearInstances[i]
+            return target
+          }
         })
+        .filter(target => target && target.status !== 'dead')
         .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
         .filter(target => !spirit.coven || target.coven !== spirit.coven)
 
@@ -42,13 +45,9 @@ module.exports = (spirit, targetCategory) => {
         if (target) {
           resolve(target)
         }
-        else {
-          resolve(false)
-        }
       }
-      else {
-        resolve(false)
-      }
+
+      resolve(false)
     }
     catch (err) {
       reject(err)

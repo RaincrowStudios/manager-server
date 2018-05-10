@@ -2,6 +2,7 @@ const timers = require('../../database/timers')
 const addFieldsToHash = require('../../redis/addFieldsToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
+const removeFromAll = require('../../redis/removeFromAll')
 const resolveSpiritAction = require('./action/resolveSpiritAction')
 
 async function spiritAction(spiritInstance) {
@@ -9,6 +10,11 @@ async function spiritAction(spiritInstance) {
     const instanceInfo = await getAllFromHash(spiritInstance)
 
     if (instanceInfo) {
+      if (!instanceInfo.id) {
+        await removeFromAll('spirits', spiritInstance)
+        return true
+      }
+
       const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
 
       const spirit = Object.assign(
@@ -25,19 +31,26 @@ async function spiritAction(spiritInstance) {
 
       const currentTime = Date.now()
 
-      let newActionOn
+      let newActionOn, seconds
       if (spirit.actionFreq.includes('-')) {
         const range = spirit.actionFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
 
-        newActionOn = currentTime +
-          ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
+        seconds = Math.floor(Math.random() * (max - min + 1)) + min
       }
       else {
-        newActionOn = parseInt(spirit.actionFreq, 10)
+        seconds = parseInt(spirit.actionFreq, 10)
       }
 
+      if (spirit.bloodlustCount) {
+        seconds = seconds - spirit.bloodlustCount > 1 ?
+          seconds - spirit.bloodlustCount : 1
+      }
+
+      newActionOn = currentTime + (seconds * 1000)
+
+      console.log('%s acting in %d seconds', spirit.displayName, (newActionOn - currentTime) / 1000)
       await addFieldsToHash(spirit.instance, ['actionOn'], [newActionOn])
 
       const newTimer =
@@ -51,6 +64,7 @@ async function spiritAction(spiritInstance) {
         timers.update(spiritTimers)
       }
     }
+    return true
   }
   catch (err) {
     console.error(err)

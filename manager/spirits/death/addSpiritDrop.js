@@ -20,7 +20,7 @@ module.exports = (spirit) => {
         const collectibles = await Promise.all(spirit.drop.map(drop => {
           if (drop) {
             return new Promise((resolve) => {
-              resolve({type: 'silver', displayName: 'Silver'})
+              resolve({type: 'silver', displayName: 'Silver Drach'})
             })
           }
           else {

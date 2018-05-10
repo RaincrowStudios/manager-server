@@ -1,3 +1,4 @@
+const addFieldsToHash = require('../../../redis/addFieldsToHash')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const getOneFromHash = require('../../../redis/getOneFromHash')
 const determineTargets = require('../target/determineTargets')
@@ -21,7 +22,6 @@ module.exports = (spirit) => {
         const action = determineAction(actions)
 
         const targetExists = await checkKeyExistance(target.instance)
-
         if (targetExists && action) {
           switch (action) {
             case 'attack':
@@ -38,6 +38,9 @@ module.exports = (spirit) => {
               break
           }
         }
+      }
+      else if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
+        await addFieldsToHash(spirit.instance, ['bloodlustCount'], [0])
       }
       resolve(true)
     }

@@ -15,9 +15,9 @@ module.exports = (spiritInstance, killer) => {
       const instanceInfo = await getAllFromHash(spiritInstance)
 
       if (instanceInfo) {
-        const spititInfo = await getOneFromHash('list:spirits', instanceInfo.id)
+        const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
         const spirit = Object.assign(
-          {}, spititInfo, instanceInfo, {instance: spiritInstance}
+          {}, spiritInfo, instanceInfo, {instance: spiritInstance}
         )
 
         const activeSpirits =
@@ -48,7 +48,6 @@ module.exports = (spiritInstance, killer) => {
               }
             }
           ),
-          removeFromAll('spirits', spirit.instance),
           updateHashFieldArray(
             spirit.owner,
             'remove',
@@ -67,6 +66,8 @@ module.exports = (spiritInstance, killer) => {
         }
 
         await Promise.all(update)
+
+        await removeFromAll('spirits', spirit.instance)
       }
       const spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {

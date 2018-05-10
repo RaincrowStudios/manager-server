@@ -1,3 +1,4 @@
+const addFieldsToHash = require('../../../redis/addFieldsToHash')
 const getOneFromHash = require('../../../redis/getOneFromHash')
 const incrementHashField = require('../../../redis/incrementHashField')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
@@ -8,19 +9,36 @@ module.exports = (spirit, killer) => {
     try {
       if (spirit.bounty.length) {
         const update = []
-        const rewards = spirit.bounty.map(async item => {
+        const rewards = []
+        const collectibles = await Promise.all(spirit.bounty.map(bounty => {
+          if (bounty) {
+            return new Promise((resolve) => {
+              resolve(
+                {type: 'silver', displayName: 'Silver Drach', range: bounty.amount}
+              )
+            })
+          }
+          else {
+            return getOneFromHash('list:collectibles', bounty.id)
+          }
+        }))
+
+        for (const collectible of collectibles) {
           let count
-          if (item.amount.includes('-')) {
-            const range = item.amount.split('-')
+          if (!collectible.range) {
+            count = 1
+          }
+          else if(collectible.range.includes('-')) {
+            const range = collectible.range.split('-')
             const min = parseInt(range[0], 10)
             const max = parseInt(range[1], 10)
             count = Math.floor(Math.random() * (max - min + 1)) + min
           }
           else {
-            count = item.count
+            count = collectible.count
           }
 
-          if (item.id === 'silver') {
+          if (collectible.type === 'silver') {
             update.push(
               incrementHashField(
                 killer.instance,
@@ -28,15 +46,10 @@ module.exports = (spirit, killer) => {
                 count
               )
             )
-            return {displayName: 'silver', count: count}
+            rewards.push({displayName: 'silver', count: count})
           }
           else {
-            const { type, range, ...rest } =
-              await getOneFromHash('list:collectibles', item.id)
-            const collectible = rest
-            collectible.count = count
-
-            if (type === 'herb') {
+            if (collectible.type === 'herb') {
               collectible.perserved = false
             }
 
@@ -59,7 +72,7 @@ module.exports = (spirit, killer) => {
             else {
               command = 'replace'
 
-              oldCollectible = killer[type + 's']
+              oldCollectible = killer[collectible.type + 's']
                 .filter((old, i) => {
                   if (old.id === collectible.id) {
                     oldCollectibleIndex = i
@@ -74,20 +87,20 @@ module.exports = (spirit, killer) => {
               updateHashFieldArray(
                 killer.instance,
                 command,
-                type + 's',
+                collectible.type + 's',
                 collectible,
                 oldCollectibleIndex
               )
             )
-            return {displayName: collectible.displayName, count: count}
+            rewards.push({displayName: collectible.displayName, count: count})
           }
-        })
+        }
 
         update.push(
           informPlayers(
             [killer.player],
             {
-              command: 'character_reward',
+              command: 'character_bounty_reward',
               rewards: rewards
             }
           )

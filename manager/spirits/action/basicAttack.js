@@ -27,7 +27,7 @@ module.exports = (spirit, target) => {
           total += Math.floor(Math.random() * (max - min + 1)) + min
 
           if (spirit.conditions && spirit.conditions.length !== 0) {
-            for (const condition of spirit.conditions.conditions) {
+            for (const condition of spirit.conditions) {
               if (condition.beCrit) {
                 total += condition.power
               }
@@ -46,7 +46,7 @@ module.exports = (spirit, target) => {
         let [targetEnergy, targetStatus] =
           await adjustEnergy(target.instance, resolution.total)
 
-        console.log(targetEnergy, targetStatus)
+        console.log('%s attacked %s. Energy: %d', spirit.displayName, target.displayName, targetEnergy)
 
         const xp = 1//determineXP()
 
@@ -78,12 +78,29 @@ module.exports = (spirit, target) => {
             ['previousTarget'],
             [{ instance: target.instance, type: 'spirit' }]
           ),
-          addFieldsToHash(
-            target.instance,
-            ['lastAttackedBy'],
-            [{ instance: spirit.instance, type: 'spirit' }]
-          )
         ]
+        if (target.type === 'spirit' && targetStatus !== 'dead') {
+          update.push(
+            addFieldsToHash(
+              target.instance,
+              ['lastAttackedBy'],
+              [{ instance: spirit.instance, type: 'spirit' }]
+            )
+          )
+        }
+
+        if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
+          const bloodlustCount = spirit.bloodlustCount ?
+            spirit.bloodlustCount + 1 : 1
+
+          update.push(
+            addFieldsToHash(
+              spirit.instance,
+              ['bloodlustCount'],
+              [bloodlustCount]
+            ),
+          )
+        }
 
         if (target.type !== 'spirit') {
           update.push(
@@ -104,11 +121,11 @@ module.exports = (spirit, target) => {
           )
         }
 
-        if (targetStatus === 'dead') {
-          update.push(resolveTargetDestruction(spirit, target, 'Attack'))
-        }
-
         await Promise.all(update)
+
+        if (targetStatus === 'dead') {
+          await resolveTargetDestruction(spirit, target, 'Attack')
+        }
       }
       resolve(true)
     }
