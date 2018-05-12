@@ -9,7 +9,7 @@ module.exports = (instance) => {
 
       client.del([instance], (err) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(true)

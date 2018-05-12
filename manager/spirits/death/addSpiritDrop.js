@@ -10,14 +10,15 @@ const generateDropCoords = require('./generateDropCoords')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (spirit.drop[0] === 'carried') {
-        spirit.drop = spirit.carrying
+      const drops = spirit.drop ? spirit.drop : []
+      if (spirit.carrying && spirit.carrying.length) {
+        drops.push(...spirit.carrying)
       }
 
-      if (spirit.drop.length) {
+      if (drops.length) {
         const update = []
 
-        const collectibles = await Promise.all(spirit.drop.map(drop => {
+        const collectibles = await Promise.all(drops.map(drop => {
           if (drop) {
             return new Promise((resolve) => {
               resolve({type: 'silver', displayName: 'Silver Drach'})
@@ -72,6 +73,7 @@ module.exports = (spirit) => {
 
         await Promise.all(update)
       }
+      
       resolve(true)
     }
     catch (err) {

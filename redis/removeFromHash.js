@@ -12,7 +12,7 @@ module.exports = (instance, field) => {
 
       client.hdel([instance, field], (err) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(true)

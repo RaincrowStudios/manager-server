@@ -15,7 +15,7 @@ module.exports = (instance, energy) => {
         [scripts.adjustEnergy.sha, 1, instance, energy],
         (err, result) => {
           if (err) {
-            reject(err)
+            throw new Error(err)
           }
           else {
             resolve(JSON.parse(result))

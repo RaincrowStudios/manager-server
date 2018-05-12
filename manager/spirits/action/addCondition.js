@@ -1,5 +1,5 @@
 const uuidv1 = require('uuid/v1')
-const addFieldsToHash = require('../../../redis/addFieldsToHash')
+const addFieldToHash = require('../../../redis/addFieldToHash')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
@@ -10,10 +10,10 @@ const deleteCondition = require('../../conditions/deleteCondition')
 module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
+      let duration
       const conditionInstance = uuidv1()
       const currentTime = Date.now()
-
-      let duration
+      target.conditions = target.conditions ? target.conditions : []
       if (typeof spell.condition.duration === 'string') {
         if (spell.condition.duration.includes('-')) {
           const range = spell.condition.duration.split('-')
@@ -50,7 +50,7 @@ module.exports = (caster, target, spell) => {
         instance: conditionInstance,
         caster: caster.instance,
         createdOn: currentTime,
-        expiresOn: currentTime + (duration * 1000)
+        expiresOn: duration > 0 ? currentTime + (duration * 1000) : 0
       }
 
       if (spell.condition.hidden) {
@@ -87,7 +87,7 @@ module.exports = (caster, target, spell) => {
 
       let indexes = []
       const oldCondition = target.conditions.filter((condition, i) => {
-        if (spell.condition.id === spell.id) {
+        if (condition.id === spell.id) {
           indexes.push(i)
           return true
         }
@@ -98,7 +98,8 @@ module.exports = (caster, target, spell) => {
 
       if (
         (oldCondition.length && !spell.condition.stackable) ||
-        (spell.condition.stackable && oldCondition.length >= spell.condition.stackable)
+        (spell.condition.stackable &&
+          oldCondition.length >= spell.condition.stackable)
       ) {
         await Promise.all([
           deleteCondition(oldCondition[0].instance),
@@ -113,10 +114,10 @@ module.exports = (caster, target, spell) => {
       }
 
       const update = [
-        addFieldsToHash(
+        addFieldToHash(
           'list:conditions',
-          [conditionInstance],
-          [target.instance]
+          conditionInstance,
+          target.instance
         ),
         addToActiveSet('conditions', conditionInstance),
         conditionAdd(conditionInstance, result),
@@ -136,7 +137,8 @@ module.exports = (caster, target, spell) => {
               target.fuzzyLongitude,
               {
                 command: 'map_condition_add',
-                condition: result.displayName
+                instance: result.instance,
+                spell: result.displayName
               },
               [target.player]
             ),
@@ -144,13 +146,10 @@ module.exports = (caster, target, spell) => {
               [target.player],
               {
                 command: 'character_condition_add',
-                condition: {
-                  instance: result.instance,
-                  id: result.id,
-                  displayName: result.displayName,
-                  caster: caster.displayName,
-                  expiresOn: result.expiresOn
-                }
+                instance: result.instance,
+                spell: result.displayName,
+                caster: caster.displayName,
+                expiresOn: result.expiresOn
               }
             )
           )
@@ -162,9 +161,8 @@ module.exports = (caster, target, spell) => {
               target.longitude,
               {
                 command: 'map_condition_add',
-                condition: {
-                  displayName: result.displayName,
-                }
+                instance: result.instance,
+                spell: result.displayName
               }
             )
           )

@@ -18,7 +18,7 @@ module.exports = (category, member, radius, count = 0) => {
 
       client.georadiusbymember(query, (err, results) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(results)

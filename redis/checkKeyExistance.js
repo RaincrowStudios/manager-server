@@ -9,7 +9,7 @@ module.exports = (instance) => {
 
       client.exists([instance], (err, result) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(result)

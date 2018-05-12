@@ -1,5 +1,5 @@
 const timers = require('../../database/timers')
-const addFieldsToHash = require('../../redis/addFieldsToHash')
+const addFieldToHash = require('../../redis/addFieldToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
@@ -50,8 +50,7 @@ async function spiritAction(spiritInstance) {
 
       newActionOn = currentTime + (seconds * 1000)
 
-      console.log('%s acting in %d seconds', spirit.displayName, (newActionOn - currentTime) / 1000)
-      await addFieldsToHash(spirit.instance, ['actionOn'], [newActionOn])
+      await addFieldToHash(spirit.instance, 'actionOn', newActionOn)
 
       const newTimer =
         setTimeout(() =>

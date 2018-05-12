@@ -17,7 +17,7 @@ module.exports = (category, instance) => {
         .del([instance])
         .exec(err => {
           if (err) {
-            reject(err)
+            throw new Error(err)
           }
           else {
             resolve(true)

@@ -1,6 +1,6 @@
 const uuidv1 = require('uuid/v1')
 const timers = require('../../database/timers')
-const addFieldsToHash = require('../../redis/addFieldsToHash')
+const addFieldToHash = require('../../redis/addFieldToHash')
 const addObjectToHash = require('../../redis/addObjectToHash')
 const addToActiveSet = require('../../redis/addToActiveSet')
 const addToGeohash = require('../../redis/addToGeohash')
@@ -59,7 +59,7 @@ module.exports = async (instance) => {
           riftSummon(instance), newSummonOn - currentTime
         )
 
-      await addFieldsToHash(instance, ['summonOn'], [newSummonOn])
+      await addFieldToHash(instance, ['summonOn'], [newSummonOn])
 
       const riftTimers = timers.by('instance', instance)
       if (riftTimers) {

@@ -21,8 +21,8 @@ async function conditionTrigger (conditionInstance) {
           bearerInstance,
           ['player', 'type', 'conditions', 'latitude', 'longitude', 'fuzzyLatitude', 'fuzzyLongitude']
         )
-
-      if (conditions.length) {
+      console.log(type)
+      if (conditions && conditions.length) {
         let index
         const conditionToUpdate = conditions.filter((condition, i) => {
           if (condition.instance === conditionInstance) {
@@ -40,7 +40,8 @@ async function conditionTrigger (conditionInstance) {
 
           const newCondition = conditionToUpdate
           const total = resolveCondition(spell.condition, newCondition)
-          const bearerNewEnergy = await adjustEnergy(bearerInstance, total)
+          const [bearerEnergy, bearerStatus] =
+            await adjustEnergy(bearerInstance, total)
 
           console.log({
             event: 'condition_triggered',
@@ -50,10 +51,10 @@ async function conditionTrigger (conditionInstance) {
             total: total,
           })
 
-          if (bearerNewEnergy <= 0 && type === 'spirit') {
+          if (bearerStatus === 'dead' && type === 'spirit') {
             await spiritDeath(bearerInstance, newCondition.caster)
           }
-          else if (bearerNewEnergy <= 0) {
+          else if (bearerStatus === 'dead') {
             await Promise.all([
               informNearbyPlayers(
                 fuzzyLatitude,
@@ -87,7 +88,8 @@ async function conditionTrigger (conditionInstance) {
                     command: 'character_condition_trigger',
                     condition: conditionInstance,
                     spell: spell.displayName,
-                    energy: bearerNewEnergy
+                    energy: bearerEnergy,
+                    status: bearerStatus
                   }
                 )
               ),
@@ -97,7 +99,7 @@ async function conditionTrigger (conditionInstance) {
                 {
                   command: 'map_condition_trigger',
                   spell: spell.displayName,
-                  energy: bearerNewEnergy
+                  energy: bearerEnergy
                 },
                 [player]
               )
@@ -110,7 +112,7 @@ async function conditionTrigger (conditionInstance) {
                   {
                     command: 'map_condition_trigger',
                     spell: spell.displayName,
-                    energy: bearerNewEnergy
+                    energy: bearerEnergy
                   },
                 )
               )

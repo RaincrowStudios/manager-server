@@ -5,7 +5,13 @@ const informPlayers = require('./informPlayers')
 module.exports = (latitude, longitude, message, exclude = []) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const displayRadius = await getOneFromHash('list:constants', 'displayRadius')
+      if (typeof latitude !== 'number' && typeof longitude !== 'number') {
+        console.log(message)
+        throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
+      }
+
+      const displayRadius =
+        await getOneFromHash('list:constants', 'displayRadius')
 
       const nearCharacters = await getNearbyFromGeohash(
         'characters',

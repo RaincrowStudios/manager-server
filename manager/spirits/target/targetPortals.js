@@ -1,62 +1,36 @@
-const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
-const getAllFromHash = require('../../../redis/getAllFromHash')
+module.exports = (spirit, nearTargets, targetCategory) => {
+ const nearPortals = nearTargets.filter(target => target.type === 'portal')
 
-module.exports = (spirit, targetCategory) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-     const nearPortals = await getNearbyFromGeohash(
-        'portals',
-        spirit.latitude,
-        spirit.longitude,
-        spirit.reach
-      )
+ let target
+  if (nearPortals.length) {
+    if (targetCategory === 'allyPortals') {
+      const nearAllyPortals = nearPortals
+        .filter(portal => portal.coven === spirit.coven)
 
-      if (nearPortals.length > 0) {
-        if (targetCategory === 'allyPortals') {
-          const nearAllyPortals = nearPortals
-            .filter(portal => portal.coven === spirit.coven)
-
-          if (nearAllyPortals.length > 0) {
-            const target = nearAllyPortals[
-                Math.floor(Math.random() * nearAllyPortals.length)
-              ]
-
-            resolve(target)
-          }
-          else {
-            resolve(false)
-          }
-        }
-        else if (targetCategory === 'enemyPortals') {
-          const nearEnemyPortals = nearPortals
-            .filter(portal => portal.coven !== spirit.coven)
-
-          if (nearEnemyPortals.length > 0) {
-            const target = nearEnemyPortals[
-                Math.floor(Math.random() * nearEnemyPortals.length)
-              ]
-
-            resolve(target)
-          }
-          else {
-            resolve(false)
-          }
-        }
-        else {
-          const index = Math.floor(Math.random() * nearPortals.length)
-          const target = await getAllFromHash(nearPortals[index])
-
-          if (target) {
-            target.instance = nearPortals[index]
-            resolve(target)
-          }
-        }
+      if (nearAllyPortals.length) {
+        target = nearAllyPortals[
+            Math.floor(Math.random() * nearAllyPortals.length)
+          ]
       }
+    }
+    else if (targetCategory === 'enemyPortals') {
+      const nearEnemyPortals = nearPortals
+        .filter(portal => portal.coven !== spirit.coven)
 
-      resolve(false)
+      if (nearEnemyPortals.length) {
+        target = nearEnemyPortals[
+            Math.floor(Math.random() * nearEnemyPortals.length)
+          ]
+      }
     }
-    catch (err) {
-      reject(err)
+    else {
+      target = nearPortals[Math.floor(Math.random() * nearPortals.length)]
     }
-  })
+
+    if (target) {
+      return target
+    }
+  }
+
+ return false
 }

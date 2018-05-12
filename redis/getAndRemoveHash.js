@@ -12,7 +12,7 @@ module.exports = (instance) => {
         .del([instance])
         .exec((err, results) => {
           if (err) {
-            reject(err)
+            throw new Error(err)
           }
           else {
             resolve(results[0])

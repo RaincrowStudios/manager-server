@@ -1,4 +1,4 @@
-const informNearbyPlayers = require('../../../../utils/informManager')
+const informNearbyPlayers = require('../../../../utils/informNearbyPlayers')
 const addCondition = require('../addCondition')
 
 module.exports = (caster, target, spell, ingredients) => {

@@ -18,7 +18,7 @@ module.exports = (category, latitude, longitude, radius, count = 0) => {
 			}
 			client.georadius(query, (err, results) => {
 				if (err) {
-					reject(err)
+					throw new Error(err)
 				}
 				else {
 					resolve(results)

@@ -12,7 +12,7 @@ module.exports = (category, instance) => {
 
       client.zrem(['set:active:' + category, instance], (err) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(true)

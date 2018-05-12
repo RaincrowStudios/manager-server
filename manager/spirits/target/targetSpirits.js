@@ -1,82 +1,41 @@
-const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
-const getAllFromHash = require('../../../redis/getAllFromHash')
+module.exports = (spirit, nearTargets, targetCategory) => {
+  const nearSpirits = nearTargets
+    .filter(spirit => spirit.type !== 'spirit')
 
-module.exports = (spirit, targetCategory) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let nearInstances = await getNearbyFromGeohash(
-        'spirits',
-        spirit.latitude,
-        spirit.longitude,
-        spirit.reach
-      )
+  if (nearSpirits.length) {
+    let target
+    if (targetCategory === 'allySpirits') {
+      const nearAllies = nearSpirits
+        .filter(target => target.coven === spirit.coven)
 
-      nearInstances = nearInstances
-        .filter(instance => instance !== spirit.instance)
-
-      const nearInfo = await Promise.all(
-          nearInstances.map(instance => getAllFromHash(instance))
-        )
-
-      const nearSpirits = nearInfo.map((spirit, i) => {
-          spirit.instance = nearInstances[i]
-          return spirit
-        })
-        .filter(spirit => spirit.status !== 'dead')
-
-      if (nearSpirits.length) {
-        if (targetCategory === 'allySpirits') {
-          const nearAllies = nearSpirits
-            .filter(target => target.coven === spirit.coven)
-
-          if (nearAllies.length > 0) {
-            const target =
-              nearAllies[Math.floor(Math.random() * nearAllies.length)]
-
-            resolve(target)
-          }
-        }
-        else if (targetCategory === 'enemySpirits') {
-          const nearEnemies = nearSpirits
-            .filter(target => target.coven !== spirit.coven)
-
-          if (nearEnemies.length) {
-            const target =
-              nearEnemies[Math.floor(Math.random() * nearEnemies.length)]
-
-            resolve(target)
-          }
-        }
-        else if (targetCategory === 'attacker') {
-          const targets = nearSpirits
-            .filter(target => target.instance === spirit.lastAttackedBy.instance)
-
-          if (targets.length) {
-            resolve(targets[0])
-          }
-        }
-        else if (targetCategory === 'previousTarget') {
-          const targets = nearSpirits
-            .filter(target => target.instance === spirit.previousTarget.instance)
-
-          if (targets.length) {
-            resolve(targets[0])
-          }
-        }
-        else {
-          const target =
-            nearSpirits[Math.floor(Math.random() * nearSpirits.length)]
-
-          if (target) {
-            resolve(target)
-          }
-        }
+      if (nearAllies.length) {
+        target = nearAllies[Math.floor(Math.random() * nearAllies.length)]
       }
+    }
+    else if (targetCategory === 'enemySpirits') {
+      const nearEnemies = nearSpirits
+        .filter(target => target.coven !== spirit.coven)
 
-      resolve(false)
+      if (nearEnemies.length) {
+        target = nearEnemies[Math.floor(Math.random() * nearEnemies.length)]
+      }
     }
-    catch (err) {
-      reject(err)
+    else if (targetCategory === 'attacker') {
+      target = nearSpirits
+        .filter(target => target.instance === spirit.lastAttackedBy.instance)[0]
     }
-  })
+    else if (targetCategory === 'previousTarget') {
+      target = nearSpirits
+        .filter(target => target.instance === spirit.previousTarget.instance)[0]
+    }
+    else {
+      target = nearSpirits[Math.floor(Math.random() * nearSpirits.length)]
+    }
+
+    if (target) {
+      return target
+    }
+  }
+
+  return false
 }

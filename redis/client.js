@@ -12,7 +12,9 @@ const client = redis.createClient(
   redisConfig.redisHost
 )
 client.auth(redisConfig.redisKey, (err) => {
-    if (err) throw err
+  if (err) {
+    throw new Error(err)
+  }
 })
 
 client.on('ready', () => {

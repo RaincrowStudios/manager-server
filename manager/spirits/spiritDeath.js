@@ -15,16 +15,17 @@ module.exports = (spiritInstance, killer) => {
       const instanceInfo = await getAllFromHash(spiritInstance)
 
       if (instanceInfo) {
+        if (instanceInfo.id === undefined) {
+          await removeFromAll('spirits', spirit.instance)
+          resolve(true)
+        }
         const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
         const spirit = Object.assign(
           {}, spiritInfo, instanceInfo, {instance: spiritInstance}
         )
 
-        const activeSpirits =
-          await getOneFromHash(spirit.owner, 'activeSpirits')
-        const index = activeSpirits.indexOf(spirit.instance)
-
         const update = [
+          addSpiritDrop(spirit),
           deleteAllConditions(spirit.conditions),
           informNearbyPlayers(
             spirit.latitude,
@@ -33,41 +34,47 @@ module.exports = (spiritInstance, killer) => {
               command: 'map_spirit_death',
               instance: spirit.instance,
             }
-          ),
-          informPlayers(
-            [spirit.player],
-            {
-              command: 'character_spirit_death',
-              instance: spirit.instance,
-              displayName: spirit.displayName,
-              killer: {
-                displayName: killer.displayName,
-                type: killer.type,
-                degree: killer.degree,
-                owner: killer.type === 'spirit' ? killer.ownerDisplay : false
-              }
-            }
-          ),
-          updateHashFieldArray(
-            spirit.owner,
-            'remove',
-            'activeSpirits',
-            spirit.instance,
-            index
-          ),
+          )
         ]
 
-        if (spirit.drop.length) {
-          update.push(addSpiritDrop(spirit))
+        if (spirit.owner) {
+          const activeSpirits =
+            await getOneFromHash(spirit.owner, 'activeSpirits')
+          const index = activeSpirits.indexOf(spirit.instance)
+          update.push(
+            informPlayers(
+              [spirit.player],
+              {
+                command: 'character_spirit_death',
+                instance: spirit.instance,
+                displayName: spirit.displayName,
+                killer: {
+                  displayName: killer.displayName,
+                  type: killer.type,
+                  degree: killer.degree,
+                  owner: killer.type === 'spirit' ? killer.ownerDisplay : false
+                }
+              }
+            ),
+            updateHashFieldArray(
+              spirit.owner,
+              'remove',
+              'activeSpirits',
+              spirit.instance,
+              index
+            )
+          )
         }
 
-        if (!spirit.owner && !killer.type === 'spirit') {
+        if (!spirit.owner && killer.type !== 'spirit') {
           update.push(addSpiritBounty(spirit, killer))
         }
 
         await Promise.all(update)
 
         await removeFromAll('spirits', spirit.instance)
+
+        console.log('Spirit dead')
       }
       const spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {

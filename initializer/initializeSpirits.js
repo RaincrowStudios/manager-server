@@ -24,10 +24,12 @@ async function initializeSpirits() {
           else if (spirit.energy <= 0) {
             if (spirits[i].lastAttackedBy) {
               let killer
-              const killerInfo = await getAllFromHash(spirits[i].lastAttackedBy.instance)
+              const killerInfo =
+                await getAllFromHash(spirits[i].lastAttackedBy.instance)
 
               if (killerInfo.type === 'spirit') {
-                const spiritInfo = await getOneFromHash('list:spirits', killerInfo.id)
+                const spiritInfo =
+                  await getOneFromHash('list:spirits', killerInfo.id)
                 killer = Object.assign(
                   {},
                   spiritInfo,
@@ -55,7 +57,6 @@ async function initializeSpirits() {
                   spiritExpire(spirits[i]),
                   spirit.expireOn - currentTime
                 )
-              console.log('%s expiring in %d seconds', spirit.id, (spirit.expireOn - currentTime) / 1000)
             }
 
             const moveTimer =
@@ -65,16 +66,12 @@ async function initializeSpirits() {
                   spirit.moveOn - currentTime : 0
               )
 
-            console.log('%s moving in %d seconds', spirit.id, (spirit.moveOn - currentTime) / 1000)
-
             const actionTimer =
               setTimeout(() =>
                 spiritAction(spirits[i]),
                 spirit.actionOn > currentTime ?
                   spirit.actionOn - currentTime : 0
               )
-
-              console.log('%s acting in %d seconds', spirit.id, (spirit.actionOn - currentTime) / 1000)
 
             timers.insert({
               instance: spirits[i],

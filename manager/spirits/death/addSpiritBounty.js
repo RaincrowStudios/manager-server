@@ -1,4 +1,4 @@
-const addFieldsToHash = require('../../../redis/addFieldsToHash')
+const addFieldToHash = require('../../../redis/addFieldToHash')
 const getOneFromHash = require('../../../redis/getOneFromHash')
 const incrementHashField = require('../../../redis/incrementHashField')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
@@ -7,7 +7,7 @@ const informPlayers = require('../../../utils/informPlayers')
 module.exports = (spirit, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (spirit.bounty.length) {
+      if (spirit.bounty && spirit.bounty.length) {
         const update = []
         const rewards = []
         const collectibles = await Promise.all(spirit.bounty.map(bounty => {
@@ -40,11 +40,7 @@ module.exports = (spirit, killer) => {
 
           if (collectible.type === 'silver') {
             update.push(
-              incrementHashField(
-                killer.instance,
-                'silver',
-                count
-              )
+              incrementHashField(killer.instance, 'silver', count)
             )
             rewards.push({displayName: 'silver', count: count})
           }
@@ -62,10 +58,10 @@ module.exports = (spirit, killer) => {
               command = 'add'
 
               update.push(
-                addFieldsToHash(
+                addFieldToHash(
                   killer.instance,
-                  ['unlockedCollectibles'],
-                  [killer.unlockedCollectibles.push(collectible.id)]
+                  'unlockedCollectibles',
+                  killer.unlockedCollectibles.push(collectible.id)
                 )
               )
             }

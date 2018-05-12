@@ -17,7 +17,7 @@ module.exports = (category, region, instance, score) => {
         ['set:leaderboard:' + category + ':' + region, score, instance],
         (err) => {
           if (err) {
-            reject(err)
+            throw new Error(err)
           }
           else {
             resolve(true)

@@ -12,8 +12,7 @@ module.exports = (instance, fields) => {
 
       client.hmget([instance, ...fields], (err, results) => {
         if (err) {
-          err.code = '5300'
-          reject(err)
+          throw new Error('5300')
         }
         resolve(results.map(result => JSON.parse(result)))
       })

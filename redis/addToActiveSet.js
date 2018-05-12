@@ -12,7 +12,7 @@ module.exports = (category, instance) => {
 
       client.zadd(['set:active:' + category, Date.now(), instance], (err) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(true)

@@ -15,7 +15,7 @@ module.exports = (instance, field, increment) => {
 
       client.hincrby([instance, field, increment], (err, result) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(result)

@@ -9,7 +9,7 @@ async function initializer() {
   initializeCooldowns()
   initializeImmunities()
   initializePortals()
-  initializeSpirits()
+  //initializeSpirits()
 }
 
 module.exports = initializer

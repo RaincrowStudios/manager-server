@@ -1,19 +1,20 @@
-const addFieldsToHash = require('../../../redis/addFieldsToHash')
-const addExperience = require('../../../redis/addExperience')
+const addFieldToHash = require('../../../redis/addFieldToHash')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const determineCritical = require('./determineCritical')
 const determineResist = require('./determineResist')
-const determineExperience = require('./determineExperience')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
 module.exports = (spirit, target) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const spiritExists = await checkKeyExistance(spirit.instance)
-      const targetExists = await checkKeyExistance(target.instance)
+      const [spiritExists, targetExists] = await Promise.all([
+        checkKeyExistance(spirit.instance),
+        checkKeyExistance(target.instance)
+      ])
+
       if (spiritExists && targetExists) {
         const range = spirit.attack.split('-')
         const min = parseInt(range[0], 10)
@@ -46,11 +47,6 @@ module.exports = (spirit, target) => {
         let [targetEnergy, targetStatus] =
           await adjustEnergy(target.instance, resolution.total)
 
-        console.log('%s attacked %s. Energy: %d', spirit.displayName, target.displayName, targetEnergy)
-
-        const xp = 1//determineXP()
-
-        //const award = await addExperience('characters', spirit.owner, xpGain)
         const update = [
           informNearbyPlayers(
             spirit.latitude,
@@ -62,29 +58,19 @@ module.exports = (spirit, target) => {
               action: 'Attack'
             }
           ),
-          informPlayers(
-            [spirit.player],
-            {
-              command: 'character_spirit_action',
-              spirit: spirit.displayName,
-              action: 'Attack',
-              target: target.displayName,
-              targetType: target.type,
-              xp: xp
-            }
-          ),
-          addFieldsToHash(
+          addFieldToHash(
             spirit.instance,
-            ['previousTarget'],
-            [{ instance: target.instance, type: 'spirit' }]
+            'previousTarget',
+            { instance: target.instance, type: 'spirit' }
           ),
         ]
+
         if (target.type === 'spirit' && targetStatus !== 'dead') {
           update.push(
-            addFieldsToHash(
+            addFieldToHash(
               target.instance,
-              ['lastAttackedBy'],
-              [{ instance: spirit.instance, type: 'spirit' }]
+              'lastAttackedBy',
+              { instance: spirit.instance, type: 'spirit' }
             )
           )
         }
@@ -94,11 +80,7 @@ module.exports = (spirit, target) => {
             spirit.bloodlustCount + 1 : 1
 
           update.push(
-            addFieldsToHash(
-              spirit.instance,
-              ['bloodlustCount'],
-              [bloodlustCount]
-            ),
+            addFieldToHash(spirit.instance, 'bloodlustCount', bloodlustCount),
           )
         }
 
@@ -108,6 +90,7 @@ module.exports = (spirit, target) => {
               [target.player],
               {
                 command: 'character_spell_hit',
+                instance: spirit.instance,
                 caster: spirit.displayName,
                 type: spirit.type,
                 degree: spirit.degree,

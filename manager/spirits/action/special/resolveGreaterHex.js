@@ -1,5 +1,5 @@
 const getOneFromHash = require('../../../../redis/getOneFromHash')
-const spriritSpell = require('../spriritSpell')
+const spiritSpellNormal = require('../spiritSpellNormal')
 
 module.exports = (caster, target, ingredients) => {
   return new Promise(async (resolve, reject) => {
@@ -13,7 +13,7 @@ module.exports = (caster, target, ingredients) => {
       for (let i = 0; i < 3; i++) {
         const spell = await getOneFromHash('list:spells', 'spell_hex')
         const intermediateResult =
-          await spriritSpell(caster, target, spell, ingredients)
+          await spiritSpellNormal(caster, target, spell, ingredients)
 
         result.total += intermediateResult.total
         if (intermediateResult.critical) {

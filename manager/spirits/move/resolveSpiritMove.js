@@ -1,4 +1,4 @@
-const addFieldsToHash = require('../../../redis/addFieldsToHash')
+const addFieldToHash = require('../../../redis/addFieldToHash')
 const addToGeohash = require('../../../redis/addToGeohash')
 const informNearbyPlayersUnion = require('../../../utils/informNearbyPlayersUnion')
 const createMapToken = require('../../../utils/createMapToken')
@@ -20,11 +20,8 @@ module.exports = (spirit) => {
             token: createMapToken(spirit.instance, spirit)
           }
         ),
-        addFieldsToHash(
-          spirit.instance,
-          ['latitude', 'longitude'],
-          [newCoords[0], newCoords[1]]
-        ),
+        addFieldToHash(spirit.instance, 'latitude', newCoords[0]),
+        addFieldToHash(spirit.instance, 'longitude', newCoords[1]),
         addToGeohash('spirits', spirit.instance, newCoords[0], newCoords[1])
       ])
 

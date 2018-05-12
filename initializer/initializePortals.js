@@ -12,7 +12,7 @@ async function initializePortals() {
         const currentTime = Date.now()
         const portal = await getAllFromHash(portals[i])
 
-        if (portal && portal.summonOn > currentTime && portal.energy > 0) {
+        if (portal && portal.energy > 0) {
           const summonTimer =
             setTimeout(() =>
               portalSummon(portals[i]),

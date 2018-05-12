@@ -14,7 +14,9 @@ const subscriber = redis.createClient(
 )
 
 subscriber.auth(redisConfig.redisKey, (err) => {
-    if (err) throw err
+  if (err) {
+    throw new Error(err)
+  }
 })
 
 subscriber.on('ready', () => {

@@ -1,8 +1,8 @@
 const removeFromActiveSet = require('../../../../redis/removeFromActiveSet')
 const removeFromHash = require('../../../../redis/removeFromHash')
 const updateHashFieldArray = require('../../../../redis/updateHashFieldArray')
-const informManager = require('../../../../utils/informManager')
 const informPlayers = require('../../../../utils/informPlayers')
+const deleteCondition = require('../../../conditions/deleteCondition')
 
 module.exports = (caster, target) => {
   return new Promise(async (resolve, reject) => {
@@ -17,13 +17,7 @@ module.exports = (caster, target) => {
 
       if (target.conditions.length) {
         await Promise.all([
-          informManager(
-            {
-              command: 'remove',
-              type: 'condition',
-              instance: target.conditions[index].instance,
-            }
-          ),
+          deleteCondition(target.conditions[index].instance),
           informPlayers(
             [target.player],
             {

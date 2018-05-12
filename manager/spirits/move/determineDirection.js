@@ -1,3 +1,5 @@
+const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
+const getAllFromHash = require('../../../redis/getAllFromHash')
 const targetAll = require('../target/targetAll')
 const targetAllies = require('../target/targetAllies')
 const targetCharacters = require('../target/targetCharacters')
@@ -10,29 +12,76 @@ const determineFlee = require('./determineFlee')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let destination, direction
+      let destination
+      let direction = false
+      const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
+        await Promise.all([
+          getNearbyFromGeohash(
+           'characters',
+           spirit.latitude,
+           spirit.longitude,
+           spirit.reach
+         ),
+         getNearbyFromGeohash(
+          'collectibles',
+          spirit.latitude,
+          spirit.longitude,
+          spirit.reach
+        ),
+         getNearbyFromGeohash(
+            'portals',
+            spirit.latitude,
+            spirit.longitude,
+            spirit.reach
+          ),
+          getNearbyFromGeohash(
+           'spirits',
+           spirit.latitude,
+           spirit.longitude,
+           spirit.reach
+         )
+       ])
+
+     const nearInstances =
+      [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]
+       .filter(instance => instance !== spirit.instance)
+
+     const nearInfo = await Promise.all(
+       nearInstances.map(instance => getAllFromHash(instance))
+     )
+
+     const nearTargets = nearInfo.map((target, i) => {
+         if (target) {
+           target.instance = nearInstances[i]
+           return target
+         }
+       })
+       .filter(target => target && target.status !== 'dead')
 
       if (spirit.status === 'vulnerable') {
         if (!spirit.attributes || !spirit.attributes.includes('stubborn')) {
-          destination = await determineFlee(spirit)
+          destination = await determineFlee(spirit, nearTargets)
 
           if (destination) {
             direction = [
               Math.sign(destination.latitude - spirit.latitude),
               Math.sign(destination.longitude - spirit.longitude),
             ]
+
+            resolve(direction)
           }
         }
       }
 
       if (spirit.attributes && spirit.attributes.includes('cowardly')) {
-        destination = await determineFlee(spirit)
+        destination = await determineFlee(spirit, nearTargets)
 
         if (destination) {
           direction = [
             Math.sign(destination.latitude - spirit.latitude),
             Math.sign(destination.longitude - spirit.longitude),
           ]
+          resolve(direction)
         }
       }
 
@@ -40,129 +89,74 @@ module.exports = (spirit) => {
         const directionCategory = spirit.moveTree[i].split(':')
         switch (directionCategory[0]) {
           case 'all':
-            destination = await targetAll(spirit)
-
-            if (destination) {
-              direction = [
-                Math.sign(destination.latitude - spirit.latitude),
-                Math.sign(destination.longitude - spirit.longitude),
-              ]
-            }
+            destination = targetAll(spirit, nearTargets)
             break
           case 'attacker':
             if (spirit.lastAttackedBy) {
               destination =
                 spirit.lastAttackedBy.type === 'spirit' ?
-                  await targetSpirits(spirit, directionCategory[0]) :
-                  await targetCharacters(spirit, directionCategory[0])
-
-              if (destination) {
-                direction = [
-                  Math.sign(destination.latitude - spirit.latitude),
-                  Math.sign(destination.longitude - spirit.longitude),
-                ]
-              }
+                  targetSpirits(spirit, nearTargets, directionCategory[0]) :
+                  targetCharacters(spirit, nearTargets, directionCategory[0])
             }
             break
           case 'previousTarget':
             if (spirit.previousTarget) {
               destination =
                 spirit.previousTarget.type === 'spirit' ?
-                  await targetSpirits(spirit, directionCategory[0]) :
-                  await targetCharacters(spirit, directionCategory[0])
-
-              if (destination) {
-                direction = [
-                  Math.sign(destination.latitude - spirit.latitude),
-                  Math.sign(destination.longitude - spirit.longitude),
-                ]
-              }
+                  targetSpirits(spirit, nearTargets, directionCategory[0]) :
+                  targetCharacters(spirit, nearTargets, directionCategory[0])
             }
             break
           case 'collectible':
             if (spirit.carrying.length < spirit.maxCarry) {
               destination =
-                await targetCollectibles(spirit, directionCategory[1])
-
-              if (destination) {
-                direction = [
-                  Math.sign(destination.latitude - spirit.latitude),
-                  Math.sign(destination.longitude - spirit.longitude),
-                ]
-              }
+                targetCollectibles(spirit, nearTargets, directionCategory[1])
             }
             break
           case 'allies':
           case 'vulnerableAllies':
-            destination = await targetAllies(spirit, directionCategory[0])
-
-            if (destination) {
-              direction = [
-                Math.sign(destination.latitude - spirit.latitude),
-                Math.sign(destination.longitude - spirit.longitude),
-              ]
-            }
+            destination = targetAllies(spirit, nearTargets, directionCategory[0])
             break
           case 'enemies':
           case 'vulnerableEnemies':
-            destination = await targetEnemies(spirit, directionCategory[0])
-
-            if (destination) {
-              direction = [
-                Math.sign(destination.latitude - spirit.latitude),
-                Math.sign(destination.longitude - spirit.longitude),
-              ]
-            }
+            destination = targetEnemies(spirit, nearTargets, directionCategory[0])
             break
           case 'spirits':
           case 'allySpirits':
           case 'enemySpirits':
-            destination = await targetSpirits(spirit, directionCategory[0])
-
-            if (destination) {
-              direction = [
-                Math.sign(destination.latitude - spirit.latitude),
-                Math.sign(destination.longitude - spirit.longitude),
-              ]
-            }
+            destination = targetSpirits(spirit, nearTargets, directionCategory[0])
             break
           case 'summoner':
             direction = 'summoner'
             break
           case 'portals':
-            destination = await targetPortals(spirit, directionCategory[0])
-
-            if (destination) {
-              direction = [
-                Math.sign(destination.latitude - spirit.latitude),
-                Math.sign(destination.longitude - spirit.longitude),
-              ]
-            }
+            destination = targetPortals(spirit, nearTargets, directionCategory[0])
             break
           case 'summonLocation':
             direction = [
               Math.sign(spirit.summonLat - spirit.latitude),
               Math.sign(spirit.summonLong - spirit.longitude),
             ]
+
+            resolve(direction)
             break
           case 'vampires':
           case 'witches':
-            destination = await targetCharacters(spirit, directionCategory[0])
-
-            if (destination) {
-              direction = [
-                Math.sign(destination.latitude - spirit.latitude),
-                Math.sign(destination.longitude - spirit.longitude),
-              ]
-            }
+            destination = targetCharacters(spirit, nearTargets, directionCategory[0])
             break
           default:
             break
         }
-        if (direction) {
-          resolve(direction)
+
+        if (destination) {
+          direction = [
+            Math.sign(destination.latitude - spirit.latitude),
+            Math.sign(destination.longitude - spirit.longitude),
+          ]
         }
+        resolve(direction)
       }
+
       resolve(false)
     }
     catch (err) {

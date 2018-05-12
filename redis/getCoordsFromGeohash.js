@@ -12,7 +12,7 @@ module.exports = (category, member) => {
 
       client.geopos(['geo:' + category, member], (err, results) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(results)

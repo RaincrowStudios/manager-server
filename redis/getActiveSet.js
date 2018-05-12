@@ -9,7 +9,7 @@ module.exports = (category) => {
 
       client.zrange(['set:active:' + category, 0, -1], (err, results) => {
         if (err) {
-          reject(err)
+          throw new Error(err)
         }
         else {
           resolve(results)
