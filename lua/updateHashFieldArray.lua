@@ -5,9 +5,9 @@ local field = ARGV[2]
 local newValue = cjson.decode(ARGV[3])
 local index = ARGV[4] + 1
 
-local alive = redis.call('EXISTS', key)
+local exists = redis.call('EXISTS', key)
 
-if alive == 0 then
+if exists == 0 then
   return cjson.encode(false)
 else
   local array = cjson.decode(redis.call('HGET', key, field))
