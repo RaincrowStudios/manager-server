@@ -10,7 +10,7 @@ module.exports = (instance, field, value) => {
       else if (!field || typeof field !== 'string') {
         throw new Error('Invalid field: ' + field)
       }
-      else if (!value) {
+      else if (value === undefined) {
         throw new Error('Invalid values: ' + value)
       }
 

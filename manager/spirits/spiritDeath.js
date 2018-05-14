@@ -73,8 +73,6 @@ module.exports = (spiritInstance, killer) => {
         await Promise.all(update)
 
         await removeFromAll('spirits', spirit.instance)
-
-        console.log('Spirit dead')
       }
       const spiritTimers = timers.by('instance', spiritInstance)
       if (spiritTimers) {

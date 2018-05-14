@@ -1,4 +1,5 @@
 const client = require('./client')
+const scripts = require('../lua/scripts')
 
 module.exports = (category, instance, latitude, longitude) => {
   return new Promise((resolve, reject) => {
@@ -13,14 +14,23 @@ module.exports = (category, instance, latitude, longitude) => {
         throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
       }
 
-      client.geoadd(['geo:' + category, longitude, latitude, instance], (err) => {
-        if (err) {
-          throw new Error(err)
+      client.evalsha(
+        [
+          scripts.moveInGeohash.sha,
+          1, 'geo:' + category,
+          latitude,
+          longitude,
+          instance
+        ],
+        (err, result) => {
+          if (err) {
+            throw new Error(err)
+          }
+          else {
+            resolve(result)
+          }
         }
-        else {
-          resolve(true)
-        }
-      })
+      )
     }
     catch (err) {
       reject(err)
