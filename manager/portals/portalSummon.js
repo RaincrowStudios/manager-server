@@ -1,4 +1,5 @@
 const uuidv1 = require('uuid/v1')
+const addExperience = require('../../redis/addExperience')
 const addObjectToHash = require('../../redis/addObjectToHash')
 const addToActiveSet = require('../../redis/addToActiveSet')
 const addToGeohash = require('../../redis/addToGeohash')
@@ -6,6 +7,7 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const determineExperience = require('../../utils/determineExperience')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const spiritAdd = require('../spirits/spiritAdd')
@@ -20,13 +22,17 @@ module.exports = async (portalInstance) => {
       const spiritInstance = uuidv1()
 
       const query = [
-        getOneFromHash('list:spirits', portal.spirit.id)
+        getOneFromHash('list:spirits', portal.spirit.id),
+        getOneFromHash('list:constants', 'xpMultipliers'),
+        getOneFromHash(portal.owner, 'summonedSpirits')
       ]
 
       if (portal.owner) {
         getOneFromHash(portal.owner, 'activePortals')
       }
-      const [spiritInfo, activePortals] = await Promise.all(query)
+
+      const [spiritInfo, xpMultipliers, summonedSpirits, activePortals] =
+        await Promise.all(query)
 
       const spirit = Object.assign(
         {}, spiritInfo, portal.spirit, {instance: spiritInstance}
@@ -42,8 +48,12 @@ module.exports = async (portalInstance) => {
       spirit.latitude = portal.latitude
       spirit.longitude = portal.longitude
 
+      const firstSummon = summonedSpirits.includes(spirit.id)
+
+      const xpGain = determineExperience(xpMultipliers, 'spirit', firstSummon)
 
       update.push(
+        addExperience(spirit.owner, spirit.dominion, xpGain, spirit.coven),
         addObjectToHash(spiritInstance, spirit),
         addToActiveSet('spirits', spiritInstance),
         addToGeohash(

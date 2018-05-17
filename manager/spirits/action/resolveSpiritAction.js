@@ -1,6 +1,6 @@
+const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
 const getOneFromHash = require('../../../redis/getOneFromHash')
-const addExperience = require('../../../utils/addExperience')
 const informPlayers= require('../../../utils/informPlayers')
 const levelUp= require('../../../utils/levelUp')
 const determineTargets = require('../target/determineTargets')
