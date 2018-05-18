@@ -46,15 +46,43 @@ module.exports = async (portalInstance) => {
         {}, spiritInfo, portal.spirit, {instance: spiritInstance}
       )
 
-      spirit.createdOn = currentTime
-      spirit.expireOn = spirit.duration > 0 ?
-        currentTime + (spirit.duration * 60000) : 0
-      spirit.moveOn = currentTime
-      spirit.actionOn = currentTime
       spirit.summonLat = portal.latitude
       spirit.summonLong = portal.longitude
       spirit.latitude = portal.latitude
       spirit.longitude = portal.longitude
+      spirit.createdOn = currentTime
+      spirit.expireOn = spirit.duration > 0 ?
+        currentTime + (spirit.duration * 60000) : 0
+
+      let moveOn
+      if (spirit.moveFreq.includes('-')) {
+        const range = spirit.moveFreq.split('-')
+        const min = parseInt(range[0], 10)
+        const max = parseInt(range[1], 10)
+
+        moveOn = currentTime +
+          ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
+      }
+      else {
+        moveOn = parseInt(spirit.moveFreq, 10)
+      }
+
+      spirit.moveOn = moveOn
+
+      let actionOn
+      if (spirit.moveFreq.includes('-')) {
+        const range = spirit.moveFreq.split('-')
+        const min = parseInt(range[0], 10)
+        const max = parseInt(range[1], 10)
+
+        actionOn = currentTime +
+          ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
+      }
+      else {
+        actionOn = parseInt(spirit.moveFreq, 10)
+      }
+
+      spirit.actionOn = actionOn
 
       update.push(
         addObjectToHash(spiritInstance, spirit),
@@ -138,10 +166,8 @@ module.exports = async (portalInstance) => {
           instance: portalInstance
         }
       )
-
+      update.push(spiritAdd(spiritInstance, spirit))
       await Promise.all(update)
-
-      spiritAdd(spiritInstance, spirit)
       /*
       console.log({
         event: 'spirit_summoned',
