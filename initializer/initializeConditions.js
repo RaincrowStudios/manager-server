@@ -5,73 +5,76 @@ const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
 const deleteCondition = require('../manager/conditions/deleteCondition')
 
-async function initializeConditions() {
-  try {
-    const conditions = await getActiveSet('conditions')
+function initializeConditions() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const conditions = await getActiveSet('conditions')
 
-    if (conditions.length) {
-      for (let i = 0; i < conditions.length; i++) {
-        const currentTime = Date.now()
-        const bearerInstance =
-          await getOneFromHash('list:conditions', conditions[i])
+      if (conditions.length) {
+        for (let i = 0; i < conditions.length; i++) {
+          const currentTime = Date.now()
+          const bearerInstance =
+            await getOneFromHash('list:conditions', conditions[i])
 
-        if (!bearerInstance) {
-          deleteCondition(conditions[i])
-          continue
-        }
+          if (!bearerInstance) {
+            deleteCondition(conditions[i])
+            continue
+          }
 
-        const conditionsArray =
-          await getOneFromHash(bearerInstance, 'conditions')
+          const conditionsArray =
+            await getOneFromHash(bearerInstance, 'conditions')
 
-        const condition = conditionsArray
-          .filter(condition => condition.instance === conditions[i])[0]
+          const condition = conditionsArray
+            .filter(condition => condition.instance === conditions[i])[0]
 
-        if (!condition) {
-          deleteCondition(conditions[i])
-          continue
-        }
+          if (!condition) {
+            deleteCondition(conditions[i])
+            continue
+          }
 
-        if (condition.expiresOn === 0 || condition.expiresOn > currentTime) {
-          let expireTimer
-          if (condition.expiresOn) {
-            expireTimer =
+          if (condition.expiresOn === 0 || condition.expiresOn > currentTime) {
+            let expireTimer
+            if (condition.expiresOn) {
+              expireTimer =
+                setTimeout(() =>
+                  conditionExpire(conditions[i]),
+                  condition.expiresOn - currentTime
+                )
+              }
+
+            const triggerTimer =
               setTimeout(() =>
-                conditionExpire(conditions[i]),
-                condition.expiresOn - currentTime
+                conditionTrigger(conditions[i]),
+                condition.triggerOn > currentTime ?
+                  condition.triggerOn - currentTime : 0
               )
+
+            const previousTimers = timers.by('instance', conditions[i])
+            if (previousTimers) {
+              previousTimers.expireTimer
+              previousTimers.triggerTimer
+              timers.update(previousTimers)
             }
-
-          const triggerTimer =
-            setTimeout(() =>
-              conditionTrigger(conditions[i]),
-              condition.triggerOn > currentTime ?
-                condition.triggerOn - currentTime : 0
-            )
-
-          const previousTimers = timers.by('instance', conditions[i])
-          if (previousTimers) {
-            previousTimers.expireTimer
-            previousTimers.triggerTimer
-            timers.update(previousTimers)
+            else {
+              timers.insert({
+                instance: conditions[i],
+                expireTimer,
+                triggerTimer,
+              })
+            }
           }
           else {
-            timers.insert({
-              instance: conditions[i],
-              expireTimer,
-              triggerTimer,
-            })
+            conditionExpire(conditions[i])
+            continue
           }
         }
-        else {
-          conditionExpire(conditions[i])
-          continue
-        }
       }
+      resolve(true)
     }
-  }
-  catch (err) {
-    console.error(err)
-  }
+    catch (err) {
+      reject(err)
+    }
+  })
 }
 
 module.exports = initializeConditions

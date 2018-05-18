@@ -6,7 +6,6 @@ module.exports = (latitude, longitude, message, exclude = []) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (typeof latitude !== 'number' && typeof longitude !== 'number') {
-        console.log(message)
         throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
       }
 

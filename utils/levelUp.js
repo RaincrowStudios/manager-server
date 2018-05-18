@@ -4,8 +4,18 @@ const informPlayers = require('./informPlayers')
 module.exports = (player, newLevel) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const [allSpells, baseEnergyByLevel] = await getFieldsFromHash(
+        'list:constants',
+        ['spellsByLevel', 'baseEnergyByLevel']
+      )
+
+      const unlockedSpellIds = []
+      for (let i = 0; i < newLevel; i++) {
+        unlockedSpellIds.push(...allSpells[i])
+      }
+
       const unlockedSpells =
-        await getFieldsFromHash('list:spells', newLevel[2])
+        await getFieldsFromHash('list:spells', unlockedSpellIds)
 
       const newSpells = unlockedSpells.map(spell => {
         return {
@@ -25,8 +35,8 @@ module.exports = (player, newLevel) => {
           [player],
           {
             command: 'character_level_up',
-            level: newLevel[0],
-            baseEnergy: newLevel[1],
+            level: newLevel,
+            baseEnergy: baseEnergyByLevel[newLevel - 1],
             newSpells: newSpells
           }
         )

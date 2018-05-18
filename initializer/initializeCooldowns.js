@@ -4,45 +4,48 @@ const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const cooldownExpire = require('../manager/cooldowns/cooldownExpire')
 
 async function initializeCooldowns() {
-  try {
-    const cooldowns = await getActiveSet('cooldowns')
+  return new Promise(async (resolve, reject) => {
+    try {
+      const cooldowns = await getActiveSet('cooldowns')
 
-    if (cooldowns.length) {
-      for (let i = 0; i < cooldowns.length; i++) {
-        const currentTime = Date.now()
-        const cooldown = await getFieldsFromHash(
-          'list:cooldowns',
-          [cooldowns[i]]
-        )
+      if (cooldowns.length) {
+        for (let i = 0; i < cooldowns.length; i++) {
+          const currentTime = Date.now()
+          const cooldown = await getFieldsFromHash(
+            'list:cooldowns',
+            [cooldowns[i]]
+          )
 
-        if (cooldown) {
-          if (cooldown.expiresOn > currentTime) {
-            const expireTimer =
-              setTimeout(() =>
-                cooldownExpire(cooldowns[i]),
-                cooldown.expiresOn - currentTime
-              )
+          if (cooldown) {
+            if (cooldown.expiresOn > currentTime) {
+              const expireTimer =
+                setTimeout(() =>
+                  cooldownExpire(cooldowns[i]),
+                  cooldown.expiresOn - currentTime
+                )
 
-            const previousTimers = timers.by('instance', cooldowns[i])
-            if (previousTimers) {
-              previousTimers.expireTimer
+              const previousTimers = timers.by('instance', cooldowns[i])
+              if (previousTimers) {
+                previousTimers.expireTimer
 
-              timers.update(previousTimers)
+                timers.update(previousTimers)
+              }
+              else {
+                timers.insert({instance: cooldowns[i], expireTimer})
+              }
             }
             else {
-              timers.insert({instance: cooldowns[i], expireTimer})
+              cooldownExpire(cooldowns[i])
             }
-          }
-          else {
-            cooldownExpire(cooldowns[i])
           }
         }
       }
+      resolve(true)
     }
-  }
-  catch (err) {
-    console.error(err)
-  }
+    catch (err) {
+      reject(err)
+    }
+  })
 }
 
 module.exports = initializeCooldowns

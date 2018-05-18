@@ -1,4 +1,5 @@
 const client = require('./client')
+const scripts = require('../lua/scripts')
 
 module.exports = (instance, field, value) => {
   return new Promise((resolve, reject) => {
@@ -10,15 +11,17 @@ module.exports = (instance, field, value) => {
         throw new Error('Invalid field: ' + field)
       }
       else if (value === undefined) {
-        throw new Error('Invalid value: ' + value)
+        throw new Error('Invalid values: ' + value)
       }
 
-      client.hmset([instance, field, JSON.stringify(value)], (err) => {
+      client.evalsha(
+        [scripts.updateHashField.sha, 1, instance, field, JSON.stringify(value)],
+        (err, result) => {
         if (err) {
           throw new Error(err)
         }
         else {
-          resolve(true)
+          resolve(result)
         }
       })
     }

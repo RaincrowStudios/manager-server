@@ -8,31 +8,32 @@ const redisConfig = JSON.parse(redisConfigJSON)
 
 const manager = require('../manager/manager')
 
-const subscriber = redis.createClient(
-  redisConfig.redisPort,
-  redisConfig.redisHost
-)
+function subscriber() {
+  const subscriber = redis.createClient(
+    redisConfig.redisPort,
+    redisConfig.redisHost
+  )
 
-subscriber.auth(redisConfig.redisKey, (err) => {
-  if (err) {
-    throw new Error(err)
-  }
-})
-
-subscriber.on('ready', () => {
-  console.log("Redis Subscriber ready")
-})
-
-subscriber.on('error', (err) => {
-  //contact admin
-  console.log("Error in Redis Subscriber", err)
-})
-
-subscriber.on('message', ((channel, message) => {
-    manager(JSON.parse(message))
+  subscriber.auth(redisConfig.redisKey, (err) => {
+    if (err) {
+      throw new Error(err)
+    }
   })
-)
 
-subscriber.subscribe('manager')
+  subscriber.on('ready', () => {
+    console.log("Redis Subscriber ready")
+  })
 
+  subscriber.on('error', (err) => {
+    //contact admin
+    console.log("Error in Redis Subscriber", err)
+  })
+
+  subscriber.on('message', ((channel, message) => {
+      manager(JSON.parse(message))
+    })
+  )
+
+  subscriber.subscribe('manager')
+}
 module.exports = subscriber

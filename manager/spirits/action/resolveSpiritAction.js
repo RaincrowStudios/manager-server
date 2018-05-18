@@ -1,8 +1,8 @@
 const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
 const getOneFromHash = require('../../../redis/getOneFromHash')
-const informPlayers= require('../../../utils/informPlayers')
-const levelUp= require('../../../utils/levelUp')
+const informPlayers = require('../../../utils/informPlayers')
+const levelUp = require('../../../utils/levelUp')
 const determineTargets = require('../target/determineTargets')
 const basicAttack = require('./basicAttack')
 const determineAction = require('./determineAction')
@@ -42,7 +42,15 @@ module.exports = (spirit) => {
           }
         }
         if (spirit.owner) {
-          const xpGain = determineExperience()
+          const xpMultipliers =
+          await getOneFromHash('list:constants', 'xpMultipliers')
+
+          const xpGain = determineExperience(
+            xpMultipliers,
+            'action',
+            false,
+            spirit
+          )
 
           const [xp, newLevel] = await addExperience(
             spirit.owner, spirit.dominion, xpGain, spirit.coven

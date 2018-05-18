@@ -1,7 +1,7 @@
 const timers = require('../../database/timers')
-const addFieldToHash = require('../../redis/addFieldToHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
+const updateHashField = require('../../redis/updateHashField')
 const removeFromAll = require('../../redis/removeFromAll')
 const resolveSpiritMove = require('./move/resolveSpiritMove')
 
@@ -43,7 +43,7 @@ async function spiritMove(spiritInstance) {
         newMoveOn = parseInt(spirit.moveFreq, 10)
       }
 
-      await addFieldToHash(spirit.instance, 'moveOn', newMoveOn)
+      await updateHashField(spirit.instance, 'moveOn', newMoveOn)
 
       const newTimer =
         setTimeout(() =>

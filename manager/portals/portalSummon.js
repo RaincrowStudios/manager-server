@@ -23,16 +23,24 @@ module.exports = async (portalInstance) => {
 
       const query = [
         getOneFromHash('list:spirits', portal.spirit.id),
-        getOneFromHash('list:constants', 'xpMultipliers'),
-        getOneFromHash(portal.owner, 'summonedSpirits')
+        getOneFromHash('list:constants', 'xpMultipliers')
       ]
 
       if (portal.owner) {
-        getOneFromHash(portal.owner, 'activePortals')
+        query.push(
+          getOneFromHash(portal.owner, 'aptitude'),
+          getOneFromHash(portal.owner, 'summonedSpirits'),
+          getOneFromHash(portal.owner, 'activePortals')
+        )
       }
 
-      const [spiritInfo, xpMultipliers, summonedSpirits, activePortals] =
-        await Promise.all(query)
+      const [
+        spiritInfo,
+        xpMultipliers,
+        aptitude,
+        summonedSpirits,
+        activePortals
+      ] = await Promise.all(query)
 
       const spirit = Object.assign(
         {}, spiritInfo, portal.spirit, {instance: spiritInstance}
@@ -48,12 +56,7 @@ module.exports = async (portalInstance) => {
       spirit.latitude = portal.latitude
       spirit.longitude = portal.longitude
 
-      const firstSummon = summonedSpirits.includes(spirit.id)
-
-      const xpGain = determineExperience(xpMultipliers, 'spirit', firstSummon)
-
       update.push(
-        addExperience(spirit.owner, spirit.dominion, xpGain, spirit.coven),
         addObjectToHash(spiritInstance, spirit),
         addToActiveSet('spirits', spiritInstance),
         addToGeohash(
@@ -82,9 +85,22 @@ module.exports = async (portalInstance) => {
         )
       )
 
-      if (activePortals) {
+      if (spirit.owner) {
+        const firstSummon = summonedSpirits ?
+          summonedSpirits.includes(spirit.id) : false
+
+        const xpGain = determineExperience(
+          xpMultipliers,
+          'summon',
+          firstSummon,
+          spirit,
+          aptitude
+        )
+
         const index = activePortals.indexOf(portalInstance)
+
         update.push(
+          addExperience(spirit.owner, spirit.dominion, xpGain, spirit.coven),
           updateHashFieldArray(
             portal.owner,
             'remove',

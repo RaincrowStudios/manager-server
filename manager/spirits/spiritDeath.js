@@ -81,6 +81,7 @@ module.exports = (spiritInstance, killer) => {
         clearTimeout(spiritTimers.actionTimer)
         timers.remove(spiritTimers)
       }
+
       resolve(true)
     }
     catch (err) {

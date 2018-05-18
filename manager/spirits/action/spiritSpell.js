@@ -1,6 +1,7 @@
 const addFieldToHash = require('../../../redis/addFieldToHash')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
+const updateHashField = require('../../../redis/updateHashField')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
@@ -42,7 +43,7 @@ module.exports = (spirit, target, spell) => {
 
         if (spirit.status !== 'dead') {
           update.push(
-            addFieldToHash(
+            updateHashField(
               spirit.instance,
               'previousTarget',
               { instance: target.instance, type: 'spirit' }
@@ -62,7 +63,7 @@ module.exports = (spirit, target, spell) => {
 
         if (target.type === 'spirit' && targetStatus !== 'dead') {
           update.push(
-            addFieldToHash(
+            updateHashField(
               target.instance,
               'lastAttackedBy',
               { instance: spirit.instance, type: 'spirit' }

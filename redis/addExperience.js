@@ -1,8 +1,9 @@
-const client = require('../redis/client')
+const client = require('./client')
+const addToLeaderboard = ('./addToLeaderboard')
 const scripts = require('../lua/scripts')
 
 module.exports = (character, region, xp, coven = '') => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!character || typeof character !== 'string') {
         throw new Error('Invalid character: ' + character)
@@ -19,24 +20,31 @@ module.exports = (character, region, xp, coven = '') => {
         }
       }
 
-      client.multi()
-      .evalsha([scripts.addExperience.sha, 1, character, xp])
-      .zincrby(['leaderboard:world:character', xp, character])
-      .zincrby(['leaderboard:' + region + ':character', xp, character])
-
+      /*const leaderboards = [
+        addToLeaderboard('world', 'character', xp, character),
+        addToLeaderboard(region, 'character', xp, character)
+      ]
       if (coven) {
-        client.zincrby(['leaderboard:world:coven', xp, coven])
-        .zincrby(['leaderboard:' + region + ':coven', xp, coven])
+        leaderboards.push(
+          addToLeaderboard('world', 'coven', xp, coven),
+          addToLeaderboard(region, 'coven', xp, coven)
+        )
+
       }
 
-      client.exec((err, results) => {
-        if (err) {
-          throw new Error(err)
+      await Promise.all(leaderboards)*/
+
+      client.evalsha(
+        [scripts.addExperience.sha, 1, character, xp],
+        (err, results) => {
+          if (err) {
+            throw new Error(err)
+          }
+          else {
+            resolve(JSON.parse(results))
+          }
         }
-        else {
-          resolve(JSON.parse(results[0]))
-        }
-      })
+      )
     }
     catch (err) {
       reject(err)

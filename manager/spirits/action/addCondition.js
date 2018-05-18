@@ -1,5 +1,5 @@
 const uuidv1 = require('uuid/v1')
-const addFieldToHash = require('../../../redis/addFieldToHash')
+const addEntriesToList = require('../../../redis/addEntriesToList')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
@@ -103,6 +103,13 @@ module.exports = (caster, target, spell) => {
       ) {
         await Promise.all([
           deleteCondition(oldCondition[0].instance),
+          informPlayers(
+            [target.player],
+            {
+              command: 'character_condition_remove',
+              instance: result.instance
+            }
+          ),
           updateHashFieldArray(
             target.instance,
             'remove',
@@ -114,10 +121,10 @@ module.exports = (caster, target, spell) => {
       }
 
       const update = [
-        addFieldToHash(
-          'list:conditions',
-          conditionInstance,
-          target.instance
+        addEntriesToList(
+          'conditions',
+          [conditionInstance],
+          [target.instance]
         ),
         addToActiveSet('conditions', conditionInstance),
         conditionAdd(conditionInstance, result),

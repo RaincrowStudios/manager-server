@@ -5,11 +5,18 @@ const initializePortals = require('./initializePortals')
 const initializeSpirits = require('./initializeSpirits')
 
 async function initializer() {
-  initializeConditions()
-  initializeCooldowns()
-  initializeImmunities()
-  initializePortals()
-  //initializeSpirits()
+  try {
+    await Promise.all([
+      initializeConditions(),
+      initializeCooldowns(),
+      initializeImmunities(),
+      initializePortals(),
+      initializeSpirits()
+    ])
+  }
+  catch (err) {
+    console.error(err)
+  }
 }
 
 module.exports = initializer

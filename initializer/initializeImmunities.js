@@ -4,44 +4,47 @@ const getOneFromHash = require('../redis/getOneFromHash')
 const immunityExpire = require('../manager/immunities/immunityExpire')
 
 async function initializeImmunities() {
-  try {
-    const immunities = await getActiveSet('immunities')
+  return new Promise(async (resolve, reject) => {
+    try {
+      const immunities = await getActiveSet('immunities')
 
-    if (immunities.length) {
-      for (let i = 0; i < immunities.length; i++) {
-        if (immunities[i]) {
-          const currentTime = Date.now()
-          const immunity = await getOneFromHash('list:immunities', immunities[i])
+      if (immunities.length) {
+        for (let i = 0; i < immunities.length; i++) {
+          if (immunities[i]) {
+            const currentTime = Date.now()
+            const immunity = await getOneFromHash('list:immunities', immunities[i])
 
-          if (immunity) {
-            if (immunity.expiresOn > currentTime) {
-              const expireTimer =
-                setTimeout(() =>
-                  immunityExpire(immunities[i]),
-                  immunity.expiresOn - currentTime
-                )
+            if (immunity) {
+              if (immunity.expiresOn > currentTime) {
+                const expireTimer =
+                  setTimeout(() =>
+                    immunityExpire(immunities[i]),
+                    immunity.expiresOn - currentTime
+                  )
 
-              const previousTimers = timers.by('instance', immunities[i])
-              if (previousTimers) {
-                previousTimers.expireTimer
+                const previousTimers = timers.by('instance', immunities[i])
+                if (previousTimers) {
+                  previousTimers.expireTimer
 
-                timers.update(previousTimers)
+                  timers.update(previousTimers)
+                }
+                else {
+                  timers.insert({instance: immunities[i], expireTimer})
+                }
               }
               else {
-                timers.insert({instance: immunities[i], expireTimer})
+                immunityExpire(immunities[i])
               }
-            }
-            else {
-              immunityExpire(immunities[i])
             }
           }
         }
       }
+      resolve(true)
     }
-  }
-  catch (err) {
-    console.error(err)
-  }
+    catch (err) {
+      reject(err)
+    }
+  })
 }
 
 module.exports = initializeImmunities

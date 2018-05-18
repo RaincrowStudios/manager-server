@@ -21,7 +21,7 @@ async function conditionTrigger (conditionInstance) {
           bearerInstance,
           ['player', 'type', 'conditions', 'latitude', 'longitude', 'fuzzyLatitude', 'fuzzyLongitude']
         )
-      console.log(type)
+
       if (conditions && conditions.length) {
         let index
         const conditionToUpdate = conditions.filter((condition, i) => {
@@ -63,7 +63,7 @@ async function conditionTrigger (conditionInstance) {
                   command: 'map_condition_death',
                   instance: bearerInstance
                 },
-                [player]
+                [bearerInstance]
               ),
               informPlayers(
                 [player],
@@ -101,7 +101,7 @@ async function conditionTrigger (conditionInstance) {
                   spell: spell.displayName,
                   energy: bearerEnergy
                 },
-                [player]
+                [bearerInstance]
               )
             }
             else {

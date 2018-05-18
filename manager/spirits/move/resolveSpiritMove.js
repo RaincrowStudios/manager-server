@@ -1,5 +1,5 @@
-const addFieldToHash = require('../../../redis/addFieldToHash')
 const moveInGeohash = require('../../../redis/moveInGeohash')
+const updateHashField = require('../../../redis/updateHashField')
 const informNearbyPlayersUnion = require('../../../utils/informNearbyPlayersUnion')
 const createMapToken = require('../../../utils/createMapToken')
 const determineDirection = require('./determineDirection')
@@ -20,8 +20,8 @@ module.exports = (spirit) => {
             token: createMapToken(spirit.instance, spirit)
           }
         ),
-        addFieldToHash(spirit.instance, 'latitude', newCoords[0]),
-        addFieldToHash(spirit.instance, 'longitude', newCoords[1]),
+        updateHashField(spirit.instance, 'latitude', newCoords[0]),
+        updateHashField(spirit.instance, 'longitude', newCoords[1]),
         moveInGeohash('spirits', spirit.instance, newCoords[0], newCoords[1])
       ])
 

@@ -5,32 +5,36 @@ const portalSummon = require('../manager/portals/portalSummon')
 const portalDelete = require('../manager/portals/portalDelete')
 
 async function initializePortals() {
-  try {
-    const portals = await getActiveSet('portals')
-    if (portals.length > 0) {
-      for (let i = 0; i < portals.length; i++) {
-        const currentTime = Date.now()
-        const portal = await getAllFromHash(portals[i])
+  return new Promise(async (resolve, reject) => {
+    try {
+      const portals = await getActiveSet('portals')
 
-        if (portal && portal.energy > 0) {
-          const summonTimer =
-            setTimeout(() =>
-              portalSummon(portals[i]),
-              portal.summonOn > currentTime ?
-                portal.summonOn - currentTime : 0
-            )
+      if (portals.length) {
+        for (let i = 0; i < portals.length; i++) {
+          const currentTime = Date.now()
+          const portal = await getAllFromHash(portals[i])
 
-          timers.insert({instance: portals[i], summonTimer})
-        }
-        else {
-          portalDelete(portals[i], portal)
+          if (portal && portal.energy > 0) {
+            const summonTimer =
+              setTimeout(() =>
+                portalSummon(portals[i]),
+                portal.summonOn > currentTime ?
+                  portal.summonOn - currentTime : 0
+              )
+
+            timers.insert({instance: portals[i], summonTimer})
+          }
+          else {
+            portalDelete(portals[i], portal)
+          }
         }
       }
+      resolve(true)
     }
-  }
-  catch (err) {
-    console.error(err)
-  }
+    catch (err) {
+      reject(err)
+    }
+  })
 }
 
 module.exports = initializePortals
