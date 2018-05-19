@@ -5,20 +5,27 @@ const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 
 module.exports = async (portalInstance) => {
   try {
-    const coords =
+    const [latitude, longitude] =
       await getFieldsFromHash(portalInstance, ['latitude', 'longitude'])
 
-    await Promise.all([
-      informNearbyPlayers(
-        coords[0],
-        coords[1],
-        {
-          command: 'map_portal_remove',
-          instance: portalInstance
-        }
-      ),
+    const update = [
       removeFromAll('portals', portalInstance)
-    ])
+    ]
+
+    if (latitude && longitude) {
+      update.push(
+        informNearbyPlayers(
+          latitude,
+          longitude,
+          {
+            command: 'map_portal_remove',
+            instance: portalInstance
+          }
+        )
+      )
+    }
+
+    await Promise.all(update)
 
     const portalTimers = timers.by('instance', portalInstance)
     if (portalTimers) {

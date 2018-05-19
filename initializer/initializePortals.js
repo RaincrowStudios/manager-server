@@ -25,7 +25,7 @@ async function initializePortals() {
             timers.insert({instance: portals[i], summonTimer})
           }
           else {
-            portalDelete(portals[i], portal)
+            portalDelete(portals[i])
           }
         }
       }
