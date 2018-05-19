@@ -1,6 +1,6 @@
-const addFieldToHash = require('../../../redis/addFieldToHash')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
+const updateHashField = require('../../../redis/updateHashField')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const determineCritical = require('./determineCritical')
@@ -58,7 +58,7 @@ module.exports = (spirit, target) => {
               action: 'Attack'
             }
           ),
-          addFieldToHash(
+          updateHashField(
             spirit.instance,
             'previousTarget',
             { instance: target.instance, type: 'spirit' }
@@ -67,7 +67,7 @@ module.exports = (spirit, target) => {
 
         if (target.type === 'spirit' && targetStatus !== 'dead') {
           update.push(
-            addFieldToHash(
+            updateHashField(
               target.instance,
               'lastAttackedBy',
               { instance: spirit.instance, type: 'spirit' }
@@ -80,7 +80,7 @@ module.exports = (spirit, target) => {
             spirit.bloodlustCount + 1 : 1
 
           update.push(
-            addFieldToHash(spirit.instance, 'bloodlustCount', bloodlustCount),
+            updateHashField(spirit.instance, 'bloodlustCount', bloodlustCount),
           )
         }
 
@@ -104,11 +104,11 @@ module.exports = (spirit, target) => {
           )
         }
 
-        await Promise.all(update)
-
         if (targetStatus === 'dead') {
-          await resolveTargetDestruction(spirit, target, 'Attack')
+          update.push(resolveTargetDestruction(spirit, target, 'Attack'))
         }
+
+        await Promise.all(update)
       }
       resolve(true)
     }

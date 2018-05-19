@@ -1,6 +1,6 @@
-const addFieldToHash = require('../../../redis/addFieldToHash')
 const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
 const getAllFromHash = require('../../../redis/getAllFromHash')
+const updateHashField = require('../../../redis/updateHashField')
 const informPlayers = require('../../../utils/informPlayers')
 const targetAll = require('./targetAll')
 const targetAllies = require('./targetAllies')
@@ -82,7 +82,7 @@ module.exports = (spirit) => {
           )
         }
       }
-      update.push(addFieldToHash(spirit.instance, 'sentinelList', nearEnemies)
+      update.push(updateHashField(spirit.instance, 'sentinelList', nearEnemies)
       )
       await Promise.all(update)
     }

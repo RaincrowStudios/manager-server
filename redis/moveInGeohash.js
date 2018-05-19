@@ -24,6 +24,7 @@ module.exports = (category, instance, latitude, longitude) => {
         ],
         (err, result) => {
           if (err) {
+            console.log(category, instance, latitude, longitude)
             throw new Error(err)
           }
           else {

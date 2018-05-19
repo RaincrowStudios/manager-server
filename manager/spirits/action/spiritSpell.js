@@ -1,4 +1,3 @@
-const addFieldToHash = require('../../../redis/addFieldToHash')
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const updateHashField = require('../../../redis/updateHashField')
@@ -56,7 +55,7 @@ module.exports = (spirit, target, spell) => {
             spirit.bloodlustCount + 1 : 1
 
           update.push(
-            addFieldToHash(spirit.instance, 'bloodlustCount', bloodlustCount)
+            updateHashField(spirit.instance, 'bloodlustCount', bloodlustCount)
           )
         }
 
