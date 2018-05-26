@@ -6,6 +6,7 @@ const initializeSpirits = require('./initializeSpirits')
 
 async function initializer() {
   try {
+    console.log('here')
     await Promise.all([
       initializeConditions(),
       initializeCooldowns(),

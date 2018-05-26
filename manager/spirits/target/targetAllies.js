@@ -9,7 +9,11 @@ module.exports = (spirit, nearTargets, targetCategory) => {
       target.instance !== spirit.owner
     )
     .filter(target => (target.instance === spirit.owner ||
-      (spirit.coven && target.coven === spirit.coven)
+      (spirit.coven &&
+        (target.coven === spirit.coven ||
+          spirit.allies.map(ally => ally.coven).includes(target.coven)
+        )
+      )
     ))
 
   if (targetCategory === 'vulnerableAllies') {

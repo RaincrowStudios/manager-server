@@ -62,7 +62,8 @@ module.exports = (spirit) => {
                   spirit.latitude,
                   spirit.longitude,
                   {
-                    command: 'map_collectible_add',
+                    command: 'map_collectible_drop',
+                    spirit: spirit.instance,
                     token: createMapToken(instance, collectible),
                   }
                 )
@@ -73,7 +74,7 @@ module.exports = (spirit) => {
 
         await Promise.all(update)
       }
-      
+
       resolve(true)
     }
     catch (err) {

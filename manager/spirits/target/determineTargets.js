@@ -1,5 +1,6 @@
 const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
 const getAllFromHash = require('../../../redis/getAllFromHash')
+const getOneFromHash = require('../../../redis/getOneFromHash')
 const updateHashField = require('../../../redis/updateHashField')
 const informPlayers = require('../../../utils/informPlayers')
 const targetAll = require('./targetAll')
@@ -13,6 +14,10 @@ const targetSpirits = require('./targetSpirits')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
+      if (spirit.coven) {
+        spirit.allies = await getOneFromHash(spirit.coven, 'allies')
+      }
+
       const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
         await Promise.all([
           getNearbyFromGeohash(

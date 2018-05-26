@@ -1,6 +1,6 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashField = require('../../redis/updateHashField')
 const resolveSpiritAction = require('./action/resolveSpiritAction')
@@ -15,7 +15,7 @@ async function spiritAction(spiritInstance) {
         return true
       }
 
-      const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
+      const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
 
       const spirit = Object.assign(
         {}, spiritInfo, instanceInfo, {instance: spiritInstance}

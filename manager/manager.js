@@ -4,8 +4,8 @@ const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
 const conditionDispel = require('./conditions/conditionDispel')
 const immunityAdd = require('./immunities/immunityAdd')
+const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
-const riftAdd = require('./rifts/riftAdd')
 const spiritAdd = require('./spirits/spiritAdd')
 const spiritDeath = require('./spirits/spiritDeath')
 
@@ -14,8 +14,8 @@ const addTimers = {
   condition: conditionAdd,
   cooldown: cooldownAdd,
   immunity: immunityAdd,
+  location: locationAdd,
   portal: portalAdd,
-  rift: riftAdd,
   spirit: spiritAdd
 }
 

@@ -7,19 +7,20 @@ module.exports = (coords1, coords2, message, exclude = []) => {
     try {
       const displayRadius = await getOneFromHash('list:constants', 'displayRadius')
 
-      const nearCharacters1 = await getNearbyFromGeohash(
-        'characters',
-        coords1[0],
-        coords1[1],
-        displayRadius
-      )
-
-      const nearCharacters2 = await getNearbyFromGeohash(
-        'characters',
-        coords2[0],
-        coords2[1],
-        displayRadius
-      )
+      const [nearCharacters1, nearCharacters2] = await Promise.all([
+          getNearbyFromGeohash(
+          'characters',
+          coords1[0],
+          coords1[1],
+          displayRadius
+        ),
+        getNearbyFromGeohash(
+          'characters',
+          coords2[0],
+          coords2[1],
+          displayRadius
+        )
+      ])
 
       const nearCharactersUnion = nearCharacters1
         .filter(instance => !nearCharacters2.includes(instance))

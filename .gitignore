@@ -58,6 +58,7 @@ typings/
 .env
 
 # Keys and Certificates
+keys/
 redis-key/
 jwt-secret/
 email-credentials/

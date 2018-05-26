@@ -7,7 +7,7 @@ module.exports = (instance, energy) => {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
       }
-      else if (typeof energy !== 'number' || !energy) {
+      else if (typeof energy !== 'number') {
         throw new Error('Invalid energy: ' + energy)
       }
 

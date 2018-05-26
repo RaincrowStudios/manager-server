@@ -15,6 +15,9 @@ else
     currentEnergy = 0
     status = 'dead'
     redis.call('HSET', instance, 'energy', currentEnergy)
+  elseif currentEnergy >= baseEnergy * 5 then
+    currentEnergy = baseEnergy * 5
+    redis.call('HSET', instance, 'energy', currentEnergy)
   elseif currentEnergy/baseEnergy <= 0.2 then
     status = 'vulnerable'
   end

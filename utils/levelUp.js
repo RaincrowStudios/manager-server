@@ -23,9 +23,9 @@ module.exports = (player, newLevel) => {
           displayName: spell.displayName,
           school: spell.school,
           level: spell.level,
-          degreeReq: spell.degreeReq.toString(10),
-          cost: spell.cost.toString(10),
-          range: spell.range.toString(10),
+          degreeReq: spell.degreeReq ? spell.degreeReq.toString(10) : null,
+          cost: spell.cost ? spell.cost.toString(10) : null,
+          range: spell.range ? spell.range.toString(10) : null,
           description: spell.description
         }
       })

@@ -1,6 +1,6 @@
 const client = require('./client')
-const addToLeaderboard = ('./addToLeaderboard')
 const scripts = require('../lua/scripts')
+const adjustLeaderboards = require('../utils/adjustLeaderboards')
 
 module.exports = (character, region, xp, coven = '') => {
   return new Promise(async (resolve, reject) => {
@@ -11,7 +11,7 @@ module.exports = (character, region, xp, coven = '') => {
       else if (!region || typeof region !== 'string') {
         throw new Error('Invalid region: ' + region)
       }
-      else if (!xp || typeof xp !== 'number') {
+      else if (typeof xp !== 'number') {
         throw new Error('Invalid xp: ' + xp)
       }
       else if (coven) {
@@ -20,19 +20,7 @@ module.exports = (character, region, xp, coven = '') => {
         }
       }
 
-      /*const leaderboards = [
-        addToLeaderboard('world', 'character', xp, character),
-        addToLeaderboard(region, 'character', xp, character)
-      ]
-      if (coven) {
-        leaderboards.push(
-          addToLeaderboard('world', 'coven', xp, coven),
-          addToLeaderboard(region, 'coven', xp, coven)
-        )
-
-      }
-
-      await Promise.all(leaderboards)*/
+      await adjustLeaderboards(character, region, 'witch', xp, coven)
 
       client.evalsha(
         [scripts.addExperience.sha, 1, character, xp],

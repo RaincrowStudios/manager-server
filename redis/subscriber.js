@@ -1,32 +1,26 @@
-const fs = require('fs')
 const redis = require('redis')
-const redisConfigJSON =
-  process.env.NODE_ENV === 'development' ?
-    fs.readFileSync('redis-key/test-keys.json') :
-    fs.readFileSync('redis-key/keys.json')
-const redisConfig = JSON.parse(redisConfigJSON)
-
 const manager = require('../manager/manager')
+const keys = require('../keys')
 
 function subscriber() {
   const subscriber = redis.createClient(
-    redisConfig.redisPort,
-    redisConfig.redisHost
+    keys.redis.port,
+    keys.redis.host
   )
 
-  subscriber.auth(redisConfig.redisKey, (err) => {
+  subscriber.auth(keys.redis.key, err => {
     if (err) {
       throw new Error(err)
     }
   })
 
   subscriber.on('ready', () => {
-    console.log("Redis Subscriber ready")
+    console.log('Worker %d subscribed to Redis', process.pid)
   })
 
-  subscriber.on('error', (err) => {
+  subscriber.on('error', err => {
     //contact admin
-    console.log("Error in Redis Subscriber", err)
+    console.log('Error in Redis Subscriber', err)
   })
 
   subscriber.on('message', ((channel, message) => {
