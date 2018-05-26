@@ -31,10 +31,9 @@ else {
   server.on('request', function(req, res){
     if(req.method == 'POST') {
         req.on('data', function (data) {
-          console.log(process.pid)
           manager(JSON.parse(data))
           res.writeHead(200)
-          res.write(JSON.stringify(process.pid))
+          res.write('OK')
           res.end()
         })
     }
