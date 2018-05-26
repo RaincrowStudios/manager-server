@@ -2,18 +2,18 @@
 
 const cluster = require('cluster')
 const http = require('http')
+const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const lua = require('./lua/lua')
 const subscriber = require('./redis/subscriber')
 
 const numCPUs = require('os').cpus().length
 
-//initializer()
-
 if (cluster.isMaster) {
   console.log('Starting Manager Server...')
   console.log(`Master ${process.pid} is running`)
   lua()
+  initializer()
 
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork()
