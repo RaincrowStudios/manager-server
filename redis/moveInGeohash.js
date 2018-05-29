@@ -13,6 +13,12 @@ module.exports = (category, instance, latitude, longitude) => {
       else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
         throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
       }
+      else if (latitude < -85.05112878 || latitude > 85.05112878) {
+        throw new Error('4305')
+      }
+      else if (longitude < -180 || longitude > 180) {
+        throw new Error('4305')
+      }
 
       client.evalsha(
         [
@@ -24,7 +30,6 @@ module.exports = (category, instance, latitude, longitude) => {
         ],
         (err, result) => {
           if (err) {
-            console.log(category, instance, latitude, longitude)
             throw new Error(err)
           }
           else {

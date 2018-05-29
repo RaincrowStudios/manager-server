@@ -12,15 +12,24 @@ module.exports = (category, instance, latitude, longitude) => {
       else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
         throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
       }
+      else if (latitude < -85.05112878 || latitude > 85.05112878) {
+        throw new Error('4305')
+      }
+      else if (longitude < -180 || longitude > 180) {
+        throw new Error('4305')
+      }
 
-      client.geoadd(['geo:' + category, longitude, latitude, instance], (err) => {
-        if (err) {
-          throw new Error(err)
+      client.geoadd(
+        ['geo:' + category, longitude, latitude, instance],
+        (err) => {
+          if (err) {
+            throw new Error(err)
+          }
+          else {
+            resolve(true)
+          }
         }
-        else {
-          resolve(true)
-        }
-      })
+      )
     }
     catch (err) {
       reject(err)

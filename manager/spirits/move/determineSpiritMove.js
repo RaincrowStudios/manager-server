@@ -1,4 +1,5 @@
 const getFieldsFromHash = require('../../../redis/getFieldsFromHash')
+const checkGeohashOutOfRange = require('../../../utils/checkGeohashOutOfRange')
 
 function precisionRound(number, precision) {
   const factor = Math.pow(10, precision)
@@ -33,13 +34,18 @@ module.exports = (spirit, direction) => {
         eastWest = (Math.random() < 0.5 ? 1 : -1)
       }
 
-      const newLat = oldLat +
+      let newLat = oldLat +
         (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001) *
         northSouth)
 
-      const newLong = oldLong +
+      let newLong = oldLong +
         (((Math.floor(Math.random() * (max - min + 1)) + min) * 0.00001 *
         Math.cos(oldLat * (Math.PI / 180)))  * eastWest)
+
+      if(checkGeohashOutOfRange(newLat, newLong)) {
+        newLat = newLat + (Math.sign(newLat) * -0.01)
+        newLong = newLong + (Math.sign(newLong) * -0.01)
+      }
 
       resolve([precisionRound(newLat, 6), precisionRound(newLong, 6)])
     }

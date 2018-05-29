@@ -5,6 +5,7 @@ const addToActiveSet = require('../../redis/addToActiveSet')
 const addToGeohash = require('../../redis/addToGeohash')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const determineExperience = require('../../utils/determineExperience')
@@ -22,8 +23,8 @@ module.exports = async (portalInstance) => {
       const spiritInstance = uuidv1()
 
       const query = [
-        getOneFromHash('list:spirits', portal.spirit.id),
-        getOneFromHash('list:constants', 'xpMultipliers')
+        getOneFromList('spirits', portal.spirit.id),
+        getOneFromList('constants', 'xpMultipliers')
       ]
 
       if (portal.owner) {

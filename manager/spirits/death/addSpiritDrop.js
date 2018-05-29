@@ -1,5 +1,5 @@
 const uuidv1 = require('uuid/v1')
-const getOneFromHash = require('../../../redis/getOneFromHash')
+const getOneFromList = require('../../../redis/getOneFromList')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const addToGeohash = require('../../../redis/addToGeohash')
 const addObjectToHash = require('../../../redis/addObjectToHash')
@@ -25,7 +25,7 @@ module.exports = (spirit) => {
             })
           }
           else {
-            return getOneFromHash('list:collectibles', drop.id)
+            return getOneFromList('collectibles', drop.id)
           }
         }))
 

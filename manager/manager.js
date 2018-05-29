@@ -3,6 +3,7 @@ const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
 const conditionDispel = require('./conditions/conditionDispel')
+const idleTimerAdd = require('./idleTimers/idleTimerAdd')
 const immunityAdd = require('./immunities/immunityAdd')
 const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
@@ -13,6 +14,7 @@ const addTimers = {
   collectible: collectibleAdd,
   condition: conditionAdd,
   cooldown: cooldownAdd,
+  idleTimer: idleTimerAdd,
   immunity: immunityAdd,
   location: locationAdd,
   portal: portalAdd,

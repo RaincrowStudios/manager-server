@@ -11,7 +11,7 @@ const numCPUs = require('os').cpus().length
 
 if (cluster.isMaster) {
   console.log('Starting Manager Server...')
-  console.log(`Master ${process.pid} is running`)
+  console.log('Master %d is running', process.pid)
   lua()
   initializer()
 
@@ -20,7 +20,7 @@ if (cluster.isMaster) {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`)
+    console.log('Worker %d died', worker.process.pid)
     cluster.fork()
   })
 }
@@ -30,16 +30,16 @@ else {
 
   server.on('request', function(req, res){
     if(req.method == 'POST') {
-        req.on('data', function (data) {
-          manager(JSON.parse(data))
-          res.writeHead(200)
-          res.write('OK')
-          res.end()
-        })
+      req.on('data', function (data) {
+        manager(JSON.parse(data))
+        res.writeHead(200)
+        res.write('OK')
+        res.end()
+      })
     }
     else {
-      res.writeHead(405, {'Content-type':'application/json'})
-      res.write(JSON.stringify({error: "Method not allowed"}, 0, 4))
+      res.writeHead(405)
+      res.end()
     }
   })
 }
