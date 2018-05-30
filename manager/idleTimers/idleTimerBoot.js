@@ -17,7 +17,9 @@ module.exports = (idleTimerInstance) => {
 
       if (idleTimer) {
         const [characterInfo, occupants] = await Promise.all([
-          getFieldsFromHash(idleTimer.character),
+          getFieldsFromHash(
+            idleTimer.character,
+            ['player', 'fuzzyLatitude', 'fuzzyLongitude']),
           getOneFromHash(idleTimer.location, 'occupants')
         ])
 
