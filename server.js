@@ -27,7 +27,7 @@ if (cluster.isMaster) {
 else {
   subscriber()
   const server = http.createServer().listen(8000)
-
+  console.log('Server started at http://%s:%d', server.address().address, server.address().port)
   server.on('request', function(req, res){
     if(req.method == 'POST') {
       req.on('data', function (data) {
