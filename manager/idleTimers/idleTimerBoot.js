@@ -8,7 +8,7 @@ const removeFromList = require('../../redis/removeFromList')
 const removeHash = require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
-const generateNewCoordinates = require('../components/generateNewCoordinates')
+const generateNewCoordinates = require('./components/generateNewCoordinates')
 
 module.exports = (idleTimerInstance) => {
   return new Promise(async (resolve, reject) => {
