@@ -32,6 +32,8 @@ module.exports = async (portalInstance) => {
       clearTimeout(portalTimers.summonTimer)
       timers.remove(portalTimers)
     }
+
+    return true
   }
   catch (err) {
     console.error(err)

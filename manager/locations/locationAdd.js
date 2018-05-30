@@ -11,6 +11,8 @@ module.exports = (locationInstance, location) => {
       )
 
     timers.insert({locationInstance, expireTimer})
+    
+    return true
   }
   catch (err) {
     console.error(err)
