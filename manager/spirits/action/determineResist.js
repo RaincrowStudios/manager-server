@@ -10,7 +10,6 @@ module.exports = (target) => {
   }
 
   const roll = Math.floor((Math.random() * 100) + 1)
-  resistChance = 50
   if (roll <= resistChance) {
     return true
   }
