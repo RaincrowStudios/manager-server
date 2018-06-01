@@ -1,6 +1,6 @@
 const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
-const getOneFromHash = require('../../../redis/getOneFromHash')
+const getOneFromList = require('../../../redis/getOneFromList')
 const informPlayers = require('../../../utils/informPlayers')
 const levelUp = require('../../../utils/levelUp')
 const determineTargets = require('../target/determineTargets')
@@ -18,32 +18,34 @@ module.exports = (spirit) => {
       let [target, actions] = await determineTargets(spirit)
 
       if (target.type === 'spirit') {
-        const spiritInfo = await getOneFromHash('list:spirits', target.id)
+        const spiritInfo = await getOneFromList('spirits', target.id)
         target = Object.assign({}, spiritInfo, target)
       }
 
       if (target) {
         const action = determineAction(actions)
         if (action) {
-          switch (action) {
-            case 'attack':
-              await basicAttack(spirit, target)
-              break
-            case 'collect':
-              await spiritCollect(spirit, target)
-              break
-            case 'discover':
-              await spiritDiscover(spirit, target)
-              break
-            default:
-              spell = await getOneFromHash('list:spells', action)
-              await spiritSpell(spirit, target, spell)
-              break
+          if (target === 'discover') {
+            await spiritDiscover(spirit, action)
+          }
+          else {
+            switch (action) {
+              case 'attack':
+                await basicAttack(spirit, target)
+                break
+              case 'collect':
+                await spiritCollect(spirit, target)
+                break
+              default:
+                spell = await getOneFromList('spells', action)
+                await spiritSpell(spirit, target, spell)
+                break
+            }
           }
         }
         if (spirit.owner) {
           const xpMultipliers =
-          await getOneFromHash('list:constants', 'xpMultipliers')
+            await getOneFromList('constants', 'xpMultipliers')
 
           const xpGain = determineExperience(
             xpMultipliers,

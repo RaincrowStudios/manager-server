@@ -19,13 +19,13 @@ module.exports = (spirit) => {
         const update = []
 
         const collectibles = await Promise.all(drops.map(drop => {
-          if (drop) {
+          if (drop === 'silver') {
             return new Promise((resolve) => {
               resolve({type: 'silver', displayName: 'Silver Drach'})
             })
           }
           else {
-            return getOneFromList('collectibles', drop.id)
+            return getOneFromList('collectibles', drop)
           }
         }))
 
