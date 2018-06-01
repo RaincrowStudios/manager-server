@@ -66,3 +66,6 @@ email-credentials/
 # Datastore Emulator Variables
 set_vars.cmd
 remove_vars.cmd
+
+# vim
+*.swp
