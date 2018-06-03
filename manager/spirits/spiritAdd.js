@@ -17,13 +17,15 @@ module.exports = (spiritInstance, spirit) => {
     timer.expireTimer = expireTimer
   }
 
-  const moveTimer =
-    setTimeout(() =>
-      spiritMove(spiritInstance),
-      spirit.moveOn - currentTime
-    )
+  if (spirit.moveOn) {
+    const moveTimer =
+      setTimeout(() =>
+        spiritMove(spiritInstance),
+        spirit.moveOn - currentTime
+      )
 
-  timer.moveTimer = moveTimer
+    timer.moveTimer = moveTimer
+  }
 
   const actionTimer =
     setTimeout(() =>

@@ -2,6 +2,7 @@ const timers = require('../database/timers')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
+const consumableAdd = require('./conditions/consumableAdd')
 const conditionDispel = require('./conditions/conditionDispel')
 const idleTimerAdd = require('./idleTimers/idleTimerAdd')
 const immunityAdd = require('./immunities/immunityAdd')
@@ -13,6 +14,7 @@ const spiritDeath = require('./spirits/spiritDeath')
 const addTimers = {
   collectible: collectibleAdd,
   condition: conditionAdd,
+  consumable: consumableAdd,
   cooldown: cooldownAdd,
   idleTimer: idleTimerAdd,
   immunity: immunityAdd,

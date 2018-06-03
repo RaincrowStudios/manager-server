@@ -14,59 +14,88 @@ const targetSpirits = require('./targetSpirits')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
+      let nearTargets
+
       if (spirit.coven) {
         spirit.allies = await getOneFromHash(spirit.coven, 'allies')
       }
 
-      const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
-        await Promise.all([
-          getNearbyFromGeohash(
-           'characters',
-           spirit.latitude,
-           spirit.longitude,
-           spirit.reach
-         ),
-         getNearbyFromGeohash(
-          'collectibles',
-          spirit.latitude,
-          spirit.longitude,
-          spirit.reach
-        ),
-         getNearbyFromGeohash(
-            'portals',
+      if (spirit.location) {
+        const location = await getAllFromHash(spirit.location)
+
+        const nearInstances = [
+          ...location.occupants.map(occupant => occupant.instance),
+          ...location.spirits.map(spirit => spirit.instance)
+        ]
+
+        const nearInfo = await Promise.all(
+          nearInstances.map(instance => getAllFromHash(instance))
+        )
+
+        nearTargets = nearInfo
+         .map((target, i) => {
+            if (target) {
+              target.instance = nearInstances[i]
+              return target
+            }
+          })
+          .filter(target => target && target.status !== 'dead')
+      }
+      else {
+        const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
+          await Promise.all([
+            getNearbyFromGeohash(
+             'characters',
+             spirit.latitude,
+             spirit.longitude,
+             spirit.reach
+           ),
+           getNearbyFromGeohash(
+            'collectibles',
             spirit.latitude,
             spirit.longitude,
             spirit.reach
           ),
-          getNearbyFromGeohash(
-           'spirits',
-           spirit.latitude,
-           spirit.longitude,
-           spirit.reach
-         )
-       ])
+           getNearbyFromGeohash(
+              'portals',
+              spirit.latitude,
+              spirit.longitude,
+              spirit.reach
+            ),
+            getNearbyFromGeohash(
+             'spirits',
+             spirit.latitude,
+             spirit.longitude,
+             spirit.reach
+           )
+         ])
 
-     const nearInstances =
-      [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]
-       .filter(instance => instance !== spirit.instance)
+       const nearInstances =
+        [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]
+         .filter(instance => instance !== spirit.instance)
 
-     const nearInfo = await Promise.all(
-       nearInstances.map(instance => getAllFromHash(instance))
-     )
+       const nearInfo = await Promise.all(
+         nearInstances.map(instance => getAllFromHash(instance))
+       )
 
-     const nearTargets = nearInfo
-      .map((target, i) => {
-         if (target) {
-           target.instance = nearInstances[i]
-           return target
-         }
-       })
-       .filter(target => target && target.status !== 'dead')
+       nearTargets = nearInfo
+        .map((target, i) => {
+           if (target) {
+             target.instance = nearInstances[i]
+             return target
+           }
+         })
+         .filter(target => target && target.status !== 'dead')
+       }
 
       if (spirit.attributes && spirit.attributes.includes('sentinel')) {
         const nearEnemies = nearTargets
         .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
-        .filter(target => !spirit.coven || target.coven !== spirit.coven)
+        .filter(target => !spirit.coven ||
+          (target.coven !== spirit.coven &&
+            !spirit.allies.map(ally => ally.coven).includes(target.coven)
+          )
+        )
         .map(target => target.instance)
 
       const update = []
