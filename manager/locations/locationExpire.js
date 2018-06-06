@@ -1,13 +1,16 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
+const incrementHashField = require('../../redis/incrementHashField')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeFromAll = require('../../redis/removeFromAll')
 const removeFromList = require('../../redis/removeFromList')
 const removeHash = require('../../redis/removeHash')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
+const determineRewardLocation = require('./components/determineRewardLocation')
 
 module.exports = async (locationInstance) => {
   try {
@@ -75,6 +78,38 @@ module.exports = async (locationInstance) => {
             )
           )
         }
+      }
+
+      const reward = determineRewardLocation(location)
+      if (reward) {
+        const members = await getOneFromHash(location.controlledBy, 'members')
+
+        const playersToInform = members ?
+          members.map(member => member.player) :
+          [await getOneFromHash(location.controlledBy, 'player')]
+
+        if (members) {
+          for (const member of members) {
+            update.push(
+              incrementHashField(member.character, 'gold', reward)
+            )
+          }
+        }
+        else {
+          update.push(
+            incrementHashField(location.controlledBy, 'gold', reward)
+          )
+        }
+
+        update.push(
+          informPlayers(
+            playersToInform,
+            {
+              command: 'player_location_reward',
+              reward: reward
+            }
+          )
+        )
       }
 
       await Promise.all(update)
