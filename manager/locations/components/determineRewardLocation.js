@@ -1,4 +1,4 @@
-const getOneFromList = require('../../../../redis/getOneFromList')
+const getOneFromList = require('../../../redis/getOneFromList')
 
 module.exports = (location) => {
   return new Promise(async (resolve, reject) => {
