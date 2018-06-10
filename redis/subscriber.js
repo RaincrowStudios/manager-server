@@ -15,7 +15,7 @@ function subscriber() {
   })
 
   subscriber.on('ready', () => {
-    console.log('Worker %d subscribed to Redis', process.pid)
+    console.log('Subscribed to Redis')
   })
 
   subscriber.on('error', err => {

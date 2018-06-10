@@ -6,7 +6,6 @@ const initializeSpirits = require('./initializeSpirits')
 
 async function initializer() {
   try {
-    console.log(`${process.pid} initializing timers`)
     await Promise.all([
       initializeConditions(),
       initializeCooldowns(),
