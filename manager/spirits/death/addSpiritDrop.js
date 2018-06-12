@@ -19,13 +19,16 @@ module.exports = (spirit) => {
         const update = []
 
         const collectibles = await Promise.all(drops.map(drop => {
-          if (drop.id === 'silver') {
-            return new Promise((resolve) => {
-              resolve({type: 'silver', displayName: 'Silver Drach'})
-            })
-          }
-          else {
-            return getOneFromList('collectibles', drop.id)
+          const roll = Math.floor((Math.random() * 100) + 1)
+          if (!drop.chance || roll <= drop.chance) {
+            if (drop.id === 'silver') {
+              return new Promise((resolve) => {
+                resolve({type: 'silver', displayName: 'Silver Drach'})
+              })
+            }
+            else {
+              return getOneFromList('collectibles', drop.id)
+            }
           }
         }))
 
@@ -36,7 +39,6 @@ module.exports = (spirit) => {
             const coords = generateDropCoords(spirit.latitude, spirit.longitude)
             collectible.latitude = coords[0]
             collectible.longitude = coords[1]
-            collectible.range =
 
             update.push(
               addObjectToHash(instance, collectible),
