@@ -23,6 +23,23 @@ module.exports = (spirit, nearTargets, targetCategory) => {
           ]
       }
     }
+    else if (targetCategory === 'summonerPortals') {
+      const nearSummonerPortals = nearPortals
+        .filter(portal => portal.owner === spirit.owner)
+
+      target = nearSummonerPortals[Math.floor(Math.random() * nearSummonerPortals.length)]
+    }
+    else if (targetCategory === 'summonerPortalAttacker') {
+      const summonerPortal = nearPortals
+        .filter(portal => portal.owner === spirit.owner)[0]
+
+      if (summonerPortal && summonerPortal.lastAttackedBy) {
+        target = nearTargets
+          .filter(target =>
+            target.instance === summonerPortal.lastAttackedBy.instance
+          )[0]
+      }
+    }
     else {
       target = nearPortals[Math.floor(Math.random() * nearPortals.length)]
     }

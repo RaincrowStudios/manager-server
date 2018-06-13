@@ -6,7 +6,7 @@ module.exports = (spirit, discovery) => {
     try {
       const spawnList = await getValidSpawns(spirit.latitude, spirit.longitude)
 
-      const discoveryPool = spawnList[discovery.type][discovery.rarity]
+      const discoveryPool = spawnList[discovery.type + 's'][discovery.rarity]
 
       const collectible =
         discoveryPool[Math.floor(Math.random() * discoveryPool)]
@@ -15,7 +15,7 @@ module.exports = (spirit, discovery) => {
         spirit.instance,
         'add',
         'carrying',
-        collectible.id
+        {id: collectible.id}
       )
 
       resolve(true)

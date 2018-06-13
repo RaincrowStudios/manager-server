@@ -126,11 +126,15 @@ module.exports = (spirit) => {
 
         let target
         switch (targetCategory[0]) {
+          case 'discover':
+            resolve([spirit, spirit.actionTree[i].actions])
+            break
           case 'self':
             target = spirit
             resolve([spirit, spirit.actionTree[i].actions])
             break
           case 'all':
+          case 'vulnerableAll':
             target = targetAll(spirit, nearTargets)
             break
           case 'attacker':
@@ -167,18 +171,13 @@ module.exports = (spirit) => {
           case 'enemySpirits':
             target = targetSpirits(spirit, nearTargets, targetCategory[0])
             break
-          case 'summoner':
-            target = targetCharacters(spirit, nearTargets, targetCategory[1])
-            break
-          case 'summonerAttacker':
-            break
           case 'summonerPortalAttacker':
-            break
-          case 'portals':
             target = targetPortals(spirit, nearTargets, targetCategory[0])
             break
           case 'vampires':
           case 'witches':
+          case 'summoner':
+          case 'summonerAttacker':
             target = targetCharacters(spirit, nearTargets, targetCategory[0])
             break
           default:

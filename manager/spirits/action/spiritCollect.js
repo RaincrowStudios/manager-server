@@ -22,7 +22,7 @@ module.exports = (spirit, collectible) => {
             spirit.instance,
             'add',
             'carrying',
-            collectible.id
+            {id: collectible.id}
           )
         ])
 

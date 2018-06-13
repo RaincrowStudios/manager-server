@@ -42,37 +42,52 @@ module.exports = (spirit) => {
          )
        ])
 
-     const nearInstances =
+    const nearInstances =
       [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]
-       .filter(instance => instance !== spirit.instance)
+        .filter(instance => instance !== spirit.instance)
 
-     const nearInfo = await Promise.all(
-       nearInstances.map(instance => getAllFromHash(instance))
-     )
+    const nearInfo = await Promise.all(
+      nearInstances.map(instance => getAllFromHash(instance))
+    )
 
-     const nearTargets = nearInfo.map((target, i) => {
-         if (target) {
-           target.instance = nearInstances[i]
-           return target
-         }
-       })
-       .filter(target => target && target.status !== 'dead')
+    const nearTargets = nearInfo.map((target, i) => {
+        if (target) {
+          target.instance = nearInstances[i]
+          return target
+        }
+      })
+      .filter(target => target && target.status !== 'dead')
 
-      if (spirit.status === 'vulnerable') {
-        if (!spirit.attributes || !spirit.attributes.includes('stubborn')) {
-          destination = await determineFlee(spirit, nearTargets)
+    if (spirit.status === 'vulnerable') {
+      if (!spirit.attributes || !spirit.attributes.includes('stubborn')) {
+        destination = await determineFlee(spirit, nearTargets)
 
-          if (destination) {
-            direction = [
-              Math.sign(destination.latitude - spirit.latitude),
-              Math.sign(destination.longitude - spirit.longitude),
-            ]
+        if (destination) {
+          direction = [
+            Math.sign(destination.latitude - spirit.latitude),
+            Math.sign(destination.longitude - spirit.longitude),
+          ]
 
-            resolve(direction)
-          }
+          resolve(direction)
         }
       }
+    }
+    else if (
+      spirit.energy < spirit.baseEnergy &&
+      spirit.attributes && spirit.attributes.includes('cowardly')
+    ) {
+      destination = await determineFlee(spirit, nearTargets)
 
+      if (destination) {
+        direction = [
+          Math.sign(destination.latitude - spirit.latitude),
+          Math.sign(destination.longitude - spirit.longitude),
+        ]
+
+      resolve(direction)
+      }
+    }
+    else {
       for (let i = 0; i < spirit.moveTree.length; i++) {
         const directionCategory = spirit.moveTree[i].split(':')
         switch (directionCategory[0]) {
@@ -87,6 +102,7 @@ module.exports = (spirit) => {
             }
             break
           case 'all':
+          case 'vulnerableAll':
             destination = targetAll(spirit, nearTargets)
             break
           case 'attacker':
@@ -127,7 +143,7 @@ module.exports = (spirit) => {
           case 'summoner':
             direction = 'summoner'
             break
-          case 'portals':
+          case 'summonerPortals':
             destination = targetPortals(spirit, nearTargets, directionCategory[0])
             break
           case 'summonLocation':
@@ -156,6 +172,7 @@ module.exports = (spirit) => {
       }
 
       resolve(false)
+    }
     }
     catch (err) {
       reject(err)

@@ -118,6 +118,17 @@ module.exports = async (portalInstance) => {
         const firstSummon = summonedSpirits ?
           summonedSpirits.includes(spirit.id) : false
 
+        if (firstSummon) {
+          update.push(
+            updateHashFieldArray(
+              spirit.owner,
+              'add',
+              'summonedSpirits',
+              spirit.id
+            )
+          )
+        }
+
         const xpGain = determineExperience(
           xpMultipliers,
           'summon',

@@ -17,7 +17,6 @@ module.exports = (instance, info) => {
     case 'silver':
       token = {
         instance: instance,
-        displayName: info.displayName,
         type: info.type,
         latitude: info.latitude,
         longitude: info.longitude,
@@ -26,7 +25,6 @@ module.exports = (instance, info) => {
     case 'spirit':
       token = {
         instance: instance,
-        displayName: info.displayName,
         type: info.type,
         subtype: info.tier > 0 ? 'greater' : 'lesser',
         degree: info.degree,
