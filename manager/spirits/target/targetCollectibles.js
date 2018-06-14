@@ -1,4 +1,4 @@
-module.exports = (spirit, nearTargets, targetCategory) => {
+module.exports = (spirit, nearTargets, type) => {
   let target
   let nearCollectibles = nearTargets
     .filter(target => (
@@ -8,12 +8,12 @@ module.exports = (spirit, nearTargets, targetCategory) => {
       target.type === 'silver'
     ))
 
-  if (targetCategory) {
+  if (type) {
     nearCollectibles = nearCollectibles
       .filter(collectible => {
         if (
-          collectible.id === targetCategory ||
-          collectible.type === targetCategory
+          collectible.id === type ||
+          collectible.type === type
         ) {
           return collectible
         }

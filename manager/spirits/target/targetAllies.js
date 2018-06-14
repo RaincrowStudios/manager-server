@@ -1,4 +1,4 @@
-module.exports = (spirit, nearTargets, targetCategory) => {
+module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
   let nearAllies = nearTargets
     .filter(target => (
       target.type === 'witch' ||
@@ -18,6 +18,23 @@ module.exports = (spirit, nearTargets, targetCategory) => {
 
   if (targetCategory === 'vulnerableAllies') {
     nearAllies = nearAllies.filter(ally => ally.status === 'vulnerable')
+  }
+
+  if (targetingConditions && targetingConditions.length) {
+    nearAllies = nearAllies
+      .filter(target => {
+        for (const targetingCondition of targetingConditions) {
+          if (
+            target.conditions &&
+            target.conditions
+              .map(condition => condition.id)
+              .includes(targetingCondition)
+          ) {
+            return true
+          }
+        }
+        return false
+      })
   }
 
   if (nearAllies.length) {

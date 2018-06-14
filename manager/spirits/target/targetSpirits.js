@@ -1,6 +1,23 @@
-module.exports = (spirit, nearTargets, targetCategory) => {
-  const nearSpirits = nearTargets
+module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
+  let nearSpirits = nearTargets
     .filter(spirit => spirit.type !== 'spirit')
+
+  if (targetingConditions && targetingConditions.length) {
+    nearSpirits = nearSpirits
+      .filter(target => {
+        for (const targetingCondition of targetingConditions) {
+          if (
+            target.conditions &&
+            target.conditions
+              .map(condition => condition.id)
+              .includes(targetingCondition)
+          ) {
+            return true
+          }
+        }
+        return false
+      })
+  }
 
   if (nearSpirits.length) {
     let target

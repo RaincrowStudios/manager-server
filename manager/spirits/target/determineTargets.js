@@ -122,7 +122,8 @@ module.exports = (spirit) => {
     }
 
      for (let i = 0; i < spirit.actionTree.length; i++) {
-       const targetCategory = spirit.actionTree[i].target.split(':')
+       const [targetCategory, type] = spirit.actionTree[i].target.split(':')
+       const conditions = spirit.actionTree[i].conditions
 
         let target
         switch (targetCategory[0]) {
@@ -135,50 +136,50 @@ module.exports = (spirit) => {
             break
           case 'all':
           case 'vulnerableAll':
-            target = targetAll(spirit, nearTargets)
+            target = targetAll(spirit, nearTargets, conditions)
             break
           case 'attacker':
             if (spirit.lastAttackedBy) {
               target =
                 spirit.lastAttackedBy.type === 'spirit' ?
-                  targetSpirits(spirit, nearTargets, targetCategory[0]) :
-                  targetCharacters(spirit, nearTargets, targetCategory[0])
+                  targetSpirits(spirit, nearTargets, targetCategory, conditions) :
+                  targetCharacters(spirit, nearTargets, targetCategory, conditions)
             }
             break
           case 'previousTarget':
             if (spirit.previousTarget) {
               target =
                 spirit.previousTarget.type === 'spirit' ?
-                  targetSpirits(spirit, nearTargets, targetCategory[0]) :
-                  targetCharacters(spirit, nearTargets, targetCategory[0])
+                  targetSpirits(spirit, nearTargets, targetCategory, conditions) :
+                  targetCharacters(spirit, nearTargets, targetCategory, conditions)
             }
             break
           case 'collectible':
             if (spirit.carrying.length < spirit.maxCarry) {
-              target = targetCollectibles(spirit, nearTargets, targetCategory[1])
+              target = targetCollectibles(spirit, nearTargets, type)
             }
             break
           case 'allies':
           case 'vulnerableAllies':
-            target = targetAllies(spirit, nearTargets, targetCategory[0])
+            target = targetAllies(spirit, nearTargets, targetCategory, conditions)
             break
           case 'enemies':
           case 'vulnerableEnemies':
-            target = targetEnemies(spirit, nearTargets, targetCategory[0])
+            target = targetEnemies(spirit, nearTargets, targetCategory, conditions)
             break
           case 'spirits':
           case 'allySpirits':
           case 'enemySpirits':
-            target = targetSpirits(spirit, nearTargets, targetCategory[0])
+            target = targetSpirits(spirit, nearTargets, targetCategory, conditions)
             break
           case 'summonerPortalAttacker':
-            target = targetPortals(spirit, nearTargets, targetCategory[0])
+            target = targetPortals(spirit, nearTargets, targetCategory)
             break
           case 'vampires':
           case 'witches':
           case 'summoner':
           case 'summonerAttacker':
-            target = targetCharacters(spirit, nearTargets, targetCategory[0])
+            target = targetCharacters(spirit, nearTargets, targetCategory, conditions)
             break
           default:
             break

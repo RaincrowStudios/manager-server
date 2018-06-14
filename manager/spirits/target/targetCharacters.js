@@ -1,10 +1,27 @@
 const getOneFromHash = require('../../../redis/getOneFromHash')
 
-module.exports = (spirit, nearTargets, targetCategory) => {
+module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const nearCharacters = nearTargets
+      let nearCharacters = nearTargets
         .filter(target => target.type === 'witch' || target.type === 'vampire')
+
+      if (targetingConditions && targetingConditions.length) {
+        nearCharacters = nearCharacters
+          .filter(target => {
+            for (const targetingCondition of targetingConditions) {
+              if (
+                target.conditions &&
+                target.conditions
+                  .map(condition => condition.id)
+                  .includes(targetingCondition)
+              ) {
+                return true
+              }
+            }
+            return false
+          })
+      }
 
       let target
       if (nearCharacters.length) {
