@@ -53,7 +53,7 @@ module.exports = async (portalInstance) => {
       spirit.longitude = portal.longitude
       spirit.createdOn = currentTime
       spirit.expireOn = spirit.duration > 0 ?
-        currentTime + (spirit.duration * 60000) : 0
+        currentTime + (spirit.duration * 3600000) : 0
 
       let moveOn
       if (spirit.moveFreq.includes('-')) {
