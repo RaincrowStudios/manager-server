@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (instance) => {
   return new Promise((resolve, reject) => {
@@ -6,6 +6,8 @@ module.exports = (instance) => {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
       }
+
+      const client = selectClient(instance)
 
       client.hgetall([instance], (err, results) => {
         if (err) {

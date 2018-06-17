@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 const scripts = require('../lua/scripts')
 
 module.exports = (instance, energy) => {
@@ -10,6 +10,8 @@ module.exports = (instance, energy) => {
       else if (typeof energy !== 'number') {
         throw new Error('Invalid energy: ' + energy)
       }
+
+      const client = selectClient(instance)
 
       client.evalsha(
         [scripts.adjustEnergy.sha, 1, instance, energy],

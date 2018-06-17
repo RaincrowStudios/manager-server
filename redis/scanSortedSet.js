@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (category, cursor = 0) => {
   return new Promise((resolve, reject) => {
@@ -9,6 +9,8 @@ module.exports = (category, cursor = 0) => {
       else if (typeof cursor !== 'number') {
         throw new Error('Invalid cursor: ' + cursor)
       }
+
+      const client = selectClient()
 
       client.zscan(['set:active:' + category, cursor], (err, results) => {
         if (err) {

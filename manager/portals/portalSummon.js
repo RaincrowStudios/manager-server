@@ -1,4 +1,3 @@
-const uuidv1 = require('uuid/v1')
 const addExperience = require('../../redis/addExperience')
 const addObjectToHash = require('../../redis/addObjectToHash')
 const addToActiveSet = require('../../redis/addToActiveSet')
@@ -8,6 +7,7 @@ const getOneFromHash = require('../../redis/getOneFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const createInstanceId = require('../../utils/createInstanceId')
 const determineExperience = require('../../utils/determineExperience')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
@@ -20,7 +20,7 @@ module.exports = async (portalInstance) => {
     const update = []
 
     if (portal) {
-      const spiritInstance = uuidv1()
+      const spiritInstance = createInstanceId()
 
       const query = [
         getOneFromList('spirits', portal.spirit.id),

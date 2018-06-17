@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (category, member) => {
   return new Promise((resolve, reject) => {
@@ -9,6 +9,8 @@ module.exports = (category, member) => {
       else if (!member || typeof member !== 'string') {
         throw new Error('Invalid member: ' + member)
       }
+
+      const client = selectClient()
 
       client.geopos(['geo:' + category, member], (err, results) => {
         if (err) {

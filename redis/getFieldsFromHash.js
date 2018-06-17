@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (instance, fields) => {
   return new Promise((resolve, reject) => {
@@ -9,6 +9,8 @@ module.exports = (instance, fields) => {
       else if (!fields || !Array.isArray(fields)) {
         throw new Error('Invalid fields: ' + fields)
       }
+
+      const client = selectClient(instance)
 
       client.hmget([instance, ...fields], (err, results) => {
         if (err) {

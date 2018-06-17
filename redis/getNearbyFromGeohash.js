@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (category, latitude, longitude, radius, count = 0) => {
 	return new Promise((resolve, reject) => {
@@ -10,6 +10,8 @@ module.exports = (category, latitude, longitude, radius, count = 0) => {
 			else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
 				throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
 			}
+
+			const client = selectClient()
 
 			let query = ['geo:' + category, longitude, latitude, radius, 'km']
 			if (count > 0) {

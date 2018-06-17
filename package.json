@@ -5,10 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_ENV=production node server.js",
-    "staging": "NODE_ENV=staging node server.js",
-    "dev": "set NODE_ENV=development&& nodemon --trace-warnings server.js",
-    "devx": "NODE_ENV=development nodemon --trace-warnings server.js"
+    "start": "INSTANCE_REGION=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/zone' -H 'Metadata-Flavor: Google') NODE_ENV=production node server.js",
+    "dev": "set NODE_ENV=development&& set INSTANCE_REGION=local&& nodemon --trace-warnings server.js",
+    "devx": "NODE_ENV=development INSTANCE_REGION=local nodemon --trace-warnings server.js"
   },
   "author": "Sean Landis",
   "license": "SEE LICENSE IN LICENSE",
@@ -17,6 +16,7 @@
     "axios": "^0.18.0",
     "lokijs": "^1.5.5",
     "lured": "^1.0.1",
+    "ping": "^0.2.2",
     "redis": "^2.8.0",
     "uuid": "^3.2.1"
   },

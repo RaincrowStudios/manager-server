@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (instance) => {
   return new Promise((resolve, reject) => {
@@ -7,9 +7,11 @@ module.exports = (instance) => {
         throw new Error('Invalid instance: ' + instance)
       }
 
+      const client = selectClient(instance)
+
       client.del([instance], (err) => {
         if (err) {
-          throw new Error(err)
+          throw new Error('5400')
         }
         else {
           resolve(true)

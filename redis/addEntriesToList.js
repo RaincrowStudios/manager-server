@@ -1,7 +1,7 @@
-const client = require('./client')
+const clients = require('../database/clients')
 
 module.exports = (listName, entries, values) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!listName || typeof listName !== 'string') {
         throw new Error('Invalid list: ' + listName)
@@ -21,14 +21,23 @@ module.exports = (listName, entries, values) => {
         entriesValues.push(entries[i], JSON.stringify(values[i]))
       }
 
-      client.hmset(['list:' + listName, ...entriesValues], (err) => {
-        if (err) {
-          throw new Error(err)
-        }
-        else {
-          resolve(true)
-        }
-      })
+      const clientList = clients.where(() => true)
+
+      await Promise.all(
+        clientList.forEach(client => {
+          return new Promise((resolve, reject) => {
+            client.hmset(['list:' + listName, ...entriesValues], (err) => {
+              if (err) {
+                reject('5400')
+              }
+              else {
+                resolve(true)
+              }
+            })
+          })
+        })
+      )
+      resolve(true)
     }
     catch (err) {
       reject(err)

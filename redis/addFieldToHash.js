@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (instance, field, value) => {
   return new Promise((resolve, reject) => {
@@ -12,6 +12,8 @@ module.exports = (instance, field, value) => {
       else if (value === undefined) {
         throw new Error('Invalid value: ' + value)
       }
+
+      const client = selectClient(instance)
 
       client.hmset([instance, field, JSON.stringify(value)], (err) => {
         if (err) {

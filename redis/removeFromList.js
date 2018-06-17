@@ -1,7 +1,7 @@
-const client = require('./client')
+const clients = require('../database/clients')
 
 module.exports = (instance, field) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
@@ -10,14 +10,23 @@ module.exports = (instance, field) => {
         throw new Error('Invalid field: ' + field)
       }
 
-      client.hdel(['list:' + instance, field], (err) => {
-        if (err) {
-          throw new Error(err)
-        }
-        else {
-          resolve(true)
-        }
-      })
+      const clientList = clients.where(() => true)
+
+      await Promise.all(
+        clientList.forEach(client => {
+          return new Promise((resolve, reject) => {
+            client.hdel(['list:' + instance, field], (err) => {
+              if (err) {
+                reject('5400')
+              }
+              else {
+                resolve(true)
+              }
+            })
+          })
+        })
+      )
+      resolve(true)
     }
     catch (err) {
       reject(err)

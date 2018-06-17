@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 const scripts = require('../lua/scripts')
 
 module.exports = (instance, command, field, value, index = 0) => {
@@ -7,7 +7,7 @@ module.exports = (instance, command, field, value, index = 0) => {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
       }
-      else if (!command || typeof command !== 'string') {
+      else if (!command || typeof field !== 'string') {
         throw new Error('Invalid command: ' + command)
       }
       else if (!field || typeof field !== 'string') {
@@ -16,9 +16,8 @@ module.exports = (instance, command, field, value, index = 0) => {
       else if (value === undefined) {
         throw new Error('Invalid value: ' + value)
       }
-      else if (index === undefined || typeof index !== 'number') {
-        throw new Error('Invalid index: ' + index)
-      }
+
+      const client = selectClient(instance)
 
       client.evalsha(
         [

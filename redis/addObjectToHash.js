@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (instance, object) => {
   return new Promise((resolve, reject) => {
@@ -13,8 +13,16 @@ module.exports = (instance, object) => {
       const fieldsValues = []
       const keys = Object.keys(object)
       for (const key of keys) {
+        if (!key || typeof key !== 'string') {
+          throw new Error('Invalid key: ' + key)
+        }
+        else if (object[key] === undefined) {
+          throw new Error('Invalid property: ' + object[key])
+        }
         fieldsValues.push(key, JSON.stringify(object[key]))
       }
+
+      const client = selectClient(instance)
 
       client.hmset([instance, ...fieldsValues], (err) => {
         if (err) {

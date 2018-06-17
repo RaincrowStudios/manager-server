@@ -1,7 +1,7 @@
-const uuidv1 = require('uuid/v1')
 const addEntriesToList = require('../../../redis/addEntriesToList')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
+const createInstanceId = require('../../../utils/createInstanceId')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const conditionAdd = require('../../conditions/conditionAdd')
@@ -11,7 +11,7 @@ module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
       let duration
-      const conditionInstance = uuidv1()
+      const conditionInstance = createInstanceId()
       const currentTime = Date.now()
       target.conditions = target.conditions ? target.conditions : []
       if (typeof spell.condition.duration === 'string') {

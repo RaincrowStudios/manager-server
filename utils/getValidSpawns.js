@@ -1,5 +1,5 @@
 const axios = require('axios')
-const key = require('../keys')
+const key = require('../keys/keys')
 
 module.exports = (latitude, longitude) => {
   return new Promise(async (resolve, reject) => {
@@ -28,7 +28,7 @@ module.exports = (latitude, longitude) => {
       if (!dominion) {
         dominion = false
       }
-      
+
         resolve(dominion)
       }
       catch (err) {

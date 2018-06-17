@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (instance, field, increment) => {
   return new Promise((resolve, reject) => {
@@ -12,6 +12,8 @@ module.exports = (instance, field, increment) => {
       else if (!increment || typeof increment !== 'number') {
         throw new Error('Invalid increment: ' + increment)
       }
+
+      const client = selectClient(instance)
 
       client.hincrby([instance, field, increment], (err, result) => {
         if (err) {

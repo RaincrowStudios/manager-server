@@ -1,31 +1,31 @@
 'use strict'
 
-const http = require('http')
+const net = require('net')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
-const lua = require('./lua/lua')
-const subscriber = require('./redis/subscriber')
+const createClients = require('./redis/createClients')
+const createSubscribers = require('./redis/createSubscribers')
 const port = process.env.NODE_ENV === 'development' ? 8082 : 80
 
-lua()
-initializer()
-subscriber()
-const server = http.createServer().listen(port)
+async function startup() {
+  await createClients()
+  await createSubscribers()
+  //initializer()
+}
 
-server.on('request', function(req, res){
-  if(req.method == 'POST') {
-    req.on('data', function (data) {
-      manager(JSON.parse(data))
-      res.writeHead(200)
-      res.write('OK')
-      res.end()
-    })
-  }
-  else {
-    res.writeHead(405)
-    res.end()
-  }
+//startup()
+
+const server = net.createServer(socket => {
+  socket.on('data', data => {
+    //manager(JSON.parse(data))
+  })
+
+  socket.on('error', err => {
+    console.error(err)
+  })
 })
+
+server.listen(port)
 
 process.on('unhandledRejection', (reason, location) => {
   console.error('Unhandled Rejection at:', location, 'reason:', reason)

@@ -1,15 +1,18 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 const scripts = require('../lua/scripts')
 const adjustLeaderboards = require('../utils/adjustLeaderboards')
 
-module.exports = (character, region, xp, coven = '') => {
+module.exports = (instance, region, type, xp, coven = '') => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!character || typeof character !== 'string') {
-        throw new Error('Invalid character: ' + character)
+      if (!instance || typeof instance !== 'string') {
+        throw new Error('Invalid instance: ' + instance)
       }
       else if (!region || typeof region !== 'string') {
         throw new Error('Invalid region: ' + region)
+      }
+      else if (!type || typeof type !== 'string') {
+        throw new Error('Invalid type: ' + type)
       }
       else if (typeof xp !== 'number') {
         throw new Error('Invalid xp: ' + xp)
@@ -20,10 +23,12 @@ module.exports = (character, region, xp, coven = '') => {
         }
       }
 
-      await adjustLeaderboards(character, region, 'witch', xp, coven)
+      const client = selectClient(instance)
+
+      await adjustLeaderboards(instance, region, type, xp, coven)
 
       client.evalsha(
-        [scripts.addExperience.sha, 1, character, xp],
+        [scripts.addExperience.sha, 1, instance, xp],
         (err, results) => {
           if (err) {
             throw new Error(err)

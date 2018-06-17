@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (category, instance) => {
   return new Promise((resolve, reject) => {
@@ -9,6 +9,8 @@ module.exports = (category, instance) => {
       else if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
       }
+
+      const client = selectClient(instance)
 
       client.zadd(['set:active:' + category, Date.now(), instance], (err) => {
         if (err) {

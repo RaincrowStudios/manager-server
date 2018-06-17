@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (category, member, radius, count = 0) => {
   return new Promise((resolve, reject) => {
@@ -9,6 +9,8 @@ module.exports = (category, member, radius, count = 0) => {
       else if (!member || typeof member !== 'string') {
         throw new Error('Invalid member: ' + member)
       }
+
+      const client = selectClient()
 
       let query = ['geo:' + category, member, radius, 'km']
       if (count > 0) {

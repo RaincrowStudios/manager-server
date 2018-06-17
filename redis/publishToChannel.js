@@ -1,9 +1,10 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 
 module.exports = (channel, message) => {
   return new Promise(async (resolve, reject) => {
     try {
-      message.sentOn = Date.now()
+      const client = selectClient()
+
       client.publish(channel, JSON.stringify(message))
       resolve(true)
     }

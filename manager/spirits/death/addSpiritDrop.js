@@ -1,8 +1,8 @@
-const uuidv1 = require('uuid/v1')
 const getOneFromList = require('../../../redis/getOneFromList')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const addToGeohash = require('../../../redis/addToGeohash')
 const addObjectToHash = require('../../../redis/addObjectToHash')
+const createInstanceId = require('../../../utils/createInstanceId')
 const createMapToken = require('../../../utils/createMapToken')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const generateDropCoords = require('./generateDropCoords')
@@ -35,7 +35,7 @@ module.exports = (spirit) => {
 
         for (const collectible of collectibles) {
           if (collectible) {
-            const instance = uuidv1()
+            const instance = createInstanceId()
 
             const [latitude, longitude] =
               generateDropCoords(spirit.latitude, spirit.longitude)

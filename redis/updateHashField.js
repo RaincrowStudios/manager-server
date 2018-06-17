@@ -1,4 +1,4 @@
-const client = require('./client')
+const selectClient = require('./selectClient')
 const scripts = require('../lua/scripts')
 
 module.exports = (instance, field, value) => {
@@ -13,6 +13,8 @@ module.exports = (instance, field, value) => {
       else if (value === undefined) {
         throw new Error('Invalid values: ' + value)
       }
+
+      const client = selectClient(instance)
 
       client.evalsha(
         [scripts.updateHashField.sha, 1, instance, field, JSON.stringify(value)],

@@ -1,7 +1,7 @@
-const client = require('./client')
+const clients = require('../database/clients')
 
 module.exports = (category, instance, latitude, longitude) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
         throw new Error('Invalid category: ' + category)
@@ -19,17 +19,23 @@ module.exports = (category, instance, latitude, longitude) => {
         throw new Error('4305')
       }
 
-      client.geoadd(
-        ['geo:' + category, longitude, latitude, instance],
-        (err) => {
-          if (err) {
-            throw new Error(err)
-          }
-          else {
-            resolve(true)
-          }
-        }
+      const clientList = clients.where(() => true)
+
+      await Promise.all(
+        clientList.forEach(client => {
+          return new Promise((resolve, reject) => {
+            client.geoadd(['geo:' + category, longitude, latitude, instance], (err) => {
+              if (err) {
+                reject('5400')
+              }
+              else {
+                resolve(true)
+              }
+            })
+          })
+        })
       )
+      resolve(true)
     }
     catch (err) {
       reject(err)
