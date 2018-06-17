@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (instance) => {
   return new Promise((resolve, reject) => {
@@ -7,7 +7,7 @@ module.exports = (instance) => {
         throw new Error('Invalid instance: ' + instance)
       }
 
-      const client = selectClient(instance)
+      const client = selectRedisClient(instance)
 
       client.hgetall([instance], (err, results) => {
         if (err) {

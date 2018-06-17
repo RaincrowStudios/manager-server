@@ -19,22 +19,28 @@ module.exports = (category, instance, latitude, longitude) => {
         throw new Error('4305')
       }
 
-      const clientList = clients.where(() => true)
+      const clientList = clients.where(() => true).map(entry => entry.client)
 
-      await Promise.all(
-        clientList.forEach(client => {
-          return new Promise((resolve, reject) => {
-            client.geoadd(['geo:' + category, longitude, latitude, instance], (err) => {
-              if (err) {
-                reject('5400')
+      const update = []
+      for (const client of clientList) {
+        update.push(
+          new Promise((resolve, reject) => {
+            client.geoadd(
+              ['geo:' + category, longitude, latitude, instance],
+              (err) => {
+                if (err) {
+                  reject(err)
+                }
+                else {
+                  resolve(true)
+                }
               }
-              else {
-                resolve(true)
-              }
-            })
+            )
           })
-        })
-      )
+        )
+      }
+
+      await Promise.all(update)
       resolve(true)
     }
     catch (err) {

@@ -1,5 +1,4 @@
 module.exports = {
-  'local': 'localhost',
   'us-central1': 128,
   'europe-west1': 132,
   'us-west1': 138,

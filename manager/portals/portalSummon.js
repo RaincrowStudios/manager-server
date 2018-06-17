@@ -140,7 +140,7 @@ module.exports = async (portalInstance) => {
         const index = activePortals.indexOf(portalInstance)
 
         update.push(
-          addExperience(spirit.owner, spirit.dominion, xpGain, spirit.coven),
+          addExperience(spirit.owner, spirit.dominion, 'witch', xpGain, spirit.coven),
           updateHashFieldArray(
             portal.owner,
             'remove',

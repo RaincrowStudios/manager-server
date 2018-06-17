@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 const scripts = require('../lua/scripts')
 
 module.exports = (instance, energy) => {
@@ -11,7 +11,7 @@ module.exports = (instance, energy) => {
         throw new Error('Invalid energy: ' + energy)
       }
 
-      const client = selectClient(instance)
+      const client = selectRedisClient(instance)
 
       client.evalsha(
         [scripts.adjustEnergy.sha, 1, instance, energy],

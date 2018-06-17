@@ -3,21 +3,24 @@
 const net = require('net')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
-const createClients = require('./redis/createClients')
-const createSubscribers = require('./redis/createSubscribers')
+const createRedisClients = require('./redis/createRedisClients')
+const createRedisSubscribers = require('./redis/createRedisSubscribers')
 const port = process.env.NODE_ENV === 'development' ? 8082 : 80
 
 async function startup() {
-  await createClients()
-  await createSubscribers()
+  console.log('Starting Manager...')
+  await Promise.all([
+    createRedisClients(),
+    createRedisSubscribers()
+  ])
   //initializer()
 }
 
-//startup()
+startup()
 
 const server = net.createServer(socket => {
   socket.on('data', data => {
-    //manager(JSON.parse(data))
+    manager(JSON.parse(data))
   })
 
   socket.on('error', err => {

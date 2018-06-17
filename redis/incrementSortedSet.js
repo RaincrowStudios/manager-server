@@ -13,22 +13,25 @@ module.exports = (key, increment, instance) => {
         throw new Error('Invalid instance: ' + instance)
       }
 
-      const clientList = clients.where(() => true)
+      const clientList = clients.where(() => true).map(entry => entry.client)
 
-      await Promise.all(
-        clientList.forEach(client => {
-          return new Promise((resolve, reject) => {
-            client.zincrby([key, increment, instance], (err, result) => {
+      const update = []
+      for (const client of clientList) {
+        update.push(
+          new Promise((resolve, reject) => {
+            client.zincrby([key, increment, instance], (err) => {
               if (err) {
-                reject('5400')
+                reject(err)
               }
               else {
-                resolve(result)
+                resolve(true)
               }
             })
           })
-        })
-      )
+        )
+      }
+
+      await Promise.all(update)
       resolve(true)
     }
     catch (err) {

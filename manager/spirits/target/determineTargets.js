@@ -124,9 +124,8 @@ module.exports = (spirit) => {
      for (let i = 0; i < spirit.actionTree.length; i++) {
        const [targetCategory, type] = spirit.actionTree[i].target.split(':')
        const conditions = spirit.actionTree[i].conditions
-
         let target
-        switch (targetCategory[0]) {
+        switch (targetCategory) {
           case 'discover':
             resolve([spirit, spirit.actionTree[i].actions])
             break

@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (category, cursor = 0) => {
   return new Promise((resolve, reject) => {
@@ -10,7 +10,7 @@ module.exports = (category, cursor = 0) => {
         throw new Error('Invalid cursor: ' + cursor)
       }
 
-      const client = selectClient()
+      const client = selectRedisClient()
 
       client.zscan(['set:active:' + category, cursor], (err, results) => {
         if (err) {

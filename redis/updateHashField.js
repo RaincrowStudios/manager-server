@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 const scripts = require('../lua/scripts')
 
 module.exports = (instance, field, value) => {
@@ -14,7 +14,7 @@ module.exports = (instance, field, value) => {
         throw new Error('Invalid values: ' + value)
       }
 
-      const client = selectClient(instance)
+      const client = selectRedisClient(instance)
 
       client.evalsha(
         [scripts.updateHashField.sha, 1, instance, field, JSON.stringify(value)],

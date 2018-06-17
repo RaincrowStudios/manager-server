@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (instance, fields) => {
   return new Promise((resolve, reject) => {
@@ -10,7 +10,7 @@ module.exports = (instance, fields) => {
         throw new Error('Invalid fields: ' + fields)
       }
 
-      const client = selectClient(instance)
+      const client = selectRedisClient(instance)
 
       client.hmget([instance, ...fields], (err, results) => {
         if (err) {

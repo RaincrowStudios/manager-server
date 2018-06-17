@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (category, instance) => {
   return new Promise((resolve, reject) => {
@@ -10,7 +10,7 @@ module.exports = (category, instance) => {
         throw new Error('Invalid instance: ' + instance)
       }
 
-      const client = selectClient()
+      const client = selectRedisClient()
 
       client.zrem(['set:active:' + category, instance], (err) => {
         if (err) {

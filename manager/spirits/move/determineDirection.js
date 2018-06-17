@@ -89,8 +89,8 @@ module.exports = (spirit) => {
     }
     else {
       for (let i = 0; i < spirit.moveTree.length; i++) {
-        const directionCategory = spirit.moveTree[i].split(':')
-        switch (directionCategory[0]) {
+        const [directionCategory, type] = spirit.moveTree[i].split(':')
+        switch (directionCategory) {
           case 'flee':
             destination = await determineFlee(spirit, nearTargets)
             if (destination) {
@@ -109,42 +109,42 @@ module.exports = (spirit) => {
             if (spirit.lastAttackedBy) {
               destination =
                 spirit.lastAttackedBy.type === 'spirit' ?
-                  targetSpirits(spirit, nearTargets, directionCategory[0]) :
-                  targetCharacters(spirit, nearTargets, directionCategory[0])
+                  targetSpirits(spirit, nearTargets, directionCategory) :
+                  targetCharacters(spirit, nearTargets, directionCategory)
             }
             break
           case 'previousTarget':
             if (spirit.previousTarget) {
               destination =
                 spirit.previousTarget.type === 'spirit' ?
-                  targetSpirits(spirit, nearTargets, directionCategory[0]) :
-                  targetCharacters(spirit, nearTargets, directionCategory[0])
+                  targetSpirits(spirit, nearTargets, directionCategory) :
+                  targetCharacters(spirit, nearTargets, directionCategory)
             }
             break
           case 'collectible':
             if (spirit.carrying.length < spirit.maxCarry) {
               destination =
-                targetCollectibles(spirit, nearTargets, directionCategory[1])
+                targetCollectibles(spirit, nearTargets, type)
             }
             break
           case 'allies':
           case 'vulnerableAllies':
-            destination = targetAllies(spirit, nearTargets, directionCategory[0])
+            destination = targetAllies(spirit, nearTargets, directionCategory)
             break
           case 'enemies':
           case 'vulnerableEnemies':
-            destination = targetEnemies(spirit, nearTargets, directionCategory[0])
+            destination = targetEnemies(spirit, nearTargets, directionCategory)
             break
           case 'spirits':
           case 'allySpirits':
           case 'enemySpirits':
-            destination = targetSpirits(spirit, nearTargets, directionCategory[0])
+            destination = targetSpirits(spirit, nearTargets, directionCategory)
             break
           case 'summoner':
             direction = 'summoner'
             break
           case 'summonerPortals':
-            destination = targetPortals(spirit, nearTargets, directionCategory[0])
+            destination = targetPortals(spirit, nearTargets, directionCategory)
             break
           case 'summonLocation':
             direction = [
@@ -156,7 +156,7 @@ module.exports = (spirit) => {
             break
           case 'vampires':
           case 'witches':
-            destination = targetCharacters(spirit, nearTargets, directionCategory[0])
+            destination = targetCharacters(spirit, nearTargets, directionCategory)
             break
           default:
             break

@@ -55,7 +55,7 @@ module.exports = (spirit) => {
           )
 
           const [xp, newLevel] = await addExperience(
-            spirit.owner, spirit.dominion, xpGain, spirit.coven
+            spirit.owner, spirit.dominion, 'witch', xpGain, spirit.coven
           )
 
           const inform = [

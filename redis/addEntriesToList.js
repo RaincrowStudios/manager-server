@@ -21,22 +21,25 @@ module.exports = (listName, entries, values) => {
         entriesValues.push(entries[i], JSON.stringify(values[i]))
       }
 
-      const clientList = clients.where(() => true)
+      const clientList = clients.where(() => true).map(entry => entry.client)
 
-      await Promise.all(
-        clientList.forEach(client => {
-          return new Promise((resolve, reject) => {
+      const update = []
+      for (const client of clientList) {
+        update.push(
+          new Promise((resolve, reject) => {
             client.hmset(['list:' + listName, ...entriesValues], (err) => {
               if (err) {
-                reject('5400')
+                reject(err)
               }
               else {
                 resolve(true)
               }
             })
           })
-        })
-      )
+        )
+      }
+
+      await Promise.all(update)
       resolve(true)
     }
     catch (err) {

@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (category, latitude, longitude, radius, count = 0) => {
 	return new Promise((resolve, reject) => {
@@ -11,7 +11,7 @@ module.exports = (category, latitude, longitude, radius, count = 0) => {
 				throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
 			}
 
-			const client = selectClient()
+			const client = selectRedisClient()
 
 			let query = ['geo:' + category, longitude, latitude, radius, 'km']
 			if (count > 0) {

@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 const scripts = require('../lua/scripts')
 const adjustLeaderboards = require('../utils/adjustLeaderboards')
 
@@ -23,7 +23,7 @@ module.exports = (instance, region, type, xp, coven = '') => {
         }
       }
 
-      const client = selectClient(instance)
+      const client = selectRedisClient(instance)
 
       await adjustLeaderboards(instance, region, type, xp, coven)
 

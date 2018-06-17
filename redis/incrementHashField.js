@@ -1,4 +1,4 @@
-const selectClient = require('./selectClient')
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (instance, field, increment) => {
   return new Promise((resolve, reject) => {
@@ -13,7 +13,7 @@ module.exports = (instance, field, increment) => {
         throw new Error('Invalid increment: ' + increment)
       }
 
-      const client = selectClient(instance)
+      const client = selectRedisClient(instance)
 
       client.hincrby([instance, field, increment], (err, result) => {
         if (err) {

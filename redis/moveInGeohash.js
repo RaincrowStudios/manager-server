@@ -20,11 +20,12 @@ module.exports = (category, instance, latitude, longitude) => {
         throw new Error('4305')
       }
 
-      const clientList = clients.where(() => true)
+      const clientList = clients.where(() => true).map(entry => entry.client)
 
-      await Promise.all(
-        clientList.forEach(client => {
-          return new Promise((resolve, reject) => {
+      const update = []
+      for (const client of clientList) {
+        update.push(
+          new Promise((resolve, reject) => {
             client.evalsha(
               [
                 scripts.moveInGeohash.sha,
@@ -35,17 +36,19 @@ module.exports = (category, instance, latitude, longitude) => {
               ],
               (err) => {
                 if (err) {
-                    reject('5400')
-                  }
-                  else {
-                    resolve(true)
-                  }
+                  reject(err)
                 }
-              )
-            })
-          }
+                else {
+                  resolve(true)
+                }
+              }
+            )
+          })
         )
-      )
+      }
+
+      await Promise.all(update)
+
       resolve(true)
     }
     catch (err) {
