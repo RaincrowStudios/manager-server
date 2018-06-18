@@ -1,6 +1,7 @@
 const ping = require('ping')
 const redis = require('redis')
 const ips = require('../config/region-ips')
+const manager = require('../manager/manager')
 
 module.exports = () => {
   return new Promise((resolve, reject) => {
@@ -32,6 +33,10 @@ module.exports = () => {
 
               subscriber.on('ready', () => {
                 subscriber.subscribe('manager')
+              })
+
+              subscriber.on('message', (channel, message) => {
+                manager(JSON.parse(message))
               })
 
               subscriber.on('error', err => {
