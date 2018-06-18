@@ -14,7 +14,7 @@ async function startup() {
     createRedisClients(),
     createRedisSubscribers()
   ])
-  //initializer()
+  initializer()
 }
 
 startup()
