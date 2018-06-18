@@ -1,11 +1,12 @@
 'use strict'
 
 const net = require('net')
+const production = require('./config/production')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
 const createRedisSubscribers = require('./redis/createRedisSubscribers')
-const port = process.env.NODE_ENV === 'development' ? 8082 : 8080
+const port = process.env.NODE_ENV === 'development' ? 8082 : production.port
 
 async function startup() {
   console.log('Starting Manager...')

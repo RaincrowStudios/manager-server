@@ -1,6 +1,7 @@
 const lured = require('lured')
 const ping = require('ping')
 const redis = require('redis')
+const production = require('../config/production')
 const clients = require('../database/clients')
 const ips = require('../config/region-ips')
 const scripts = require('../lua/scripts')
@@ -22,6 +23,9 @@ module.exports = () => {
               //contact admin
               throw new Error(err)
             }
+            else {
+              resolve(true)
+            }
           })
         })
 
@@ -33,7 +37,7 @@ module.exports = () => {
       }
       else {
         Object.keys(ips).forEach(region => {
-          const host = '10.' + ips[region] + '.1.255'
+          const host = ips[region] + production.redisAddress
           ping.sys.probe(host, (isAlive) => {
             if (isAlive) {
               const client = redis.createClient(
@@ -60,8 +64,8 @@ module.exports = () => {
             }
           })
         })
+        resolve(true)
       }
-      resolve(true)
     }
     catch (err) {
       reject(err)
