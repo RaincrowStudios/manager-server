@@ -5,7 +5,7 @@ const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
 const createRedisSubscribers = require('./redis/createRedisSubscribers')
-const port = process.env.NODE_ENV === 'development' ? 8082 : 80
+const port = process.env.NODE_ENV === 'development' ? 8082 : 8080
 
 async function startup() {
   console.log('Starting Manager...')
