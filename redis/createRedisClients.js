@@ -38,40 +38,43 @@ module.exports = () => {
         })
       }
       else {
-        const update = Object.keys(ips).forEach(region => {
-          new Promise((resolve, reject) => {
-            const host = ips[region] + production.redisAddress
-            ping.sys.probe(host, (isAlive) => {
-              if (isAlive) {
-                const client = redis.createClient(
-                  6379,
-                  host
-                )
+        const update = []
+        Object.keys(ips).forEach(region => {
+          update.push(
+            new Promise((resolve, reject) => {
+              const host = ips[region] + production.redisAddress
+              ping.sys.probe(host, (isAlive) => {
+                if (isAlive) {
+                  const client = redis.createClient(
+                    6379,
+                    host
+                  )
 
-                client.on('ready', () => {
-                  clients.insert({region: region, client: client})
-                  const luredClient = lured.create(client, scripts)
-                  luredClient.load(err => {
-                    if (err) {
-                      reject(err)
-                    }
+                  client.on('ready', () => {
+                    clients.insert({region: region, client: client})
+                    const luredClient = lured.create(client, scripts)
+                    luredClient.load(err => {
+                      if (err) {
+                        reject(err)
+                      }
+                    })
+                    resolve(true)
                   })
-                  resolve(true)
-                })
 
-                client.on('error', (err) => {
-                  const clientToRemove = clients.by('client', client)
-                  if (typeof clientToRemove === 'object') {
-                    clients.remove(clientToRemove)
-                  }
-                  reject(err)
-                })
-              }
-              else {
-                resolve(true)
-              }
+                  client.on('error', (err) => {
+                    const clientToRemove = clients.by('client', client)
+                    if (typeof clientToRemove === 'object') {
+                      clients.remove(clientToRemove)
+                    }
+                    reject(err)
+                  })
+                }
+                else {
+                  resolve(true)
+                }
+              })
             })
-          })
+          )
         })
         await Promise.all(update)
         resolve(true)
