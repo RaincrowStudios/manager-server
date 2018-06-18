@@ -1,5 +1,6 @@
 'use strict'
 
+const http = require('http')
 const net = require('net')
 const production = require('./config/production')
 const initializer = require('./initializer/initializer')
@@ -19,9 +20,18 @@ async function startup() {
 
 startup()
 
+if (process.env.NODE_ENV === 'production') {
+  const httpServer = http.createServer().listen(production.healthcheck)
+
+  httpServer.on('request', (req, res) => {
+    res.writeHead(200)
+    res.write('OK')
+    res.end()
+  })
+}
+
 const server = net.createServer(socket => {
   socket.on('data', data => {
-    console.log('here')
     manager(JSON.parse(data))
   })
 
