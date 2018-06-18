@@ -31,7 +31,9 @@ module.exports = () => {
 
         client.on('error', (err) => {
           const clientToRemove = clients.by('client', client)
-          clients.remove(clientToRemove)
+          if (typeof clientToRemove === 'object') {
+            clients.remove(clientToRemove)
+          }
           throw new Error(err)
         })
       }
