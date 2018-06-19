@@ -9,7 +9,7 @@ const createRedisSubscribers = require('./redis/createRedisSubscribers')
 const port = process.env.NODE_ENV === 'development' ? 8082 : production.port
 
 async function startup() {
-  console.log('Starting Manager...')
+  console.log('Starting manager server...')
   await Promise.all([
     createRedisClients(),
     createRedisSubscribers()
@@ -29,7 +29,9 @@ const server = net.createServer(socket => {
   })
 })
 
-server.listen(port)
+server.listen(port, () => {
+  console.log('Manager server started.')
+})
 
 process.on('unhandledRejection', (reason, location) => {
   console.error('Unhandled Rejection at:', location, 'reason:', reason)

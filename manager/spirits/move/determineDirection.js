@@ -144,6 +144,7 @@ module.exports = (spirit) => {
             direction = 'summoner'
             break
           case 'summonerPortals':
+          case 'portals':
             destination = targetPortals(spirit, nearTargets, directionCategory)
             break
           case 'summonLocation':
