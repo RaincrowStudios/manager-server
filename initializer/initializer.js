@@ -8,27 +8,22 @@ const initializeSpirits = require('./initializeSpirits')
 async function initializer() {
   try {
     const id = process.env.INSTANCE_ID
-    const region = process.env.NODE_ENV === 'development' ?
-      'local' :
-      process.env.INSTANCE_REGION.split('/').pop().slice(0, -2)
 
-    let group
-    switch (process.env.NODE_ENV) {
-      case 'development':
-        group = 'local'
-        break
-      case 'staging':
-        group = 'staging-manager-group'
-        break
-      default:
-        group = 'prod-manager-group-' + region
-    }
-
+    let url = 'https://www.googleapis.com/compute/beta/projects/raincrow-pantheon/'
     let managers = []
-    if (process.env.NODE_ENV !== 'development') {
-      const url =
-        'https://www.googleapis.com/compute/beta/projects/raincrow-pantheon/regions/' +
-        region + '/instanceGroupManagers/' + group + '/listManagedInstances'
+    if (process.env.NODE_ENV === 'staging') {
+      url = url + 'zones/' + process.env.INSTANCE_REGION.split('/').pop() +
+        '/instanceGroups/staging-manager-group/listInstances'
+      const response = await axios.post(url, {})
+      console.log(response)
+      managers = JSON.parse(response).items.map(vm => vm.id)
+    }
+    else if (process.env.NODE_ENV === 'production') {
+      url = url + 'regions/' +
+        process.env.INSTANCE_REGION.split('/').pop().slice(0, -2) +
+        '/instanceGroupManagers/' + 'prod-manager-group-' +
+        process.env.INSTANCE_REGION.split('/').pop().slice(0, -2) +
+        '/listManagedInstances'
       const response = await axios.post(url, {})
       console.log(response)
       managers = JSON.parse(response).managedInstances.map(vm => vm.id)
