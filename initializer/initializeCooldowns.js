@@ -1,9 +1,10 @@
 const timers = require('../database/timers')
+const addFieldToHash = require('../redis/addFieldToHash')
 const getActiveSet = require('../redis/getActiveSet')
-const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const getAllFromHash = require('../redis/getAllFromHash')
 const cooldownExpire = require('../manager/cooldowns/cooldownExpire')
 
-async function initializeCooldowns() {
+async function initializeCooldowns(id, managers) {
   return new Promise(async (resolve, reject) => {
     try {
       const cooldowns = await getActiveSet('cooldowns')
@@ -11,12 +12,11 @@ async function initializeCooldowns() {
       if (cooldowns.length) {
         for (let i = 0; i < cooldowns.length; i++) {
           const currentTime = Date.now()
-          const cooldown = await getFieldsFromHash(
-            'list:cooldowns',
-            [cooldowns[i]]
-          )
+          const cooldown = await getAllFromHash(cooldowns[i])
 
-          if (cooldown) {
+          if (cooldown && !managers.includes(cooldown.manager)) {
+            await addFieldToHash(cooldowns[i], 'manager', id)
+
             if (cooldown.expiresOn > currentTime) {
               const expireTimer =
                 setTimeout(() =>

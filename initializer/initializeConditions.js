@@ -1,11 +1,12 @@
 const timers = require('../database/timers')
 const getActiveSet = require('../redis/getActiveSet')
 const getOneFromHash = require('../redis/getOneFromHash')
+const getOneFromList = require('../redis/getOneFromList')
 const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
 const deleteCondition = require('../manager/conditions/deleteCondition')
 
-function initializeConditions() {
+function initializeConditions(id, managers) {
   return new Promise(async (resolve, reject) => {
     try {
       const conditions = await getActiveSet('conditions')
@@ -14,7 +15,7 @@ function initializeConditions() {
         for (let i = 0; i < conditions.length; i++) {
           const currentTime = Date.now()
           const bearerInstance =
-            await getOneFromHash('list:conditions', conditions[i])
+            await getOneFromList('conditions', conditions[i])
 
           if (!bearerInstance) {
             deleteCondition(conditions[i])

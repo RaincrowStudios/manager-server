@@ -1,9 +1,10 @@
 const timers = require('../database/timers')
+const addFieldToHash = require('../redis/addFieldToHash')
 const getActiveSet = require('../redis/getActiveSet')
-const getOneFromHash = require('../redis/getOneFromHash')
+const getOneFromList = require('../redis/getOneFromList')
 const immunityExpire = require('../manager/immunities/immunityExpire')
 
-async function initializeImmunities() {
+async function initializeImmunities(id, managers) {
   return new Promise(async (resolve, reject) => {
     try {
       const immunities = await getActiveSet('immunities')
@@ -12,9 +13,11 @@ async function initializeImmunities() {
         for (let i = 0; i < immunities.length; i++) {
           if (immunities[i]) {
             const currentTime = Date.now()
-            const immunity = await getOneFromHash('list:immunities', immunities[i])
+            const immunity = await getOneFromList('immunities', immunities[i])
 
-            if (immunity) {
+            if (immunity && !managers.includes(immunity.manager)) {
+              await addFieldToHash(immunities[i], 'manager', id)
+
               if (immunity.expiresOn > currentTime) {
                 const expireTimer =
                   setTimeout(() =>

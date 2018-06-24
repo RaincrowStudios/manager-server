@@ -1,4 +1,6 @@
 const timers = require('../database/timers')
+const addFieldToHash = require('../redis/addFieldToHash')
+const getOneFromHash = require('../redis/getOneFromHash')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
@@ -30,6 +32,7 @@ const deathTimers = {
 async function manager(message) {
   try {
     let timersToClear
+    const instanceManager = await getOneFromHash(message.instance, 'manager')
     switch (message.command) {
       case 'dispel':
         conditionDispel(message.target, message.index)
@@ -46,10 +49,14 @@ async function manager(message) {
         }
         break
       case 'add':
+        message[message.type].manager = process.env.INSTANCE_ID
+        await addFieldToHash(message.instance, 'manager', process.env.INSTANCE_ID)
         addTimers[message.type](message.instance, message[message.type])
         break
       case 'death':
-        deathTimers[message.type](message.instance, message.killer)
+        if (instanceManager === process.env.INSTANCE_ID) {
+          deathTimers[message.type](message.instance, message.killer)
+        }
         break
       default:
         break

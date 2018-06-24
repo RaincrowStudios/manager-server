@@ -1,6 +1,6 @@
 const timers = require('../../database/timers')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeFromList = require('../../redis/removeFromList')
+const removeHash= require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const createMapToken = require('../../utils/createMapToken')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
@@ -17,7 +17,7 @@ module.exports = async (target, index) => {
         }
       ),
       removeFromActiveSet('conditions', target.conditions[index].instance),
-      removeFromList('conditions', target.conditions[index].instance),
+      removeHash(target.conditions[index].instance),
       updateHashFieldArray(
         target.instance,
         'remove',

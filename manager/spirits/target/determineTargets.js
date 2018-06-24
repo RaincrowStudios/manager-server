@@ -7,6 +7,7 @@ const targetAll = require('./targetAll')
 const targetAllies = require('./targetAllies')
 const targetCharacters = require('./targetCharacters')
 const targetCollectibles = require('./targetCollectibles')
+const targetDead = require('./targetDead')
 const targetEnemies = require('./targetEnemies')
 const targetPortals = require('./targetPortals')
 const targetSpirits = require('./targetSpirits')
@@ -179,6 +180,12 @@ module.exports = (spirit) => {
           case 'summoner':
           case 'summonerAttacker':
             target = targetCharacters(spirit, nearTargets, targetCategory, conditions)
+            break
+          case 'deadAllies':
+          case 'deadAll':
+          case 'deadEnemies':
+          case 'deadSummoner':
+            target = targetDead(spirit, nearTargets, targetCategory)
             break
           default:
             break

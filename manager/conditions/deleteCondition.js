@@ -1,6 +1,6 @@
 const timers = require('../../database/timers')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeFromList = require('../../redis/removeFromList')
+const removeHash = require('../../redis/removeHash')
 
 module.exports = (conditionInstance) => {
   return new Promise(async (resolve, reject) => {
@@ -8,7 +8,7 @@ module.exports = (conditionInstance) => {
       if (conditionInstance) {
         await Promise.all([
           removeFromActiveSet('conditions', conditionInstance),
-          removeFromList('conditions', conditionInstance)
+          removeHash(conditionInstance)
         ])
 
         const conditionTimers = timers.by('instance', conditionInstance)

@@ -1,5 +1,5 @@
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const incrementHashField = require('../../redis/incrementHashField')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeFromList = require('../../redis/removeFromList')
@@ -8,13 +8,13 @@ const informPlayers = require('../../utils/informPlayers')
 
 module.exports = async (consumableInstance) => {
   try {
-    const consumable = await getOneFromHash('list:active:consumables', consumableInstance)
-console.log(consumable)
+    const consumable = await getOneFromList('active:consumables', consumableInstance)
+
     if (consumable) {
       const [player, activeConsumables] =
         await getFieldsFromHash(consumable.bearer, ['player', 'activeConsumables'])
 
-      const index = activeConsumables 
+      const index = activeConsumables
         .map(oldConsumable => oldConsumable.id)
         .indexOf(consumable.id)
 
@@ -32,7 +32,7 @@ console.log(consumable)
             consumable.bearer,
             consumable.effectedStat,
             consumable.effectedAmount*-1
-        ), 
+        ),
         updateHashFieldArray(
           consumable.bearer,
           'remove',

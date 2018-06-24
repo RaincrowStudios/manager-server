@@ -1,11 +1,12 @@
+const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeFromList = require('../../redis/removeFromList')
+const removeHash = require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 
 module.exports = async (immunityInstance) => {
   try {
-    const immunity = await getOneFromHash('list:immunities', immunityInstance)
+    const immunity = await getAllFromHash(immunityInstance)
 
     if (immunity) {
       const immunityList = await getOneFromHash(immunity.bearer, 'immunityList')
@@ -15,7 +16,7 @@ module.exports = async (immunityInstance) => {
 
       await Promise.all([
         removeFromActiveSet('immunities', immunityInstance),
-        removeFromList('immunities', immunityInstance),
+        removeHash(immunityInstance),
         updateHashFieldArray(
           immunity.bearer,
           'remove',

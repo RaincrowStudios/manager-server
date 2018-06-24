@@ -1,5 +1,5 @@
 const removeFromActiveSet = require('../../../../redis/removeFromActiveSet')
-const removeFromList = require('../../../../redis/removeFromList')
+const removeHash = require('../../../../redis/removeHash')
 const updateHashFieldArray = require('../../../../redis/updateHashFieldArray')
 const informPlayers = require('../../../../utils/informPlayers')
 const deleteCondition = require('../../../conditions/deleteCondition')
@@ -26,7 +26,7 @@ module.exports = (caster, target) => {
             }
           ),
           removeFromActiveSet('conditions', target.conditions[index].instance),
-          removeFromList('conditions', target.conditions[index].instance),
+          removeHash(target.conditions[index].instance),
           updateHashFieldArray(
             target.instance,
             'remove',

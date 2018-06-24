@@ -1,7 +1,7 @@
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeFromList = require('../../redis/removeFromList')
+const removeHash = require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
 
@@ -26,7 +26,7 @@ module.exports = async (cooldownInstance) => {
           }
         ),
         removeFromActiveSet('cooldowns', cooldownInstance),
-        removeFromList('cooldowns', cooldownInstance),
+        removeHash(cooldownInstance),
         updateHashFieldArray(
           cooldown.bearer,
           'remove',
