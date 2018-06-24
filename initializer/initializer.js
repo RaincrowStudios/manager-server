@@ -29,7 +29,7 @@ async function initializer() {
       const url =
         'https://www.googleapis.com/compute/beta/projects/raincrow-pantheon/regions/' +
         region + '/instanceGroupManagers/' + group + '/listManagedInstances'
-      const response = axios.post(url, {})
+      const response = await axios.post(url, {})
       console.log(response)
       managers = JSON.parse(response).managedInstances.map(vm => vm.id)
     }
