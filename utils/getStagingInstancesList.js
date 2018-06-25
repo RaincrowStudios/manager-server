@@ -32,7 +32,7 @@ module.exports = () => {
             console.error(err)
             throw new Error(err)
           }
-
+          console.log(response)
           const itemsPage = response['items']
           console.log(itemsPage)
           if (!itemsPage) {
