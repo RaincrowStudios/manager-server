@@ -17,7 +17,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
     ))
 
   if (targetCategory === 'vulnerableAllies') {
-    nearAllies = nearAllies.filter(ally => ally.status === 'vulnerable')
+    nearAllies = nearAllies.filter(ally => ally.state === 'vulnerable')
   }
 
   if (targetingConditions && targetingConditions.length) {

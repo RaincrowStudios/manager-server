@@ -9,20 +9,20 @@ else
   local currentEnergy = redis.call('HINCRBY', instance, 'energy', energyChange)
   local baseEnergy = redis.call('HGET', instance, 'baseEnergy')
 
-  local status = false
+  local state = false
 
   if currentEnergy <= 0 then
     currentEnergy = 0
-    status = 'dead'
+    state = 'dead'
     redis.call('HSET', instance, 'energy', currentEnergy)
   elseif currentEnergy >= baseEnergy * 5 then
     currentEnergy = baseEnergy * 5
     redis.call('HSET', instance, 'energy', currentEnergy)
   elseif currentEnergy/baseEnergy <= 0.2 then
-    status = 'vulnerable'
+    state = 'vulnerable'
   end
 
-  redis.call('HSET', instance, 'status', cjson.encode(status))
+  redis.call('HSET', instance, 'state', cjson.encode(state))
 
-  return cjson.encode({currentEnergy, status})
+  return cjson.encode({currentEnergy, state})
 end

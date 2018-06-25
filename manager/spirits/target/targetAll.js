@@ -8,7 +8,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
 
   if (targetCategory === 'vulnerableAll') {
     validTargets = validTargets
-      .filter(target => target.status === 'vulnerable')
+      .filter(target => target.state === 'vulnerable')
   }
 
   if (targetingConditions && targetingConditions.length) {

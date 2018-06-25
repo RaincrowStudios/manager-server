@@ -44,7 +44,7 @@ module.exports = (spirit, target) => {
 
         const resolution = { total: parseInt(total * -1, 10), critical, resist }
 
-        let [targetEnergy, targetStatus] =
+        let [targetEnergy, targetState] =
           await adjustEnergy(target.instance, resolution.total)
 
         const update = [
@@ -65,7 +65,7 @@ module.exports = (spirit, target) => {
           ),
         ]
 
-        if (target.type === 'spirit' && targetStatus !== 'dead') {
+        if (target.type === 'spirit' && targetState !== 'dead') {
           update.push(
             updateHashField(
               target.instance,
@@ -98,13 +98,13 @@ module.exports = (spirit, target) => {
                 school: spirit.school,
                 result: resolution,
                 energy: targetEnergy,
-                status: targetStatus
+                state: targetState
               }
             )
           )
         }
 
-        if (targetStatus === 'dead') {
+        if (targetState === 'dead') {
           update.push(resolveTargetDestruction(spirit, target, 'Attack'))
         }
 

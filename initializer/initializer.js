@@ -14,7 +14,6 @@ async function initializer() {
       managers = await getManagedInstancesList()
     }
 
-    console.log(managers)
     await Promise.all([
       initializeConditions(id, managers),
       initializeCooldowns(id, managers),

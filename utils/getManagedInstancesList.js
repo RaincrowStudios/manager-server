@@ -8,7 +8,10 @@ module.exports = () => {
         if (err) {
           throw new Error(err)
         }
-        if (authClient.createScopedRequired && authClient.createScopedRequired()) {
+        if (
+          authClient.createScopedRequired &&
+          authClient.createScopedRequired()
+        ) {
           const scopes = ['https://www.googleapis.com/auth/cloud-platform']
           authClient = authClient.createScoped(scopes)
         }
@@ -21,17 +24,19 @@ module.exports = () => {
           auth: authClient,
         }
 
-        compute.regionInstanceGroupManagers.listManagedInstances(request, (err, response) => {
-          if (err) {
-            throw new Error(err)
-          }
-          else {
-            const managedInstanceIds =
-              response.data.managedInstances.map(instance => instance.id)
+        compute.regionInstanceGroupManagers.listManagedInstances(request,
+          (err, response) => {
+            if (err) {
+              throw new Error(err)
+            }
+            else {
+              const managedInstanceIds =
+                response.data.managedInstances.map(instance => instance.id)
 
-            resolve(managedInstanceIds)
+              resolve(managedInstanceIds)
+            }
           }
-        })
+        )
       })
     }
     catch (err) {

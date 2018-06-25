@@ -56,9 +56,9 @@ module.exports = (spirit) => {
           return target
         }
       })
-      .filter(target => target && target.status !== 'dead')
+      .filter(target => target && target.state !== 'dead')
 
-    if (spirit.status === 'vulnerable') {
+    if (spirit.state === 'vulnerable') {
       if (!spirit.attributes || !spirit.attributes.includes('stubborn')) {
         destination = await determineFlee(spirit, nearTargets)
 

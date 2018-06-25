@@ -22,7 +22,7 @@ module.exports = (spirit, nearTargets, targetCategory) => {
            return target
          }
        })
-       .filter(target => target && target.status === 'dead')
+       .filter(target => target && target.state === 'dead')
 
       let target = false
       if (targetCategory === 'deadSummoner') {

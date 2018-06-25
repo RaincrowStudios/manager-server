@@ -40,7 +40,7 @@ async function conditionTrigger (conditionInstance) {
 
           const newCondition = conditionToUpdate
           const total = resolveCondition(spell.condition, newCondition)
-          const [bearerEnergy, bearerStatus] =
+          const [bearerEnergy, bearerState] =
             await adjustEnergy(bearerInstance, total)
 
           console.log({
@@ -51,10 +51,10 @@ async function conditionTrigger (conditionInstance) {
             total: total,
           })
 
-          if (bearerStatus === 'dead' && type === 'spirit') {
+          if (bearerState === 'dead' && type === 'spirit') {
             await spiritDeath(bearerInstance, newCondition.caster)
           }
-          else if (bearerStatus === 'dead') {
+          else if (bearerState === 'dead') {
             await Promise.all([
               informNearbyPlayers(
                 fuzzyLatitude,
@@ -89,7 +89,7 @@ async function conditionTrigger (conditionInstance) {
                     condition: conditionInstance,
                     spell: spell.displayName,
                     energy: bearerEnergy,
-                    status: bearerStatus
+                    state: bearerState
                   }
                 )
               ),

@@ -13,7 +13,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
     )
 
   if (targetCategory === 'vulnerableEnemies') {
-    nearEnemies = nearEnemies.filter(enemy => enemy.status === 'vulnerable')
+    nearEnemies = nearEnemies.filter(enemy => enemy.state === 'vulnerable')
   }
 
   if (targetingConditions && targetingConditions.length) {

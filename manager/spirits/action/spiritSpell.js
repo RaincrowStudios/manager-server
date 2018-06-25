@@ -24,7 +24,7 @@ module.exports = (spirit, target, spell) => {
           resolution = await spiritSpellNormal(spirit, target, spell)
         }
 
-        let [targetEnergy, targetStatus] =
+        let [targetEnergy, targetState] =
           await adjustEnergy(target.instance, resolution.total)
 
         const update = [
@@ -40,7 +40,7 @@ module.exports = (spirit, target, spell) => {
           )
         ]
 
-        if (spirit.status !== 'dead') {
+        if (spirit.state !== 'dead') {
           update.push(
             updateHashField(
               spirit.instance,
@@ -60,7 +60,7 @@ module.exports = (spirit, target, spell) => {
         }
 
 
-        if (target.type === 'spirit' && targetStatus !== 'dead') {
+        if (target.type === 'spirit' && targetState !== 'dead') {
           update.push(
             updateHashField(
               target.instance,
@@ -84,7 +84,7 @@ module.exports = (spirit, target, spell) => {
                 school: spirit.school,
                 result: resolution,
                 energy: targetEnergy,
-                status: targetStatus
+                state: targetState
               }
             )
           )
@@ -92,7 +92,7 @@ module.exports = (spirit, target, spell) => {
 
         await Promise.all(update)
 
-        if (targetStatus === 'dead') {
+        if (targetState === 'dead') {
           await resolveTargetDestruction(spirit, target, spell)
         }
       }

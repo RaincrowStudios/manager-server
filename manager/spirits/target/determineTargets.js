@@ -40,7 +40,7 @@ module.exports = (spirit) => {
               return target
             }
           })
-          .filter(target => target && target.status !== 'dead')
+          .filter(target => target && target.state !== 'dead')
       }
       else {
         const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
@@ -86,7 +86,7 @@ module.exports = (spirit) => {
              return target
            }
          })
-         .filter(target => target && target.status !== 'dead')
+         .filter(target => target && target.state !== 'dead')
        }
 
       if (spirit.attributes && spirit.attributes.includes('sentinel')) {
