@@ -36,6 +36,7 @@ module.exports = () => {
               const managedInstances = response.data.managedInstances
               const managedInstanceIds =
                 managedInstances.map(instance => instance.id)
+                console.log(managedInstanceIds)
               resolve(managedInstanceIds)
             }
             catch (err) {
