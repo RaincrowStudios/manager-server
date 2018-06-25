@@ -18,7 +18,7 @@ async function authorize(callback) {
 module.exports = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      await authorize((authClient) => {
+      authorize(async (authClient) => {
         const request = {
           project: 'raincrow-pantheon',
           zone: process.env.INSTANCE_REGION.split('/').pop(),
@@ -27,7 +27,7 @@ module.exports = () => {
           auth: authClient,
         }
 
-        const handlePage = (err, response) => {
+        const handlePage = async (err, response) => {
           if (err) {
             console.error(err)
             throw new Error(err)
@@ -45,14 +45,14 @@ module.exports = () => {
 
           if (response.nextPageToken) {
             request.pageToken = response.nextPageToken
-            compute.instanceGroups.listInstances(request, handlePage)
+            await compute.instanceGroups.listInstances(request, handlePage)
           }
         }
 
-        compute.instanceGroups.listInstances(request, handlePage)
+        await compute.instanceGroups.listInstances(request, handlePage)
       })
 
-      resolve(true)
+      resolve('Done')
     }
     catch (err) {
       reject(err)
