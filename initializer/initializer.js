@@ -1,4 +1,5 @@
 const axios = require('axios')
+const getStagingInstancesList = require('../utils/getStagingInstancesList')
 const initializeConditions = require('./initializeConditions')
 const initializeCooldowns = require('./initializeCooldowns')
 const initializeImmunities = require('./initializeImmunities')
@@ -12,9 +13,7 @@ async function initializer() {
     let url = 'https://www.googleapis.com/compute/beta/projects/raincrow-pantheon/'
     let managers = []
     if (process.env.NODE_ENV === 'staging') {
-      url = url + 'zones/' + process.env.INSTANCE_REGION.split('/').pop() +
-        '/instanceGroups/staging-manager-group/listInstances'
-      const response = await axios.post(url, {})
+      const response = await getStagingInstancesList()
       console.log(response)
       managers = JSON.parse(response).items.map(vm => vm.id)
     }
