@@ -35,12 +35,10 @@ module.exports = () => {
                 throw new Error(err)
               }
               console.log(response.data)
-              const managedInstancesPage = response['managedInstances']
-
-              for (let i = 0; i < managedInstancesPage.length; i++) {
-                //Change code below to process each resource in `managedInstancesPage`:
-                console.log(JSON.stringify(managedInstancesPage[i], null, 2))
-              }
+              const managedInstances = response.data['managedInstances']
+              const managedInstanceIds =
+                managedInstances.map(instance => instance.id)
+              resolve(managedInstanceIds)
             }
             catch (err) {
               reject(err)
@@ -48,10 +46,7 @@ module.exports = () => {
           })
         }
 
-        const response =
-          await compute.regionInstanceGroupManagers.listManagedInstances(request, handlePage)
-
-        resolve(response)
+        compute.regionInstanceGroupManagers.listManagedInstances(request, handlePage)
       })
     }
     catch (err) {
