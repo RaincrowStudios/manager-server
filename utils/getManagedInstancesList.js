@@ -35,7 +35,7 @@ module.exports = () => {
                 throw new Error(err)
               }
               console.log(response.data)
-              const managedInstances = response.data['managedInstances']
+              const managedInstances = response.data.managedInstances
               const managedInstanceIds =
                 managedInstances.map(instance => instance.id)
               resolve(managedInstanceIds)

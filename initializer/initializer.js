@@ -12,10 +12,10 @@ async function initializer() {
     let managers = []
     if (process.env.NODE_ENV !== 'development') {
       const response = await getManagedInstancesList()
-      console.log(response)
       managers = JSON.parse(response).items.map(vm => vm.id)
     }
 
+    console.log(managers)
     await Promise.all([
       initializeConditions(id, managers),
       initializeCooldowns(id, managers),
