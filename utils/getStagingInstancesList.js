@@ -1,7 +1,7 @@
 const { google } = require('googleapis')
 const compute = google.compute('beta')
 
-authorize(function(authClient) {
+module.exports = authorize(function(authClient) {
   const request = {
     project: 'raincrow-pantheon',
     zone: process.env.INSTANCE_REGION.split('/').pop(),
@@ -10,7 +10,7 @@ authorize(function(authClient) {
     auth: authClient,
   }
 
-  var handlePage = function(err, response) {
+  const handlePage = function(err, response) {
     if (err) {
       console.error(err)
       return
