@@ -1,24 +1,18 @@
 const { google } = require('googleapis')
 const compute = google.compute('beta')
 
-function authorize(callback) {
-  google.auth.getApplicationDefault((err, authClient) => {
-    if (err) {
-      console.error('authentication failed: ', err)
-      return err
-    }
-    if (authClient.createScopedRequired && authClient.createScopedRequired()) {
-      const scopes = ['https://www.googleapis.com/auth/cloud-platform']
-      authClient = authClient.createScoped(scopes)
-    }
-    callback(authClient)
-  })
-}
-
 module.exports = () => {
   return new Promise((resolve, reject) => {
     try {
-      authorize(async (authClient) => {
+      google.auth.getApplicationDefault((err, authClient) => {
+        if (err) {
+          throw new Error(err)
+        }
+        if (authClient.createScopedRequired && authClient.createScopedRequired()) {
+          const scopes = ['https://www.googleapis.com/auth/cloud-platform']
+          authClient = authClient.createScoped(scopes)
+        }
+
         const request = {
           project: 'raincrow-pantheon',
           region: process.env.INSTANCE_REGION.split('/').pop().slice(0, -2),
@@ -27,25 +21,17 @@ module.exports = () => {
           auth: authClient,
         }
 
-        const handlePage = (err, response) => {
-          return new Promise((resolve, reject) => {
-            try {
-              if (err) {
-                throw new Error(err)
-              }
-              const managedInstances = response.data.managedInstances
-              const managedInstanceIds =
-                managedInstances.map(instance => instance.id)
-                console.log(managedInstanceIds)
-              resolve(managedInstanceIds)
-            }
-            catch (err) {
-              reject(err)
-            }
-          })
-        }
+        compute.regionInstanceGroupManagers.listManagedInstances(request, (err, response) => {
+          if (err) {
+            throw new Error(err)
+          }
+          else {
+            const managedInstanceIds =
+              response.data.managedInstances.map(instance => instance.id)
 
-        resolve(compute.regionInstanceGroupManagers.listManagedInstances(request, handlePage))
+            resolve(managedInstanceIds)
+          }
+        })
       })
     }
     catch (err) {
