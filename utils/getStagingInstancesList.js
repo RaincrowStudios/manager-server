@@ -34,6 +34,7 @@ module.exports = () => {
           }
 
           const itemsPage = response['items']
+          console.log(itemsPage)
           if (!itemsPage) {
             resolve(false)
           }
