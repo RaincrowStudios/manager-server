@@ -11,7 +11,7 @@ async function initializer() {
 
     let managers = []
     if (process.env.NODE_ENV !== 'development') {
-      const managers = await getManagedInstancesList()
+      managers = await getManagedInstancesList()
     }
 
     console.log(managers)
