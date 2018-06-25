@@ -11,8 +11,7 @@ async function initializer() {
 
     let managers = []
     if (process.env.NODE_ENV !== 'development') {
-      const response = await getManagedInstancesList()
-      managers = JSON.parse(response).items.map(vm => vm.id)
+      const managers = await getManagedInstancesList()
     }
 
     console.log(managers)

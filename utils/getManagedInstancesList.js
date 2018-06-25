@@ -31,10 +31,8 @@ module.exports = () => {
           return new Promise((resolve, reject) => {
             try {
               if (err) {
-                console.error(err)
                 throw new Error(err)
               }
-              console.log(response.data)
               const managedInstances = response.data.managedInstances
               const managedInstanceIds =
                 managedInstances.map(instance => instance.id)
@@ -46,7 +44,7 @@ module.exports = () => {
           })
         }
 
-        compute.regionInstanceGroupManagers.listManagedInstances(request, handlePage)
+        resolve(compute.regionInstanceGroupManagers.listManagedInstances(request, handlePage))
       })
     }
     catch (err) {
