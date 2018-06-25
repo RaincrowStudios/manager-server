@@ -1,11 +1,11 @@
 const { google } = require('googleapis')
 const compute = google.compute('beta')
 
-function authorize(callback) {
-  google.auth.getApplicationDefault(function(err, authClient) {
+async function authorize(callback) {
+  google.auth.getApplicationDefault((err, authClient) => {
     if (err) {
       console.error('authentication failed: ', err)
-      return
+      return err
     }
     if (authClient.createScopedRequired && authClient.createScopedRequired()) {
       const scopes = ['https://www.googleapis.com/auth/cloud-platform']
@@ -18,7 +18,7 @@ function authorize(callback) {
 module.exports = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      authorize(function(authClient) {
+      await authorize((authClient) => {
         const request = {
           project: 'raincrow-pantheon',
           zone: process.env.INSTANCE_REGION.split('/').pop(),
@@ -27,12 +27,12 @@ module.exports = () => {
           auth: authClient,
         }
 
-        const handlePage = function(err, response) {
+        const handlePage = (err, response) => {
           if (err) {
             console.error(err)
             throw new Error(err)
           }
-          console.log(response)
+          console.log(response.data)
           const itemsPage = response['items']
           console.log(itemsPage)
           if (!itemsPage) {
