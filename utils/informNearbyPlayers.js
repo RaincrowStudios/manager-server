@@ -5,7 +5,10 @@ const informPlayers = require('./informPlayers')
 module.exports = (latitude, longitude, message, exclude = []) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (typeof latitude !== 'number' && typeof longitude !== 'number') {
+      if (
+        typeof latitude !== 'number' || typeof longitude !== 'number' ||
+        isNaN(latitude) || isNaN(longitude)
+      ) {
         throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
       }
 

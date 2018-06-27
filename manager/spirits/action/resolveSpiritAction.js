@@ -1,6 +1,7 @@
 const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
 const getOneFromList = require('../../../redis/getOneFromList')
+const incrementHashField = require('../../../redis/getOneFromList')
 const informPlayers = require('../../../utils/informPlayers')
 const levelUp = require('../../../utils/levelUp')
 const determineTargets = require('../target/determineTargets')
@@ -59,6 +60,7 @@ module.exports = (spirit) => {
           )
 
           const inform = [
+            incrementHashField(spirit.instance, 'xpGained', xpGain),
             informPlayers(
               [spirit.player],
               {

@@ -9,7 +9,10 @@ module.exports = (category, instance, latitude, longitude) => {
       else if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
       }
-      else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
+      else if (
+        typeof latitude !== 'number' || typeof longitude !== 'number' ||
+        isNaN(latitude) || isNaN(longitude)
+      ) {
         throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
       }
       else if (latitude < -85.05112878 || latitude > 85.05112878) {

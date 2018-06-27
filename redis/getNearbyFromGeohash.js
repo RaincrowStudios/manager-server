@@ -7,7 +7,10 @@ module.exports = (category, latitude, longitude, radius, count = 0) => {
 				throw new Error('Invalid category: ' + category)
 			}
 
-			else if (typeof latitude !== 'number' && typeof longitude !== 'number') {
+			else if (
+				typeof latitude !== 'number' || typeof longitude !== 'number' ||
+				isNaN(latitude) || isNaN(longitude)
+			) {
 				throw new Error('Invalid coords: ' + latitude + ', ' + longitude)
 			}
 

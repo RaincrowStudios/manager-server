@@ -14,7 +14,7 @@ module.exports = (instance, region, type, xp, coven = '') => {
       else if (!type || typeof type !== 'string') {
         throw new Error('Invalid type: ' + type)
       }
-      else if (typeof xp !== 'number') {
+      else if (typeof xp !== 'number' || isNaN(xp)) {
         throw new Error('Invalid xp: ' + xp)
       }
       else if (coven) {

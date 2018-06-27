@@ -71,8 +71,8 @@ module.exports = async (portalInstance) => {
       spirit.moveOn = moveOn
 
       let actionOn
-      if (spirit.moveFreq.includes('-')) {
-        const range = spirit.moveFreq.split('-')
+      if (spirit.actionFreq.includes('-')) {
+        const range = spirit.actionFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
 
@@ -80,7 +80,7 @@ module.exports = async (portalInstance) => {
           ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
       }
       else {
-        actionOn = parseInt(spirit.moveFreq, 10)
+        actionOn = parseInt(spirit.actionFreq, 10)
       }
 
       spirit.actionOn = actionOn
