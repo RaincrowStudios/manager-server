@@ -4,12 +4,7 @@ const addCondition = require('../addCondition')
 module.exports = (caster, target, spell, ingredients) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const result = {
-        total: 0,
-        critical: false,
-        resist: false,
-        conditions: ['Invisibility']
-      }
+      const result = { total: 0, conditions: ['spell_invisibility'] }
 
       await Promise.all([
         addCondition(caster, target, spell, ingredients),

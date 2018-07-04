@@ -1,4 +1,4 @@
-const addEntriesToList = require('../../../redis/addEntriesToList')
+const addObjectToHash = require('../../../redis/addObjectToHash')
 const addToActiveSet = require('../../../redis/addToActiveSet')
 const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
 const createInstanceId = require('../../../utils/createInstanceId')
@@ -11,7 +11,6 @@ module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
       let duration
-      const conditionInstance = createInstanceId()
       const currentTime = Date.now()
       target.conditions = target.conditions ? target.conditions : []
       if (typeof spell.condition.duration === 'string') {
@@ -44,22 +43,22 @@ module.exports = (caster, target, spell) => {
 
       duration = parseInt(duration, 10)
 
-      let result = {
+      let condition = {
         id: spell.id,
-        displayName: spell.displayName,
-        instance: conditionInstance,
+        instance: createInstanceId(),
         caster: caster.instance,
+        bearer: target.instance,
         createdOn: currentTime,
         expiresOn: duration > 0 ? currentTime + (duration * 1000) : 0
       }
 
       if (spell.condition.hidden) {
-        result.hidden = spell.condition.hidden
+        condition.hidden = spell.condition.hidden
       }
 
       if (spell.condition.tick) {
-        result.triggerOn = currentTime + (spell.condition.tick * 1000)
-        result.tick = spell.condition.tick
+        condition.triggerOn = currentTime + (spell.condition.tick * 1000)
+        condition.tick = spell.condition.tick
       }
 
       for (const modifier of spell.condition.modifiers) {
@@ -77,10 +76,10 @@ module.exports = (caster, target, spell) => {
               property = target
             }
 
-            result[keyValue[0]] = mod * property[subparts[1]]
+            condition[keyValue[0]] = mod * property[subparts[1]]
           }
           else {
-            result[keyValue[0]] = keyValue[1]
+            condition[keyValue[0]] = keyValue[1]
           }
         }
       }
@@ -107,32 +106,31 @@ module.exports = (caster, target, spell) => {
             [target.player],
             {
               command: 'character_condition_remove',
-              instance: result.instance
+              instance: condition.instance
             }
           ),
           updateHashFieldArray(
             target.instance,
             'remove',
             'conditions',
-            result,
+            condition,
             indexes[0]
           )
         ])
       }
 
       const update = [
-        addEntriesToList(
-          'conditions',
-          [conditionInstance],
-          [target.instance]
-        ),
-        addToActiveSet('conditions', conditionInstance),
-        conditionAdd(conditionInstance, result),
+        addObjectToHash(condition.instance, condition),
+        addToActiveSet('conditions', condition.instance),
+        conditionAdd(condition.instance, condition),
         updateHashFieldArray(
           target.instance,
           'add',
           'conditions',
-          result
+          {
+            instance: condition.instance,
+            status: condition.status
+          }
         )
       ]
 
@@ -144,8 +142,8 @@ module.exports = (caster, target, spell) => {
               target.fuzzyLongitude,
               {
                 command: 'map_condition_add',
-                instance: result.instance,
-                spell: result.displayName
+                instance: condition.instance,
+                spell: condition.displayName
               },
               [target.player]
             ),
@@ -153,10 +151,10 @@ module.exports = (caster, target, spell) => {
               [target.player],
               {
                 command: 'character_condition_add',
-                instance: result.instance,
-                spell: result.displayName,
+                instance: condition.instance,
+                spell: condition.id,
                 caster: caster.displayName,
-                expiresOn: result.expiresOn
+                expiresOn: condition.expiresOn
               }
             )
           )
@@ -168,8 +166,8 @@ module.exports = (caster, target, spell) => {
               target.longitude,
               {
                 command: 'map_condition_add',
-                instance: result.instance,
-                spell: result.displayName
+                instance: condition.instance,
+                spell: condition.id
               }
             )
           )
@@ -178,7 +176,7 @@ module.exports = (caster, target, spell) => {
 
       await Promise.all(update)
 
-      resolve(result.displayName)
+      resolve(condition.id)
     }
     catch (err) {
       reject(err)

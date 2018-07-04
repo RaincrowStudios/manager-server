@@ -8,7 +8,7 @@ module.exports = (spirit, target, spell) => {
   if (spirit.conditions && spirit.conditions.length > 0) {
     for (const condition of spirit.conditions) {
       if (condition && condition.healing) {
-        total += condition.healing
+        total += parseInt(condition.healing, 10)
       }
     }
   }
@@ -16,10 +16,10 @@ module.exports = (spirit, target, spell) => {
   if (target.conditions && target.conditions.length > 0) {
     for (const condition of target.conditions) {
       if (condition && condition.healing) {
-        total += condition.healing
+        total += parseInt(condition.healing, 10)
       }
     }
   }
 
-  return { total: total }
+  return total
 }

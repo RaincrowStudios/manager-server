@@ -1,3 +1,4 @@
+const checkKeyExistance = require('../../redis/checkKeyExistance')
 const getOneFromHash = require('../../redis/getOneFromHash')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
@@ -8,12 +9,12 @@ const deleteCondition = require('./deleteCondition')
 
 module.exports = async (conditionInstance) => {
   try {
-    const bearerInstance =
-      await getOneFromHash(conditionInstance, 'bearer')
+    const bearer = await getOneFromHash(conditionInstance, 'bearer')
+    const bearerExists = await checkKeyExistance(bearer)
 
-    if (bearerInstance) {
+    if (bearerExists) {
       const [player, type, conditions] = await getFieldsFromHash(
-        bearerInstance,
+        bearer,
         ['player', 'type', 'conditions']
       )
 
@@ -28,7 +29,7 @@ module.exports = async (conditionInstance) => {
 
         const update = [
           updateHashFieldArray(
-            bearerInstance,
+            bearer,
             'remove',
             'conditions',
             conditionToExpire,
@@ -54,7 +55,7 @@ module.exports = async (conditionInstance) => {
         console.log({
           event: 'condition_expire',
           condition: conditionInstance,
-          bearer: bearerInstance
+          bearer: bearer
         })
 
         await Promise.all(update)

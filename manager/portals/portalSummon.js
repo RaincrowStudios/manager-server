@@ -8,6 +8,7 @@ const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const createInstanceId = require('../../utils/createInstanceId')
+const createMapToken = require('../../utils/createMapToken')
 const determineExperience = require('../../utils/determineExperience')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
@@ -20,8 +21,6 @@ module.exports = async (portalInstance) => {
     const update = []
 
     if (portal) {
-      const spiritInstance = createInstanceId()
-
       const query = [
         getOneFromList('spirits', portal.spirit.id),
         getOneFromList('constants', 'xpMultipliers')
@@ -44,7 +43,7 @@ module.exports = async (portalInstance) => {
       ] = await Promise.all(query)
 
       const spirit = Object.assign(
-        {}, spiritInfo, portal.spirit, {instance: spiritInstance}
+        {}, spiritInfo, portal.spirit, {instance: createInstanceId()}
       )
 
       spirit.summonLat = portal.latitude
@@ -86,11 +85,11 @@ module.exports = async (portalInstance) => {
       spirit.actionOn = actionOn
 
       update.push(
-        addObjectToHash(spiritInstance, spirit),
-        addToActiveSet('spirits', spiritInstance),
+        addObjectToHash(spirit.instance, spirit),
+        addToActiveSet('spirits', spirit.instance),
         addToGeohash(
           'spirits',
-          spiritInstance,
+          spirit.instance,
           spirit.latitude,
           spirit.longitude
         ),
@@ -100,16 +99,7 @@ module.exports = async (portalInstance) => {
           portal.longitude,
           {
             command: 'map_spirit_summon',
-            token: {
-              instance: spirit.instance,
-              displayName: spirit.displayName,
-              summoner: spirit.ownerDisplay,
-              type: spirit.type,
-              subtype: spirit.tier > 0 ? 'greater' : 'lesser',
-              degree: spirit.degree,
-              latitude: spirit.latitude,
-              longitude: spirit.longitude,
-            }
+            token: createMapToken(spirit.instance, spirit)
           }
         )
       )
@@ -152,7 +142,7 @@ module.exports = async (portalInstance) => {
             portal.owner,
             'add',
             'activeSpirits',
-            spiritInstance
+            spirit.instance
           )
         )
       }
@@ -163,8 +153,8 @@ module.exports = async (portalInstance) => {
             [spirit.player],
             {
               command: 'character_portal_summon',
-              instance: spiritInstance,
-              spirit: spirit.displayName
+              instance: spirit.instance,
+              spirit: spirit.id
             }
           )
         )
@@ -178,7 +168,7 @@ module.exports = async (portalInstance) => {
           instance: portalInstance
         }
       )
-      update.push(spiritAdd(spiritInstance, spirit))
+      update.push(spiritAdd(spirit.instance, spirit))
       await Promise.all(update)
       /*
       console.log({

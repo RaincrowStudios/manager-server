@@ -1,51 +1,32 @@
 const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
+const getOneFromList = require('../../../redis/getOneFromList')
 const updateHashField = require('../../../redis/updateHashField')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const determineCritical = require('./determineCritical')
-const determineResist = require('./determineResist')
+const determineDamage = require('./determineDamage')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 
 module.exports = (spirit, target) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const [spiritExists, targetExists] = await Promise.all([
+      const [spiritExists, targetExists, baseCrit] = await Promise.all([
         checkKeyExistance(spirit.instance),
-        checkKeyExistance(target.instance)
+        checkKeyExistance(target.instance),
+        getOneFromList('constants', 'baseCrit')
       ])
-
+      let critical = false
       if (spiritExists && targetExists) {
-        const range = spirit.attack.split('-')
-        const min = parseInt(range[0], 10)
-        const max = parseInt(range[1], 10)
-        let critical = false
-        let resist = false
+        let damage = determineDamage(spirit, target, spirit.attack)
 
-        let total = Math.floor(Math.random() * (max - min + 1)) + min
-
-        if (determineCritical(spirit, target)) {
-          total += Math.floor(Math.random() * (max - min + 1)) + min
-
-          if (spirit.conditions && spirit.conditions.length !== 0) {
-            for (const condition of spirit.conditions) {
-              if (condition.beCrit) {
-                total += condition.power
-              }
-            }
-          }
+        if (determineCritical(spirit, target, baseCrit)) {
           critical = true
+          damage += determineDamage(spirit, target, spirit.attack)
         }
-
-        if (determineResist(target)) {
-          total = Math.round(total / 2)
-          resist = true
-        }
-
-        const resolution = { total: parseInt(total * -1, 10), critical, resist }
 
         let [targetEnergy, targetState] =
-          await adjustEnergy(target.instance, resolution.total)
+          await adjustEnergy(target.instance, damage)
 
         const update = [
           informNearbyPlayers(
@@ -91,12 +72,12 @@ module.exports = (spirit, target) => {
               {
                 command: 'character_spell_hit',
                 instance: spirit.instance,
-                caster: spirit.displayName,
+                caster: spirit.id,
                 type: spirit.type,
                 degree: spirit.degree,
                 spell: 'Attack',
                 school: spirit.school,
-                result: resolution,
+                result: {total: damage, critical: critical},
                 energy: targetEnergy,
                 state: targetState
               }

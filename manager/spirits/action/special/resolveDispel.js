@@ -7,11 +7,7 @@ const deleteCondition = require('../../../conditions/deleteCondition')
 module.exports = (caster, target) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const result = {
-        total: 0,
-        critical: false,
-        resist: false,
-      }
+      const result = { total: 0, conditions: [] }
 
       const index = Math.floor(Math.random() * target.conditions.length)
 
@@ -36,10 +32,7 @@ module.exports = (caster, target) => {
           )
         ])
 
-        result.dispelled = [target.conditions[index].displayName]
-      }
-      else {
-        result.dispelled = []
+        result.conditions.push([target.conditions[index].displayName])
       }
       resolve(result)
     }

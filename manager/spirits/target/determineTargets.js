@@ -89,6 +89,21 @@ module.exports = (spirit) => {
          .filter(target => target && target.state !== 'dead')
        }
 
+      nearTargets = nearTargets.map(async target => {
+        if (target.conditions && target.conditions.length) {
+          const conditions = await Promise.all(
+            target.conditions
+              .filter(condition => condition.instance)
+              .map(instance => getAllFromHash(instance))
+          )
+          target.conditions = [
+            ...target.conditions.filter(condition => !condition.instance),
+            ...conditions
+          ]
+          return target
+        }
+      })
+
       if (spirit.attributes && spirit.attributes.includes('sentinel')) {
         const nearEnemies = nearTargets
         .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
@@ -111,7 +126,7 @@ module.exports = (spirit) => {
               {
                 command: 'character_spirit_sentinel',
                 instance: spirit.instance,
-                spirit: spirit.displayName
+                spirit: spirit.id
               }
             )
           )

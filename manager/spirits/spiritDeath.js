@@ -1,6 +1,7 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
@@ -19,7 +20,7 @@ module.exports = (spiritInstance, killer) => {
           await removeFromAll('spirits', spirit.instance)
           resolve(true)
         }
-        const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
+        const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
         const spirit = Object.assign(
           {}, spiritInfo, instanceInfo, {instance: spiritInstance}
         )
@@ -47,13 +48,19 @@ module.exports = (spiritInstance, killer) => {
               {
                 command: 'character_spirit_death',
                 instance: spirit.instance,
-                displayName: spirit.displayName,
-                killer: {
-                  displayName: killer.displayName,
-                  type: killer.type,
-                  degree: killer.degree,
-                  owner: killer.type === 'spirit' ? killer.ownerDisplay : false
-                }
+                spirit: spirit.id,
+                killer: killer.type === 'spirit' ?
+                  {
+                    spirit: killer.id,
+                    type: killer.type,
+                    degree: killer.degree,
+                    owner: killer.type === 'spirit' ? killer.ownerDisplay : false
+                  } :
+                  {
+                    displayName: killer.displayName,
+                    type: killer.type,
+                    degree: killer.degree
+                  }
               }
             ),
             updateHashFieldArray(

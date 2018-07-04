@@ -38,7 +38,7 @@ module.exports = (killer, target, spell) => {
                 displayName: killer.displayName,
                 type: killer.type,
                 degree: killer.degree,
-                spell: spell.displayName ? spell.displayName : spell
+                spell: spell.id ? spell.id : spell
               },
             }
           ),

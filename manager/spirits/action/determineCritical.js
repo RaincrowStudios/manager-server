@@ -1,10 +1,10 @@
-module.exports = (spirit, target) => {
-  let critChance = spirit.critical
+module.exports = (spirit, target, baseCrit) => {
+  let critChance = parseInt(baseCrit, 10)
 
   if (spirit.conditions && spirit.conditions.length > 0) {
     for (const condition of spirit.conditions) {
       if (condition && condition.beCrit) {
-        critChance += condition.toCrit
+        critChance += parseInt(condition.toCrit, 10)
       }
     }
   }
@@ -12,7 +12,7 @@ module.exports = (spirit, target) => {
   if (target.conditions && target.conditions.length > 0) {
     for (const condition of spirit.conditions) {
       if (condition && condition.beCrit) {
-        critChance += condition.beCrit
+        critChance += parseInt(condition.beCrit, 10)
       }
     }
   }

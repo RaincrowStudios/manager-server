@@ -1,8 +1,9 @@
 const timers = require('../../database/timers')
 const adjustEnergy = require('../../redis/adjustEnergy')
-const getOneFromHash = require('../../redis/getOneFromHash')
+const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashField = require('../../redis/updateHashField')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const spiritDeath = require('../spirits/spiritDeath')
@@ -12,147 +13,139 @@ const deleteCondition = require('./deleteCondition')
 async function conditionTrigger (conditionInstance) {
   try {
     const currentTime = Date.now()
-    const bearerInstance =
-      await getOneFromHash('list:conditions', conditionInstance)
+    const condition = await getAllFromHash(conditionInstance)
 
-    if (bearerInstance) {
-      let [player, type, conditions, latitude, longitude, fuzzyLatitude, fuzzyLongitude] =
+    if (condition && condition.bearer) {
+      const [player, type, latitude, longitude, fuzzyLatitude, fuzzyLongitude] =
         await getFieldsFromHash(
-          bearerInstance,
-          ['player', 'type', 'conditions', 'latitude', 'longitude', 'fuzzyLatitude', 'fuzzyLongitude']
+          condition.bearer,
+          [
+            'player',
+            'type',
+            'latitude',
+            'longitude',
+            'fuzzyLatitude',
+            'fuzzyLongitude'
+          ]
         )
 
-      if (conditions && conditions.length) {
-        let index
-        const conditionToUpdate = conditions.filter((condition, i) => {
-          if (condition.instance === conditionInstance) {
-            index = i
-            return true
-          }
-        })[0]
+      if (condition.caster) {
+        const spell = await getOneFromList('spells', condition.id)
 
-        if (conditionToUpdate) {
-          const spell = await getOneFromHash('list:spells', conditionToUpdate.id)
-          let [killerDisplayName, killerType, killerDegree] =
-            await getFieldsFromHash(
-              conditionToUpdate.caster, ['displayName', 'type', 'degree']
-            )
+        const [killerDisplayName, killerId, killerType, killerDegree] =
+          await getFieldsFromHash(
+            condition.caster, ['displayName', 'id', 'type', 'degree']
+          )
 
-          const newCondition = conditionToUpdate
-          const total = resolveCondition(spell.condition, newCondition)
-          const [bearerEnergy, bearerState] =
-            await adjustEnergy(bearerInstance, total)
+        const total = resolveCondition(spell.condition)
+        const [bearerEnergy, bearerState] =
+          await adjustEnergy(condition.bearer, total)
 
-          console.log({
-            event: 'condition_triggered',
-            player: player,
-            character: bearerInstance,
-            condition: spell.id,
-            total: total,
-          })
+        console.log({
+          event: 'condition_triggered',
+          player: player,
+          character: condition.bearer,
+          condition: spell.id,
+          total: total,
+        })
 
-          if (bearerState === 'dead' && type === 'spirit') {
-            await spiritDeath(bearerInstance, newCondition.caster)
-          }
-          else if (bearerState === 'dead') {
-            await Promise.all([
-              informNearbyPlayers(
-                fuzzyLatitude,
-                fuzzyLongitude,
-                {
-                  command: 'map_condition_death',
-                  instance: bearerInstance
-                },
-                [bearerInstance]
-              ),
+        if (bearerState === 'dead' && type === 'spirit') {
+          await spiritDeath(condition.bearer, condition.caster)
+        }
+        else if (bearerState === 'dead') {
+          await Promise.all([
+            informNearbyPlayers(
+              fuzzyLatitude,
+              fuzzyLongitude,
+              {
+                command: 'map_condition_death',
+                instance: condition.bearer
+              },
+              [condition.bearer]
+            ),
+            informPlayers(
+              [player],
+              {
+                command: 'character_condition_death',
+                killer: killerType === 'spirit' ? killerId : killerDisplayName,
+                type: killerType,
+                degree: killerDegree,
+                spell: spell.id
+              }
+            ),
+            deleteCondition(conditionInstance)
+          ])
+        }
+        else {
+          let update = []
+          if (type !== 'spirit') {
+            update.push(
               informPlayers(
                 [player],
                 {
-                  command: 'character_condition_death',
-                  killer: killerDisplayName,
-                  type: killerType,
-                  degree: killerDegree,
-                  spell: spell.displayName
+                  command: 'character_condition_trigger',
+                  condition: conditionInstance,
+                  spell: spell.id,
+                  energy: bearerEnergy,
+                  state: bearerState
                 }
-              ),
-              deleteCondition(conditionInstance)
-            ])
+              )
+            ),
+            informNearbyPlayers(
+              fuzzyLatitude,
+              fuzzyLongitude,
+              {
+                command: 'map_condition_trigger',
+                instance: condition.bearer,
+                spell: spell.id,
+                energy: bearerEnergy
+              },
+              [condition.bearer]
+            )
           }
           else {
-            let update = []
-            if (type !== 'spirit') {
-              update.push(
-                informPlayers(
-                  [player],
-                  {
-                    command: 'character_condition_trigger',
-                    condition: conditionInstance,
-                    spell: spell.displayName,
-                    energy: bearerEnergy,
-                    state: bearerState
-                  }
-                )
-              ),
+            update.push(
               informNearbyPlayers(
-                fuzzyLatitude,
-                fuzzyLongitude,
+                latitude,
+                longitude,
                 {
                   command: 'map_condition_trigger',
-                  spell: spell.displayName,
+                  instance: condition.bearer,
+                  spell: spell.id,
                   energy: bearerEnergy
                 },
-                [bearerInstance]
-              )
-            }
-            else {
-              update.push(
-                informNearbyPlayers(
-                  latitude,
-                  longitude,
-                  {
-                    command: 'map_condition_trigger',
-                    spell: spell.displayName,
-                    energy: bearerEnergy
-                  },
-                )
-              )
-            }
-
-            update.push(
-              updateHashFieldArray(
-                bearerInstance,
-                'replace',
-                'conditions',
-                conditionToUpdate,
-                index
               )
             )
-
-            await Promise.all(update)
-
-            newCondition.triggerOn =
-              currentTime + (newCondition.tick * 1000)
-
-            const newTimer =
-              setTimeout(() =>
-                conditionTrigger(conditionInstance),
-                newCondition.tick * 1000
-              )
-
-            let conditionTimer = timers.by('instance', conditionInstance)
-            if (conditionTimer) {
-              conditionTimer.triggerTimer = newTimer
-              timers.update(conditionTimer)
-            }
           }
-        }
-        else {
-          deleteCondition(conditionInstance)
+
+          condition.triggerOn =
+            currentTime + (condition.tick * 1000)
+
+          update.push(
+            updateHashField(conditionInstance, 'triggerOn', condition.triggerOn)
+          )
+
+          await Promise.all(update)
+
+          const newTimer =
+            setTimeout(() =>
+              conditionTrigger(conditionInstance),
+              condition.tick * 1000
+            )
+
+          let conditionTimer = timers.by('instance', conditionInstance)
+          if (conditionTimer) {
+            conditionTimer.triggerTimer = newTimer
+            timers.update(conditionTimer)
+          }
         }
       }
       else {
         deleteCondition(conditionInstance)
       }
+    }
+    else {
+      deleteCondition(conditionInstance)
     }
   }
   catch (err) {

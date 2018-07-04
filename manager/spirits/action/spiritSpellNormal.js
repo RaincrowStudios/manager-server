@@ -1,23 +1,26 @@
 const addCondition = require('./addCondition')
-const determineHeal = require('./determineHeal')
 const determineDamage = require('./determineDamage')
+const determineHeal = require('./determineHeal')
 
 module.exports = (spirit, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let result = {}
+      let total
+      let conditions = []
+
       if (spell.range.includes('#')) {
-        result = determineHeal(spirit, target, spell)
+        total = determineHeal(spirit, target, spell)
       }
       else {
-        result = determineDamage(spirit, target, spell)
+        total = determineDamage(spirit, target, spell)
       }
 
       if (spell.condition) {
-        result.conditions = await addCondition(spirit, target, spell)
+        const condition = await addCondition(spirit, target, spell)
+        conditions.push(condition)
       }
 
-      resolve(result)
+      resolve({total: total, conditions: conditions})
     }
     catch (err) {
       reject(err)

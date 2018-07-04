@@ -1,5 +1,5 @@
 const resolveDispel = require('./special/resolveDispel')
-const resolveGreaterHex = require('./special/resolveGreaterHex')
+const resolveGreater = require('./special/resolveGreater')
 const resolveInvisibility = require('./special/resolveInvisibility')
 
 module.exports = (caster, target, spell, ingredients) => {
@@ -10,8 +10,8 @@ module.exports = (caster, target, spell, ingredients) => {
         case 'dispel':
           result = await resolveDispel(caster, target, ingredients)
           break
-        case 'greaterHex':
-          result = await resolveGreaterHex(caster, target, ingredients)
+        case 'greater':
+          result = await resolveGreater(caster, target, spell, ingredients)
           break
         case 'invisibility':
           result = await resolveInvisibility(caster, target, spell, ingredients)
