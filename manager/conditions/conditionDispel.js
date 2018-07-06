@@ -1,4 +1,5 @@
 const timers = require('../../database/timers')
+const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash= require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
@@ -6,43 +7,46 @@ const createMapToken = require('../../utils/createMapToken')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 
-module.exports = async (target, index) => {
+module.exports = async (instance) => {
   try {
+    const condition = await getAllFromHash(instance)
+    const character = await getAllFromHash(condition.bearer)
+
     const update = [
       informPlayers(
-        [target.player],
+        [character.player],
         {
           command: 'character_condition_remove',
-          condition: target.conditions[index].instance
+          condition: instance
         }
       ),
-      removeFromActiveSet('conditions', target.conditions[index].instance),
-      removeHash(target.conditions[index].instance),
+      removeFromActiveSet('conditions', instance),
+      removeHash(instance),
       updateHashFieldArray(
-        target.instance,
+        condition.bearer,
         'remove',
         'conditions',
-        target.conditions[index].instance,
-        index
+        condition,
+        character.conditions.map(condition => condition.instance).indexOf(instance)
       )
     ]
 
-    if (target.conditions[index].status === 'invisible') {
+    if (condition.status === 'invisible') {
       informNearbyPlayers(
-        target.fuzzyLatitude,
-        target.fuzzyLongitude,
+        character.fuzzyLatitude,
+        character.fuzzyLongitude,
         {
           command: 'map_character_add',
-          token: createMapToken(target.instance, target)
+          token: createMapToken(condition.bearer, character)
         }
       ),
-      [target.instance]
+      [condition.bearer]
     }
 
     await Promise.all(update)
 
     const conditionTimers =
-      timers.by('instance', target.conditions[index].instance)
+      timers.by('instance', instance)
     if (conditionTimers) {
       clearTimeout(conditionTimers.expireTimer)
       clearTimeout(conditionTimers.triggerTimer)

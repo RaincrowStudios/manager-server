@@ -43,9 +43,9 @@ module.exports = (caster, target, spell) => {
 
       duration = parseInt(duration, 10)
 
-      let condition = {
-        id: spell.id,
+      const condition = {
         instance: createInstanceId(),
+        id: spell.id,
         caster: caster.instance,
         bearer: target.instance,
         createdOn: currentTime,
@@ -129,6 +129,7 @@ module.exports = (caster, target, spell) => {
           'conditions',
           {
             instance: condition.instance,
+            id: condition.id,
             status: condition.status
           }
         )
@@ -143,7 +144,7 @@ module.exports = (caster, target, spell) => {
               {
                 command: 'map_condition_add',
                 instance: condition.instance,
-                spell: condition.displayName
+                spell: condition.id
               },
               [target.player]
             ),
@@ -152,8 +153,8 @@ module.exports = (caster, target, spell) => {
               {
                 command: 'character_condition_add',
                 instance: condition.instance,
-                spell: condition.id,
-                caster: caster.displayName,
+                condition: condition.id,
+                caster: caster.id,
                 expiresOn: condition.expiresOn
               }
             )
@@ -167,7 +168,7 @@ module.exports = (caster, target, spell) => {
               {
                 command: 'map_condition_add',
                 instance: condition.instance,
-                spell: condition.id
+                condition: condition.id
               }
             )
           )

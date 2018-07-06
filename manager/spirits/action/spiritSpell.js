@@ -110,7 +110,7 @@ module.exports = (spirit, target, spell) => {
                 type: spirit.type,
                 degree: spirit.degree,
                 spell: spell.id,
-                school: spirit.school,
+                base: spell.base,
                 result: result,
                 energy: targetEnergy,
                 state: targetState

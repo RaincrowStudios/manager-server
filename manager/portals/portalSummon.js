@@ -124,7 +124,8 @@ module.exports = async (portalInstance) => {
           'summon',
           firstSummon,
           spirit,
-          aptitude
+          {aptitude: aptitude},
+          portal.ingredients
         )
 
         const index = activePortals.indexOf(portalInstance)

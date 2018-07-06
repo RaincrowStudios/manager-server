@@ -1,32 +1,27 @@
-module.exports = (xpMultipliers, category, first, spirit, aptitude = 0) => {
-  let xp
-  if (typeof xpMultipliers[category] === 'string') {
-    if (xpMultipliers[category].includes('*')) {
-      const parts = xpMultipliers[category].split('*')
+module.exports = (
+  xpMultipliers,
+  category,
+  first,
+  target,
+  caster = {},
+  ingredients = []
+) => {
+  let aptitude = caster.aptitude ? caster.aptitude : 0
 
-      let mod
-      if (isNaN(parts[0])) {
-        mod = parseInt(spirit[parts[0]], 10)
-      }
-      else {
-        mod = parseInt(parts[0], 10)
-      }
-
-      xp = mod * parseInt(spirit[parts[1]], 10)
-    }
-    else {
-      xp = parseInt(spirit[xpMultipliers[category]], 10)
-    }
-  }
-  else {
-    xp = xpMultipliers[category]
-  }
-
-  xp += aptitude
+  let xp = target[xpMultipliers[category].base] * xpMultipliers[category].multiplier
 
   if (first) {
-    xp = xp * xpMultipliers.firstMultiplier
+    xp *= xpMultipliers.firstMultiplier
   }
+
+  for (const ingredient of ingredients) {
+    if (ingredient.spell && ingredient.spell.aptitude) {
+      aptitude += (ingredient.spell.aptitude * ingredient.count)
+    }
+    xp += (ingredient.rarity * ingredient.count)
+  }
+
+  xp *= (aptitude * 0.05)
 
   return xp
 }

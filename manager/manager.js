@@ -35,7 +35,7 @@ async function manager(message) {
     const instanceManager = await getOneFromHash(message.instance, 'manager')
     switch (message.command) {
       case 'dispel':
-        conditionDispel(message.target, message.index)
+        conditionDispel(message.instance)
         break
       case 'remove':
         timersToClear = timers.by('instance', message.instance)
