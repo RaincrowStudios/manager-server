@@ -3,7 +3,6 @@ const addObjectToHash = require('../../redis/addObjectToHash')
 const addToActiveSet = require('../../redis/addToActiveSet')
 const addToGeohash = require('../../redis/addToGeohash')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
@@ -12,6 +11,7 @@ const createMapToken = require('../../utils/createMapToken')
 const determineExperience = require('../../utils/determineExperience')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
+const levelUp = require('../../utils/levelUp')
 const spiritAdd = require('../spirits/spiritAdd')
 
 module.exports = async (portalInstance) => {
@@ -21,29 +21,8 @@ module.exports = async (portalInstance) => {
     const update = []
 
     if (portal) {
-      const query = [
-        getOneFromList('spirits', portal.spirit.id),
-        getOneFromList('constants', 'xpMultipliers')
-      ]
-
-      if (portal.owner) {
-        query.push(
-          getOneFromHash(portal.owner, 'aptitude'),
-          getOneFromHash(portal.owner, 'summonedSpirits'),
-          getOneFromHash(portal.owner, 'activePortals')
-        )
-      }
-
-      const [
-        spiritInfo,
-        xpMultipliers,
-        aptitude,
-        summonedSpirits,
-        activePortals
-      ] = await Promise.all(query)
-
       const spirit = Object.assign(
-        {}, spiritInfo, portal.spirit, {instance: createInstanceId()}
+        {}, portal.spirit, {instance: createInstanceId()}
       )
 
       spirit.summonLat = portal.latitude
@@ -105,8 +84,13 @@ module.exports = async (portalInstance) => {
       )
 
       if (spirit.owner) {
-        const firstSummon = summonedSpirits ?
-          summonedSpirits.includes(spirit.id) : false
+        const [summoner, xpMultipliers] = await Promise.all([
+          getAllFromHash(portal.owner),
+          getOneFromList('constants', 'xpMultipliers')
+        ])
+
+        const firstSummon = summoner.summonedSpirits ?
+          summoner.summonedSpirits.includes(spirit.id) : false
 
         if (firstSummon) {
           update.push(
@@ -124,14 +108,25 @@ module.exports = async (portalInstance) => {
           'summon',
           firstSummon,
           spirit,
-          {aptitude: aptitude},
+          summoner,
           portal.ingredients
         )
 
-        const index = activePortals.indexOf(portalInstance)
+        const [xp, newLevel] = await addExperience(
+          spirit.owner,
+          spirit.dominion,
+          'witch',
+          xpGain,
+          spirit.coven
+        )
+
+        if (newLevel) {
+          update.push(levelUp(spirit.owner, newLevel))
+        }
+
+        const index = summoner.activePortals.indexOf(portalInstance)
 
         update.push(
-          addExperience(spirit.owner, spirit.dominion, 'witch', xpGain, spirit.coven),
           updateHashFieldArray(
             portal.owner,
             'remove',
@@ -169,7 +164,9 @@ module.exports = async (portalInstance) => {
           instance: portalInstance
         }
       )
+
       update.push(spiritAdd(spirit.instance, spirit))
+
       await Promise.all(update)
       /*
       console.log({

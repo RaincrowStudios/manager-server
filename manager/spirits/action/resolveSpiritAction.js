@@ -91,7 +91,7 @@ module.exports = (spirit) => {
             ]
 
             if (newLevel) {
-              inform.push(levelUp(spirit.player, newLevel))
+              inform.push(levelUp(spirit.owner, newLevel))
             }
           }
         }
