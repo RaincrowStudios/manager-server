@@ -16,6 +16,10 @@ module.exports = () => {
           subscriber.subscribe('manager')
         })
 
+        subscriber.on('message', (channel, message) => {
+          manager(JSON.parse(message))
+        })
+
         subscriber.on('error', (err) => {
           throw new Error(err)
         })

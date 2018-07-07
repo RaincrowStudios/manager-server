@@ -21,8 +21,12 @@ module.exports = async (portalInstance) => {
     const update = []
 
     if (portal) {
+      const { moveFreq, actionFreq } =
+        await getOneFromList('spirits', portal.spirit.id)
       const spirit = Object.assign(
-        {}, portal.spirit, {instance: createInstanceId()}
+        {},
+        portal.spirit,
+        { instance: createInstanceId() }
       )
 
       spirit.summonLat = portal.latitude
@@ -34,8 +38,8 @@ module.exports = async (portalInstance) => {
         currentTime + (spirit.duration * 3600000) : 0
 
       let moveOn
-      if (spirit.moveFreq.includes('-')) {
-        const range = spirit.moveFreq.split('-')
+      if (moveFreq.includes('-')) {
+        const range = moveFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
 
@@ -43,14 +47,14 @@ module.exports = async (portalInstance) => {
           ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
       }
       else {
-        moveOn = parseInt(spirit.moveFreq, 10)
+        moveOn = parseInt(moveFreq, 10)
       }
 
       spirit.moveOn = moveOn
 
       let actionOn
-      if (spirit.actionFreq.includes('-')) {
-        const range = spirit.actionFreq.split('-')
+      if (actionFreq.includes('-')) {
+        const range = actionFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
 
@@ -58,7 +62,7 @@ module.exports = async (portalInstance) => {
           ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
       }
       else {
-        actionOn = parseInt(spirit.actionFreq, 10)
+        actionOn = parseInt(actionFreq, 10)
       }
 
       spirit.actionOn = actionOn

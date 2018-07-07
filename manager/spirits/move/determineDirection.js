@@ -17,30 +17,34 @@ module.exports = (spirit) => {
       const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
         await Promise.all([
           getNearbyFromGeohash(
-           'characters',
-           spirit.latitude,
-           spirit.longitude,
-           spirit.reach
-         ),
-         getNearbyFromGeohash(
-          'collectibles',
-          spirit.latitude,
-          spirit.longitude,
-          spirit.reach
-        ),
-         getNearbyFromGeohash(
+            'characters',
+            spirit.latitude,
+            spirit.longitude,
+            spirit.visionRange,
+            50
+          ),
+          getNearbyFromGeohash(
+            'collectibles',
+            spirit.latitude,
+            spirit.longitude,
+            spirit.visionRange,
+            50
+          ),
+          getNearbyFromGeohash(
             'portals',
             spirit.latitude,
             spirit.longitude,
-            spirit.reach
+            spirit.visionRange,
+            50
           ),
           getNearbyFromGeohash(
-           'spirits',
-           spirit.latitude,
-           spirit.longitude,
-           spirit.reach
-         )
-       ])
+            'spirits',
+            spirit.latitude,
+            spirit.longitude,
+            spirit.visionRange,
+            50
+          )
+        ])
 
     const nearInstances =
       [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]

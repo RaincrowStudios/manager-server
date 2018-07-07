@@ -16,7 +16,8 @@ const spiritSpell = require('./spiritSpell')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let spell, inform
+      let spell
+      let inform = []
       let [target, actions] = await determineTargets(spirit)
 
       if (target.type === 'spirit') {
