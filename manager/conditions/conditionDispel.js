@@ -17,7 +17,8 @@ module.exports = async (instance) => {
         [character.player],
         {
           command: 'character_condition_remove',
-          condition: instance
+          instance: instance,
+          condition: condition.id
         }
       ),
       removeFromActiveSet('conditions', instance),

@@ -2,13 +2,14 @@ const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
 const getOneFromList = require('../../../redis/getOneFromList')
 const incrementHashField = require('../../../redis/getOneFromList')
+const determineExperience = require('../../../utils/determineExperience')
+const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const levelUp = require('../../../utils/levelUp')
 const determineTargets = require('../target/determineTargets')
 const basicAttack = require('./basicAttack')
+const checkSuccess = require('./checkSuccess')
 const determineAction = require('./determineAction')
-const determineExperience = require('./determineExperience')
-const determineSuccess = require('./determineSuccess')
 const spiritCollect = require('./spiritCollect')
 const spiritDiscover = require('./spiritDiscover')
 const spiritSpell = require('./spiritSpell')
@@ -26,17 +27,19 @@ module.exports = (spirit) => {
       }
 
       if (target) {
-        if (!determineSuccess(spirit, target)) {
+        if (!checkSuccess(spirit, target)) {
           if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
             inform.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
           }
           if (target.type === 'witch' || target.type === 'vampire') {
             inform.push(
-              informPlayers(
-                [target.player],
+              informNearbyPlayers(
+                spirit.latitude,
+                spirit.longitude,
                 {
-                  command: 'character_spirit_fail',
-                  spirit: spirit.id
+                  command: 'map_spirit_fail',
+                  instance: spirit.instance,
+                  spirit: spirit.id,
                 }
               )
             )

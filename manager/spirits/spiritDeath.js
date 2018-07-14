@@ -33,7 +33,12 @@ module.exports = (spiritInstance, killer) => {
             spirit.longitude,
             {
               command: 'map_spirit_death',
-              instance: spirit.instance,
+              targetInstance: spirit.instance,
+              target: spirit.id,
+              casterInstance: killer.instance,
+              caster: killer.displayName,
+              casterType: killer.type,
+              casterSummoner: killer.ownerDisplay ? killer.ownerDisplay : false
             }
           )
         ]
@@ -49,18 +54,10 @@ module.exports = (spiritInstance, killer) => {
                 command: 'character_spirit_death',
                 instance: spirit.instance,
                 spirit: spirit.id,
-                killer: killer.type === 'spirit' ?
-                  {
-                    spirit: killer.id,
-                    type: killer.type,
-                    degree: killer.degree,
-                    owner: killer.type === 'spirit' ? killer.ownerDisplay : false
-                  } :
-                  {
-                    displayName: killer.displayName,
-                    type: killer.type,
-                    degree: killer.degree
-                  }
+                casterInstance: killer.instance,
+                caster:  killer.type === 'spirit' ? killer.id : killer.displayName,
+                casterType: killer.type,
+                casterSummoner: killer.type === 'spirit' ? killer.ownerDisplay : false
               }
             ),
             updateHashFieldArray(

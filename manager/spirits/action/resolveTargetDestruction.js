@@ -34,12 +34,11 @@ module.exports = (killer, target, spell) => {
             [target.player],
             {
               command: 'character_spell_death',
-              killer: {
-                displayName: killer.displayName,
-                type: killer.type,
-                degree: killer.degree,
-                spell: spell.id ? spell.id : spell
-              },
+              caster: killer.id,
+              type: killer.type,
+              degree: killer.degree,
+              spell: spell.id ? spell.id : spell,
+              summoner: killer.ownerDisplay ? killer.ownerDisplay : false
             }
           ),
           deleteAllConditions(target.conditions)

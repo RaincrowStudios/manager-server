@@ -32,9 +32,9 @@ async function conditionTrigger (conditionInstance) {
       if (condition.caster) {
         const spell = await getOneFromList('spells', condition.id)
 
-        const [killerDisplayName, killerId, killerType, killerDegree] =
+        const [killerDisplayName, killerId, killerType] =
           await getFieldsFromHash(
-            condition.caster, ['displayName', 'id', 'type', 'degree']
+            condition.caster, ['displayName', 'id', 'type']
           )
 
         const total = resolveCondition(spell.condition)
@@ -59,7 +59,8 @@ async function conditionTrigger (conditionInstance) {
               fuzzyLongitude,
               {
                 command: 'map_condition_death',
-                instance: condition.bearer
+                instance: condition.bearer,
+                condition: condition.id
               },
               [condition.bearer]
             ),
@@ -67,10 +68,10 @@ async function conditionTrigger (conditionInstance) {
               [player],
               {
                 command: 'character_condition_death',
-                killer: killerType === 'spirit' ? killerId : killerDisplayName,
+                instance: conditionInstance,
+                condition: condition.id,
+                caster: killerType === 'spirit' ? killerId : killerDisplayName,
                 type: killerType,
-                degree: killerDegree,
-                spell: spell.id
               }
             ),
             deleteCondition(conditionInstance)
@@ -84,8 +85,9 @@ async function conditionTrigger (conditionInstance) {
                 [player],
                 {
                   command: 'character_condition_trigger',
-                  condition: conditionInstance,
-                  spell: spell.id,
+                  instance: conditionInstance,
+                  condition: condition.id,
+                  total: total,
                   energy: bearerEnergy,
                   state: bearerState
                 }
@@ -97,8 +99,10 @@ async function conditionTrigger (conditionInstance) {
               {
                 command: 'map_condition_trigger',
                 instance: condition.bearer,
-                spell: spell.id,
-                energy: bearerEnergy
+                condition: condition.id,
+                total: total,
+                energy: bearerEnergy,
+                state: bearerState
               },
               [condition.bearer]
             )
@@ -111,8 +115,10 @@ async function conditionTrigger (conditionInstance) {
                 {
                   command: 'map_condition_trigger',
                   instance: condition.bearer,
-                  spell: spell.id,
-                  energy: bearerEnergy
+                  condition: condition.id,
+                  total: total,
+                  energy: bearerEnergy,
+                  state: bearerState
                 },
               )
             )

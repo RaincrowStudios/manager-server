@@ -53,6 +53,18 @@ module.exports = (spirit, target, spell) => {
           }
         }
 
+        if (
+          result.total < 0 &&
+          (spirit.attributes && spirit.attributes.includes('rage')) ||
+          (spirit.conditions &&
+          spirit.conditions
+            .filter(condition => condition.status)
+            .map(condition => condition.status)
+            .includes('rage'))
+        ) {
+          result.total = result.total + Math.round(0.5 * result.total)
+        }
+
         const [targetEnergy, targetState] =
           await adjustEnergy(target.instance, result.total)
 
