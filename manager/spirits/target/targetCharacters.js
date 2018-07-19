@@ -67,10 +67,13 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
         }
         if (target) {
           resolve(target)
+        } else {
+          resolve(false)
         }
+      } else { 
+        resolve(false)
       }
 
-      resolve(false)
     }
     catch (err) {
       reject(err)
