@@ -114,14 +114,14 @@ module.exports = (spirit) => {
               destination =
                 spirit.lastAttackedBy.type === 'spirit' ?
                   targetSpirits(spirit, nearTargets, directionCategory) :
-                  targetCharacters(spirit, nearTargets, directionCategory)
+                  await targetCharacters(spirit, nearTargets, directionCategory)
             }
             break
           case 'previousTarget':
             if (spirit.previousTarget) {
               destination =
                 spirit.previousTarget.type === 'spirit' ?
-                  await targetSpirits(spirit, nearTargets, directionCategory) :
+                  targetSpirits(spirit, nearTargets, directionCategory) :
                   await targetCharacters(spirit, nearTargets, directionCategory)
             }
             break
