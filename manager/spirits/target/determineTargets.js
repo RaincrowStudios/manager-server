@@ -158,7 +158,7 @@ module.exports = (spirit) => {
               target =
                 spirit.lastAttackedBy.type === 'spirit' ?
                   targetSpirits(spirit, nearTargets, targetCategory, conditions) :
-                  targetCharacters(spirit, nearTargets, targetCategory, conditions)
+                  await targetCharacters(spirit, nearTargets, targetCategory, conditions)
             }
             break
           case 'previousTarget':
@@ -166,7 +166,7 @@ module.exports = (spirit) => {
               target =
                 spirit.previousTarget.type === 'spirit' ?
                   targetSpirits(spirit, nearTargets, targetCategory, conditions) :
-                  targetCharacters(spirit, nearTargets, targetCategory, conditions)
+                  await targetCharacters(spirit, nearTargets, targetCategory, conditions)
             }
             break
           case 'collectible':
@@ -194,13 +194,13 @@ module.exports = (spirit) => {
           case 'witches':
           case 'summoner':
           case 'summonerAttacker':
-            target = targetCharacters(spirit, nearTargets, targetCategory, conditions)
+            target = await targetCharacters(spirit, nearTargets, targetCategory, conditions)
             break
           case 'deadAllies':
           case 'deadAll':
           case 'deadEnemies':
           case 'deadSummoner':
-            target = targetDead(spirit, nearTargets, targetCategory)
+            target = await targetDead(spirit, nearTargets, targetCategory)
             break
           default:
             break

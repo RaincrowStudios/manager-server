@@ -114,7 +114,7 @@ module.exports = (spirit) => {
               destination =
                 spirit.lastAttackedBy.type === 'spirit' ?
                   targetSpirits(spirit, nearTargets, directionCategory) :
-                  targetCharacters(spirit, nearTargets, directionCategory)
+                  await targetCharacters(spirit, nearTargets, directionCategory)
             }
             break
           case 'previousTarget':
@@ -122,7 +122,7 @@ module.exports = (spirit) => {
               destination =
                 spirit.previousTarget.type === 'spirit' ?
                   targetSpirits(spirit, nearTargets, directionCategory) :
-                  targetCharacters(spirit, nearTargets, directionCategory)
+                  await targetCharacters(spirit, nearTargets, directionCategory)
             }
             break
           case 'collectible':
@@ -161,7 +161,7 @@ module.exports = (spirit) => {
             break
           case 'vampires':
           case 'witches':
-            destination = targetCharacters(spirit, nearTargets, directionCategory)
+            destination = await targetCharacters(spirit, nearTargets, directionCategory)
             break
           default:
             break
@@ -169,10 +169,11 @@ module.exports = (spirit) => {
 
         if (destination) {
           direction = [
-            Math.sign(destination.latitude - spirit.latitude),
-            Math.sign(destination.longitude - spirit.longitude),
+            Math.sign(parseFloat(destination.latitude, 10) - parseFloat(spirit.latitude, 10)),
+            Math.sign(parseFloat(destination.longitude, 10) - parseFloat(spirit.longitude, 10)),
           ]
         }
+
         resolve(direction)
       }
 
