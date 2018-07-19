@@ -34,9 +34,15 @@ module.exports = (spirit, target) => {
             spirit.longitude,
             {
               command: 'map_spirit_action',
-              instance: spirit.instance,
-              target: target.instance,
-              action: 'Attack'
+              targetInstance: target.instance,
+              target: target.id ? target.id : target.displayName,
+              targetEnergy: targetEnergy,
+              targetState: targetEnergy,
+              spiritInstance: spirit.instance,
+              spirit: spirit.id,
+              spiritEnergy: spirit.energy,
+              spiritState: spirit.state,
+              spell: 'Attack',
             }
           ),
           updateHashField(
@@ -71,15 +77,15 @@ module.exports = (spirit, target) => {
               [target.player],
               {
                 command: 'character_spell_hit',
-                instance: spirit.instance,
+                energy: targetEnergy,
+                state: targetState,
+                casterInstance: spirit.instance,
                 caster: spirit.id,
                 type: spirit.type,
                 degree: spirit.degree,
                 spell: 'Attack',
-                school: spirit.school,
+                base: false,
                 result: {total: damage, critical: critical},
-                energy: targetEnergy,
-                state: targetState
               }
             )
           )

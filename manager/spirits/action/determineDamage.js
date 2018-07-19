@@ -1,9 +1,10 @@
-module.exports = (spirit, target, spell) => {
-  const range = spell.range.split('-')
-  const min = parseInt(range[0], 10)
-  const max = parseInt(range[1], 10)
+module.exports = (spirit, target, range) => {
+  const [min, max] = range.split('-')
 
-  let total = Math.floor(Math.random() * (max - min + 1)) + min
+  let total = Math.floor(
+    Math.random() *
+    (parseInt(max, 10) - parseInt(min, 10) + 1) + parseInt(min, 10)
+  )
 
   let power = parseInt(spirit.power, 10)
   let resilience = parseInt(target.resilience, 10)
@@ -12,6 +13,9 @@ module.exports = (spirit, target, spell) => {
     for (const condition of spirit.conditions) {
       if (condition.power) {
         power += parseInt(condition.power, 10)
+      }
+      if (condition && condition.damage) {
+        total += parseInt(condition.damage, 10)
       }
     }
   }

@@ -5,14 +5,16 @@ const determineHeal = require('./determineHeal')
 module.exports = (spirit, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let total
+      let total = 0
       let conditions = []
 
-      if (spell.range.includes('#')) {
-        total = determineHeal(spirit, target, spell)
-      }
-      else {
-        total = determineDamage(spirit, target, spell)
+      if (spell.range) {
+        if (spell.range.includes('#')) {
+          total = determineHeal(spirit, target, spell.range.slice(1))
+        }
+        else {
+          total = determineDamage(spirit, target, spell.range)
+        }
       }
 
       if (spell.condition) {

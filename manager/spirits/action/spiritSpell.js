@@ -5,6 +5,7 @@ const updateHashField = require('../../../redis/updateHashField')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../utils/informPlayers')
 const determineCritical = require('./determineCritical')
+const determineSelf = require('./determineSelf')
 const resolveTargetDestruction = require('./resolveTargetDestruction')
 const spiritSpellNormal = require('./spiritSpellNormal')
 const spiritSpellSpecial = require('./spiritSpellSpecial')
@@ -65,8 +66,15 @@ module.exports = (spirit, target, spell) => {
           result.total = result.total + Math.round(0.5 * result.total)
         }
 
-        const [targetEnergy, targetState] =
-          await adjustEnergy(target.instance, result.total)
+        let selfEnergy = 0
+        if (spell.self) {
+          selfEnergy = determineSelf(spell, result.total)
+        }
+        const [[spiritEnergy, spiritState], [targetEnergy, targetState]] =
+          await Promise.all(
+            adjustEnergy(spirit.instance, selfEnergy),
+            adjustEnergy(target.instance, result.total)
+          )
 
         const update = [
           informNearbyPlayers(
@@ -74,9 +82,16 @@ module.exports = (spirit, target, spell) => {
             spirit.longitude,
             {
               command: 'map_spirit_action',
-              instance: spirit.instance,
-              target: target.instance,
-              action: spell.id
+              targetInstance: target.instance,
+              target: target.id ? target.id : target.displayName,
+              targetEnergy: targetEnergy,
+              targetState: targetEnergy,
+              spiritInstance: spirit.instance,
+              spirit: spirit.id,
+              spiritEnergy: spiritEnergy,
+              spiritState: spiritState,
+              spell: spell.id,
+              base: spell.base ? spell.base : false
             }
           )
         ]
