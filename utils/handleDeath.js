@@ -1,7 +1,7 @@
 const deleteAllConditions = require('../manager/conditions/deleteAllConditions')
 const portalDestroy = require('../manager/portals/portalDestroy')
 const spiritDeath = require('../manager/spirits/spiritDeath')
-const updateHashFieldArray = require('../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../redis/updateHashFieldObject')
 
 module.exports = (target, killer) => {
   const update = []
@@ -19,14 +19,13 @@ module.exports = (target, killer) => {
   }
   else {
     if (target.conditions) {
-      for (let i = 0; i < target.conditions.length; i++) {
+      for (const condition of Object.values(target.conditions)) {
         update.push(
-          updateHashFieldArray(
+          updateHashFieldObject(
             target.instance,
             'remove',
             'conditions',
-            target.conditions[i],
-            i
+            condition.instance
           )
         )
       }

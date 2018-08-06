@@ -6,17 +6,17 @@ module.exports = (spirit, target, range) => {
     (parseInt(max, 10) - parseInt(min, 10) + 1) + parseInt(min, 10)
   )
 
-  if (spirit.conditions && spirit.conditions.length > 0) {
+  if (spirit.conditions && Object.values(spirit.conditions).length) {
     for (const condition of spirit.conditions) {
-      if (condition && condition.healing) {
+      if (condition.healing) {
         total += parseInt(condition.healing, 10)
       }
     }
   }
 
-  if (target.conditions && target.conditions.length > 0) {
+  if (target.conditions && Object.values(target.conditions).length) {
     for (const condition of target.conditions) {
-      if (condition && condition.healing) {
+      if (condition.healing) {
         total += parseInt(condition.healing, 10)
       }
     }

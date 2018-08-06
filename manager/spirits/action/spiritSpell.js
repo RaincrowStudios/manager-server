@@ -57,10 +57,8 @@ module.exports = (spirit, target, spell) => {
           result.total < 0 &&
           (spirit.attributes && spirit.attributes.includes('rage')) ||
           (spirit.conditions &&
-          spirit.conditions
-            .filter(condition => condition.status)
-            .map(condition => condition.status)
-            .includes('rage'))
+          Object.values(spirit.conditions)
+            .filter(condition => condition.status === 'rage').length)
         ) {
           result.total = result.total + Math.round(0.5 * result.total)
         }
@@ -73,7 +71,7 @@ module.exports = (spirit, target, spell) => {
         if (
           result.total < 0 &&
           target.conditions &&
-          target.conditions
+          Object.values(target.conditions)
             .filter(condition => condition.status === 'reflective').length
         ) {
           result.reflected = Math.round(result.total / 2)
@@ -144,7 +142,7 @@ module.exports = (spirit, target, spell) => {
 
         if (
           result.total > 0 &&
-          spirit.conditions
+          Object.values(spirit.conditions)
             .filter(condition => condition.status === 'mary').length
         ) {
           const [targetEnergyUpdate, targetEnergyInform] =

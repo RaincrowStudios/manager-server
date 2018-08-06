@@ -1,43 +1,67 @@
-const removeFromActiveSet = require('../../../../redis/removeFromActiveSet')
-const removeHash = require('../../../../redis/removeHash')
-const updateHashFieldArray = require('../../../../redis/updateHashFieldArray')
-const informPlayers = require('../../../../utils/informPlayers')
+const createMapToken = require('../../../../utils/createMapToken')
+const updateHashFieldObject = require('../../../../redis/updateHashFieldObject')
+const informNearbyPlayers = require('../../../../utils/informNearbyPlayers')
 const deleteCondition = require('../../../conditions/deleteCondition')
 
-module.exports = (caster, target) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const result = { total: 0, conditions: [] }
+module.exports = (caster, target, spell) => {
+  const total = 0
+  const update = []
+  const inform = []
 
-      const index = Math.floor(Math.random() * target.conditions.length)
+  if (target.conditions && Object.values(target.conditions).length) {
+    const dispellableConditions =
+      Object.values(target.conditions).filter(condition => !condition.undispellable)
 
-      if (target.conditions.length) {
-        await Promise.all([
-          deleteCondition(target.conditions[index].instance),
-          informPlayers(
-            [target.player],
+    let dispellLength = 1
+    if (spell.id === 'spell_greaterDispel') {
+      dispellLength = dispellableConditions.length
+    }
+
+    for (let i = 0; i < dispellLength; i++) {
+      const index = spell.id === 'spell_greaterDispel' ?
+        i :
+        Math.floor(Math.random() * dispellableConditions.length)
+
+      update.push(
+        deleteCondition(dispellableConditions[index].instance),
+        updateHashFieldObject(
+          target.instance,
+          'remove',
+          'conditions',
+          dispellableConditions[index].instance
+        )
+      )
+
+      inform.push(
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            target,
             {
-              command: 'player_condition_remove',
-              condition: target.conditions[index].instance
+              command: 'map_condition_remove',
+              instance: dispellableConditions[index].instance
             }
-          ),
-          removeFromActiveSet('conditions', target.conditions[index].instance),
-          removeHash(target.conditions[index].instance),
-          updateHashFieldArray(
-            target.instance,
-            'remove',
-            'conditions',
-            target.conditions[index].instance,
-            index
-          )
-        ])
+          ]
+        }
+      )
 
-        result.conditions.push([target.conditions[index].displayName])
+      if (dispellableConditions[i].status === 'invisible') {
+        inform.push(
+          {
+            function: informNearbyPlayers,
+            parameters: [
+              target,
+              {
+                command: 'map_token_add',
+                token: createMapToken(target.instance, target)
+              },
+              [target.instance]
+            ]
+          }
+        )
       }
-      resolve(result)
     }
-    catch (err) {
-      reject(err)
-    }
-  })
+  }
+
+  return [total, update, inform]
 }

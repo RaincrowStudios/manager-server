@@ -1,6 +1,5 @@
-const checkKeyExistance = require('../../redis/checkKeyExistance')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const handleExpire = require('./components/handleExpire')
 const deleteCondition = require('./deleteCondition')
@@ -8,68 +7,54 @@ const deleteCondition = require('./deleteCondition')
 module.exports = async (conditionInstance) => {
   try {
     const condition = await getAllFromHash(conditionInstance)
-    const bearerExists = await checkKeyExistance(condition.bearer)
+    const bearer = await getAllFromHash(condition.bearer)
 
-    if (bearerExists) {
+    if (bearer) {
       const update = []
       const inform = []
-
-      const bearer = await getAllFromHash(condition.bearer)
       bearer.instance = condition.bearer
-      console.log(bearer.conditions)
-      if (bearer.conditions.length) {
-        let index
-        const conditionToExpire = bearer.conditions.filter((condition, i) => {
-          if (condition.instance === conditionInstance) {
-            index = i
-            return true
+
+      const [interimUpdate, interimInform] = await handleExpire(bearer, condition)
+
+      update.push(...interimUpdate)
+      inform.push(...interimInform)
+
+      update.push(
+        updateHashFieldObject(
+          bearer.instance,
+          'remove',
+          'conditions',
+          conditionInstance
+        ),
+        deleteCondition(conditionInstance)
+      )
+
+      if (!condition.hidden) {
+        inform.push(
+          {
+            function: informNearbyPlayers,
+            parameters: [
+              bearer,
+              {
+                command: 'map_condition_remove',
+                instance: conditionInstance
+              }
+            ]
           }
-        })[0]
-
-        const [interimUpdate, interimInform] = await handleExpire(bearer, condition)
-
-        update.push(...interimUpdate)
-        inform.push(...interimInform)
-
-        update.push(
-          updateHashFieldArray(
-            bearer.instance,
-            'remove',
-            'conditions',
-            conditionToExpire,
-            index
-          ),
-          deleteCondition(conditionInstance)
         )
+      }
 
-        if (!conditionToExpire.hidden) {
-          inform.push(
-            {
-              function: informNearbyPlayers,
-              parameters: [
-                bearer,
-                {
-                  command: 'map_condition_remove',
-                  conditionInstance: conditionInstance,
-                  bearerInstance: condition.bearer
-                }
-              ]
-            }
-          )
-        }
+      console.log({
+        event: 'condition_expire',
+        condition: conditionInstance,
+        bearer: bearer.instance
+      })
 
-        console.log({
-          event: 'condition_expire',
-          condition: conditionInstance,
-          bearer: bearer.instance
-        })
+      await Promise.all(update)
 
-        await Promise.all(update)
-
-        for (const informObject of inform) {
-          const informFunction = informObject.function
-          await informFunction(...informObject.parameters)
-        }
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
       }
     }
     else {

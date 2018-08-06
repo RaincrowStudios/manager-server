@@ -9,18 +9,18 @@ module.exports = (spirit, target, range) => {
   let power = parseInt(spirit.power, 10)
   let resilience = parseInt(target.resilience, 10)
 
-  if (spirit.conditions && spirit.conditions.length) {
+  if (spirit.conditions && Object.values(spirit.conditions).length) {
     for (const condition of spirit.conditions) {
       if (condition.power) {
         power += parseInt(condition.power, 10)
       }
-      if (condition && condition.damage) {
+      if (condition.damage) {
         total += parseInt(condition.damage, 10)
       }
     }
   }
 
-  if (target.conditions && target.conditions.length) {
+  if (target.conditions && Object.values(target.conditions).length) {
     for (const condition of target.conditions) {
       if (condition.resilience) {
         resilience += parseInt(condition.resilience, 10)

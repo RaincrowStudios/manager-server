@@ -24,7 +24,8 @@ async function spiritMove(spiritInstance) {
       )
 
       if (
-        !spirit.conditions.map(condition => condition.status).includes('bound')
+        !Object.values(spirit.conditions)
+          .filter(condition => condition.status === 'bound').length
       ) {
 
         const [interimUpdate, interimInform] = await resolveSpiritMove(spirit)

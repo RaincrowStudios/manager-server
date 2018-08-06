@@ -1,6 +1,6 @@
 const addObjectToHash = require('../../../redis/addObjectToHash')
 const addToActiveSet = require('../../../redis/addToActiveSet')
-const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../../redis/updateHashFieldObject')
 const createInstanceId = require('../../../utils/createInstanceId')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const conditionAdd = require('../../conditions/conditionAdd')
@@ -52,6 +52,14 @@ module.exports = (caster, target, spell) => {
     expiresOn: duration > 0 ? currentTime + (duration * 1000) : 0
   }
 
+  if (spell.condition.overTime) {
+    condition.overTime = spell.condition.overTime
+  }
+
+  if (spell.condition.onExpiration) {
+    condition.onExpiration = spell.condition.onExpiration
+  }
+
   if (spell.condition.hidden) {
     condition.hidden = spell.condition.hidden
   }
@@ -84,61 +92,50 @@ module.exports = (caster, target, spell) => {
     }
   }
 
-  let indexes = []
-  const oldCondition = target.conditions.filter((condition, i) => {
-    if (condition.id === spell.id) {
-      indexes.push(i)
-      return true
-    }
-    else {
-      return false
-    }
-  })
+  const oldConditions = Object.values(target.conditions)
+    .filter(condition => condition.id === spell.id)
 
   if (
-    (oldCondition.length && !spell.condition.stackable) ||
+    (oldConditions.length && !spell.condition.stackable) ||
     (spell.condition.stackable &&
-      oldCondition.length >= spell.condition.stackable)
-      && !spell.condition.hidden
+      oldConditions.length >= spell.condition.stackable)
   ) {
     update.push(
-      deleteCondition(oldCondition[0].instance),
-      updateHashFieldArray(
+      deleteCondition(oldConditions[0].instance),
+      updateHashFieldObject(
         target.instance,
         'remove',
         'conditions',
-        condition,
-        indexes[0]
+        oldConditions[0].instance
       )
     )
 
-    inform.push(
-      {
-        function: informNearbyPlayers,
-        parameters: [
-          target,
-          {
-            command: 'map_condition_remove',
-            instance: condition.instance
-          }
-        ]
-      }
-    )
+    if (!spell.condition.hidden) {
+      inform.push(
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            target,
+            {
+              command: 'map_condition_remove',
+              instance: oldConditions[0].instance
+            }
+          ]
+        }
+      )
+    }
   }
 
   update.push(
     addObjectToHash(condition.instance, condition),
     addToActiveSet('conditions', condition.instance),
     conditionAdd(condition.instance, condition),
-    updateHashFieldArray(
+    updateHashFieldObject(
       target.instance,
       'add',
       'conditions',
-      {
-        instance: condition.instance,
-        id: condition.id,
-        status: condition.status
-      }
+      condition.instance,
+      condition
     )
   )
 

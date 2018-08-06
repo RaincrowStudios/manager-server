@@ -89,24 +89,6 @@ module.exports = (spirit) => {
          .filter(target => target && target.state !== 'dead')
        }
 
-      nearTargets = await Promise.all(
-        nearTargets.map(async target => {
-          if (target.conditions && target.conditions.length) {
-            const conditions = await Promise.all(
-              target.conditions
-                .filter(condition => condition.instance)
-                .map(condition => getAllFromHash(condition.instance))
-            )
-            target.conditions = [
-              ...target.conditions.filter(condition => !condition.instance),
-              ...conditions
-            ]
-            return target
-          }
-          return target
-        })
-      )
-
       if (spirit.attributes && spirit.attributes.includes('sentinel')) {
         const nearEnemies = nearTargets
         .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)

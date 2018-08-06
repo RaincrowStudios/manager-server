@@ -2,7 +2,7 @@ local instance = KEYS[1]
 
 local command = ARGV[1]
 local field = ARGV[2]
-local key = ARGV[3
+local key = ARGV[3]
 local newValue = cjson.decode(ARGV[4])
 
 local exists = redis.call('EXISTS', instance)

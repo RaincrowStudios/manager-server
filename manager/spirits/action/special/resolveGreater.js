@@ -1,20 +1,24 @@
 const getOneFromList = require('../../../../redis/getOneFromList')
 const spiritSpellNormal = require('../spiritSpellNormal')
 
-module.exports = (caster, target, spell, ingredients) => {
+module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const result = { total: 0, conditions: [] }
-      
-      for (let i = 0; i < 3; i++) {
-        const newSpell = await getOneFromList('spells', spell.greater)
-        const intermediateResult =
-          await spiritSpellNormal(caster, target, newSpell, ingredients)
+      let total = 0
+      const update = []
+      const inform = []
+      const newSpell = await getOneFromList('spells', spell.base)
 
-        result.total += intermediateResult.total
-        result.conditions.push(...intermediateResult.conditions)
+      for (let i = 0; i < 3; i++) {
+        const [interimTotal, interimUpdate, interimInform] =
+          spiritSpellNormal(caster, target, newSpell)
+
+        total += interimTotal
+        update.push(...interimUpdate)
+        inform.push(...interimInform)
       }
-      resolve(result)
+
+      resolve([total, update, inform])
     }
     catch (err) {
       reject(err)
