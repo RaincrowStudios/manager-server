@@ -11,21 +11,30 @@ module.exports = (spirit) => {
       const direction = await determineDirection(spirit)
       const newCoords = await determineSpiritMove(spirit, direction)
 
-      await Promise.all([
-        informNearbyPlayersUnion(
-          [spirit.latitude, spirit.longitude],
-          newCoords,
-          {
-            command: 'map_spirit_move',
-            token: createMapToken(spirit.instance, spirit)
-          }
-        ),
+      const update = [
         updateHashField(spirit.instance, 'latitude', newCoords[0]),
         updateHashField(spirit.instance, 'longitude', newCoords[1]),
         moveInGeohash('spirits', spirit.instance, newCoords[0], newCoords[1])
-      ])
+      ]
 
-      resolve(true)
+      const inform = [
+        {
+          function: informNearbyPlayersUnion,
+          parameters: [
+            spirit,
+            {
+              latitude: newCoords[0],
+              longitude: newCoords[1]
+            },
+            {
+              command: 'map_spirit_move',
+              token: createMapToken(spirit.instance, spirit)
+            }
+          ]
+        }
+      ]
+
+      resolve([update, inform])
     }
     catch (err) {
       reject(err)

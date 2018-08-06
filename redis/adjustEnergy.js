@@ -1,26 +1,57 @@
-const selectRedisClient = require('./selectRedisClient')
 const scripts = require('../lua/scripts')
+const handleDeath = require('../utils/handleDeath')
+const informNearbyPlayers = require('../utils/informNearbyPlayers')
+const selectRedisClient = require('./selectRedisClient')
 
-module.exports = (instance, energy) => {
+module.exports = (entity, energyChange, killer = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      if (!instance || typeof instance !== 'string') {
-        throw new Error('Invalid instance: ' + instance)
+      if (!entity.instance || typeof entity.instance !== 'string') {
+        throw new Error('Invalid instance: ' + entity.instance)
       }
-      else if (typeof energy !== 'number') {
-        throw new Error('Invalid energy: ' + energy)
+      else if (typeof energyChange !== 'number' || isNaN(energyChange)) {
+        throw new Error('Invalid energy: ' + energyChange)
       }
 
-      const client = selectRedisClient(instance)
+      const update = []
+      const inform = []
+
+      const client = selectRedisClient(entity.instance)
 
       client.evalsha(
-        [scripts.adjustEnergy.sha, 1, instance, energy],
+        [scripts.adjustEnergy.sha, 1, entity.instance, energyChange],
         (err, result) => {
           if (err) {
             throw new Error(err)
           }
           else {
-            resolve(JSON.parse(result))
+            const [newEnergy, newState] = JSON.parse(result)
+
+            inform.push(
+              {
+                function: informNearbyPlayers,
+                parameters: [
+                  entity,
+                  {
+                    command: 'map_energy_change',
+                    instance: entity.instance,
+                    oldEnergy: entity.energy,
+                    oldState: entity.state,
+                    newEnergy: newEnergy,
+                    newState: newState
+                  }
+                ]
+              }
+            )
+
+            if (newState === 'dead') {
+              const [interimUpdate, interimInform] = handleDeath(entity, killer)
+
+              update.push(...interimUpdate)
+              inform.push(...interimInform)
+            }
+
+            resolve([update, inform])
           }
         }
       )

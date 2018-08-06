@@ -12,20 +12,28 @@ module.exports = async (portalInstance) => {
       removeFromAll('portals', portalInstance)
     ]
 
+    const inform = []
     if (latitude && longitude) {
-      update.push(
-        informNearbyPlayers(
-          latitude,
-          longitude,
-          {
-            command: 'map_portal_remove',
-            instance: portalInstance
-          }
-        )
+      inform.push(
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            {latitude, longitude},
+            {
+              command: 'map_token_remove',
+              instance: portalInstance
+            }
+          ]
+        }
       )
     }
 
     await Promise.all(update)
+
+    for (const informObject of inform) {
+      const informFunction = informObject.function
+      await informFunction(...informObject.parameters)
+    }
 
     const portalTimers = timers.by('instance', portalInstance)
     if (portalTimers) {

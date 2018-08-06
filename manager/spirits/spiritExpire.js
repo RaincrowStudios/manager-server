@@ -12,23 +12,17 @@ module.exports = async (spiritInstance) => {
     const instanceInfo = await getAllFromHash(spiritInstance)
 
     if (instanceInfo) {
+      const update = []
+      const inform = []
 
       let activeSpirits
       if (instanceInfo.owner) {
         activeSpirits = await getOneFromHash(instanceInfo.owner, 'activeSpirits')
       }
 
-      const update = [
-        informNearbyPlayers(
-          instanceInfo.latitude,
-          instanceInfo.longitude,
-          {
-            command: 'map_spirit_expire',
-            instance: spiritInstance
-          }
-        ),
-        removeFromAll('spirits', spiritInstance),
-      ]
+      update.push(
+        removeFromAll('spirits', spiritInstance)
+      )
 
       if (instanceInfo.conditions) {
         update.push(deleteAllConditions(instanceInfo.conditions))
@@ -40,7 +34,7 @@ module.exports = async (spiritInstance) => {
           informPlayers(
             [instanceInfo.player],
             {
-              command: 'player_spirit_expire',
+              command: 'character_spirit_expire',
               spirit: spiritInstance,
               displayName: instanceInfo.displayName
             }
@@ -54,7 +48,26 @@ module.exports = async (spiritInstance) => {
           )
         ]
       }
+
+      inform.push(
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            instanceInfo,
+            {
+              command: 'map_token_remove',
+              instance: spiritInstance
+            }
+          ]
+        }
+      )
+
       await Promise.all(update)
+
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
+      }
     }
     const spiritTimers = timers.by('instance', spiritInstance)
     if (spiritTimers) {

@@ -9,7 +9,7 @@ else
   local currentEnergy = redis.call('HINCRBY', instance, 'energy', energyChange)
   local baseEnergy = redis.call('HGET', instance, 'baseEnergy')
 
-  local state = false
+  local state = ''
 
   if currentEnergy <= 0 then
     currentEnergy = 0

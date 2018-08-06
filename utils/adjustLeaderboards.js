@@ -1,27 +1,33 @@
 const incrementSortedSet = require('../redis/incrementSortedSet')
 
-module.exports = (character, region, type, xp, group = '') => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const leaderboards = [
-        incrementSortedSet('leaderboard:world:'+ type, xp, character),
-        incrementSortedSet('leaderboard:' + region + ':' + type, xp, character)
-      ]
-      if (group) {
-        if (type === 'witch') {
-          leaderboards.push(
-            incrementSortedSet('leaderboard:world:coven', xp, group),
-            incrementSortedSet('leaderboard:' + region + ':coven', xp, group)
-          )
-        }
-      }
+module.exports = (entity, xp) => {
+  const leaderboards = [
+    incrementSortedSet(
+      'leaderboard:world:'+ entity.type,
+      xp,
+      entity.instance
+    ),
+    incrementSortedSet(
+      'leaderboard:' + entity.dominion + ':' + entity.type,
+      xp,
+      entity.instance
+    )
+  ]
 
-      await Promise.all(leaderboards)
+  if (entity.type === 'witch' && entity.coven) {
+    leaderboards.push(
+      incrementSortedSet(
+        'leaderboard:world:coven',
+        xp,
+        entity.coven
+      ),
+      incrementSortedSet(
+        'leaderboard:' + entity.dominion + ':coven',
+        xp,
+        entity.coven
+      )
+    )
+  }
 
-      resolve(true)
-    }
-    catch (err) {
-      reject(err)
-    }
-  })
+  return leaderboards
 }

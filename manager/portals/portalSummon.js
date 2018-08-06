@@ -11,7 +11,6 @@ const createMapToken = require('../../utils/createMapToken')
 const determineExperience = require('../../utils/determineExperience')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
-const levelUp = require('../../utils/levelUp')
 const spiritAdd = require('../spirits/spiritAdd')
 
 module.exports = async (portalInstance) => {
@@ -77,21 +76,28 @@ module.exports = async (portalInstance) => {
           spirit.longitude
         ),
         removeFromAll('portals', portalInstance),
-        informNearbyPlayers(
-          portal.latitude,
-          portal.longitude,
-          {
-            command: 'map_spirit_summon',
-            token: createMapToken(spirit.instance, spirit)
-          }
-        )
       )
+
+      const inform = [
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            portal,
+            {
+              command: 'map_token_add',
+              token: createMapToken(spirit.instance, spirit)
+            }
+          ]
+        }
+      ]
 
       if (spirit.owner) {
         const [summoner, xpMultipliers] = await Promise.all([
           getAllFromHash(portal.owner),
           getOneFromList('constants', 'xpMultipliers')
         ])
+
+        summoner.instance = portal.owner
 
         const firstSummon = summoner.summonedSpirits ?
           summoner.summonedSpirits.includes(spirit.id) : false
@@ -116,17 +122,10 @@ module.exports = async (portalInstance) => {
           portal.ingredients
         )
 
-        const [xp, newLevel] = await addExperience(
-          spirit.owner,
-          spirit.dominion,
-          'witch',
-          xpGain,
-          spirit.coven
-        )
+        const [xpUpdate, xpInform] = await addExperience(summoner, xpGain)
 
-        if (newLevel) {
-          update.push(levelUp(spirit.owner, newLevel))
-        }
+        update.push(...xpUpdate)
+        inform.push(...xpInform)
 
         const index = summoner.activePortals.indexOf(portalInstance)
 
@@ -148,39 +147,45 @@ module.exports = async (portalInstance) => {
       }
 
       if (spirit.player) {
-        update.push(
-          informPlayers(
-            [spirit.player],
-            {
-              command: 'character_portal_summon',
-              instance: spirit.instance,
-              spirit: spirit.id
-            }
-          )
+        inform.push(
+          {
+            function: informPlayers,
+            parameters: [
+              [spirit.player],
+              {
+                command: 'character_spirit_summoned',
+                instance: spirit.instance,
+                spirit: spirit.id,
+                portalInstance: portalInstance
+              }
+            ]
+          }
         )
       }
 
-      await informNearbyPlayers(
-        portal.latitude,
-        portal.longitude,
+      inform.push(
         {
-          command: 'map_portal_remove',
-          instance: portalInstance
+          function: informNearbyPlayers,
+          parameters: [
+            [portal.latitude, portal.longitude],
+            {
+              command: 'map_token_remove',
+              instance: portalInstance
+            }
+          ]
         }
       )
 
       update.push(spiritAdd(spirit.instance, spirit))
 
       await Promise.all(update)
-      /*
-      console.log({
-        event: 'spirit_summoned',
-        player: spirit.player,
-        character: spirit.owner,
-        spirit: spirit.id
-      })
-      */
+
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
+      }
     }
+
     return true
   }
   catch (err) {

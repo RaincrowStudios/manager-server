@@ -2,15 +2,16 @@ const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const getOneFromList = require('../../../redis/getOneFromList')
 const updateHashField = require('../../../redis/updateHashField')
-const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
-const informPlayers = require('../../../utils/informPlayers')
+const informNearbyPlayersUnion = require('../../../utils/informNearbyPlayersUnion')
 const determineCritical = require('./determineCritical')
 const determineDamage = require('./determineDamage')
-const resolveTargetDestruction = require('./resolveTargetDestruction')
 
 module.exports = (spirit, target) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const update = []
+      const inform = []
+
       const [spiritExists, targetExists, baseCrit] = await Promise.all([
         checkKeyExistance(spirit.instance),
         checkKeyExistance(target.instance),
@@ -25,42 +26,43 @@ module.exports = (spirit, target) => {
           damage += determineDamage(spirit, target, spirit.attack)
         }
 
-        let [targetEnergy, targetState] =
-          await adjustEnergy(target.instance, damage)
+        const [targetEnergyUpdate, targetEnergyInform] =
+          await adjustEnergy(target, damage, spirit)
 
-        const update = [
-          informNearbyPlayers(
-            spirit.latitude,
-            spirit.longitude,
-            {
-              command: 'map_spirit_action',
-              targetInstance: target.instance,
-              target: target.id ? target.id : target.displayName,
-              targetEnergy: targetEnergy,
-              targetState: targetEnergy,
-              spiritInstance: spirit.instance,
-              spirit: spirit.id,
-              spiritEnergy: spirit.energy,
-              spiritState: spirit.state,
-              spell: 'Attack',
-            }
-          ),
+        update.push(...targetEnergyUpdate)
+        inform.push(...targetEnergyInform)
+
+        update.push(
           updateHashField(
             spirit.instance,
             'previousTarget',
-            { instance: target.instance, type: 'spirit' }
+            { instance: target.instance, type: target.type }
           ),
-        ]
-
-        if (target.type === 'spirit' && targetState !== 'dead') {
-          update.push(
-            updateHashField(
-              target.instance,
-              'lastAttackedBy',
-              { instance: spirit.instance, type: 'spirit' }
-            )
+          updateHashField(
+            target.instance,
+            'lastAttackedBy',
+            { instance: spirit.instance, type: spirit.type }
           )
-        }
+        )
+
+        inform.unshift(
+          {
+            function: informNearbyPlayersUnion,
+            parameters: [
+              spirit, target,
+              {
+                command: 'map_spell_cast',
+                casterInstance: spirit.instance,
+                caster: spirit.id,
+                targetInstance: target.instance,
+                target: target.id ? target.id : target.displayName,
+                spell: 'attack',
+                base: '',
+                result: { total: damage, critical: critical }
+              }
+            ]
+          }
+        )
 
         if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
           const bloodlustCount = spirit.bloodlustCount ?
@@ -70,34 +72,9 @@ module.exports = (spirit, target) => {
             updateHashField(spirit.instance, 'bloodlustCount', bloodlustCount),
           )
         }
-
-        if (target.type !== 'spirit') {
-          update.push(
-            informPlayers(
-              [target.player],
-              {
-                command: 'character_spell_hit',
-                energy: targetEnergy,
-                state: targetState,
-                casterInstance: spirit.instance,
-                caster: spirit.id,
-                type: spirit.type,
-                degree: spirit.degree,
-                spell: 'Attack',
-                base: false,
-                result: {total: damage, critical: critical},
-              }
-            )
-          )
-        }
-
-        if (targetState === 'dead') {
-          update.push(resolveTargetDestruction(spirit, target, 'Attack'))
-        }
-
-        await Promise.all(update)
       }
-      resolve(true)
+
+      resolve([update, inform])
     }
     catch (err) {
       reject(err)

@@ -1,6 +1,6 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const removeFromAll = require('../../redis/removeFromAll')
 const resolveSpiritMove = require('./move/resolveSpiritMove')
@@ -14,8 +14,10 @@ async function spiritMove(spiritInstance) {
         await removeFromAll('spirits', spiritInstance)
         return true
       }
+      const update = []
+      const inform = []
 
-      const spiritInfo = await getOneFromHash('list:spirits', instanceInfo.id)
+      const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
 
       const spirit = Object.assign(
         {}, spiritInfo, instanceInfo, {instance: spiritInstance}
@@ -25,7 +27,10 @@ async function spiritMove(spiritInstance) {
         !spirit.conditions.map(condition => condition.status).includes('bound')
       ) {
 
-        await resolveSpiritMove(spirit)
+        const [interimUpdate, interimInform] = await resolveSpiritMove(spirit)
+
+        update.push(...interimUpdate)
+        inform.push(...interimInform)
       }
 
       const currentTime = Date.now()
@@ -43,7 +48,14 @@ async function spiritMove(spiritInstance) {
         newMoveOn = parseInt(spirit.moveFreq, 10)
       }
 
-      await updateHashField(spirit.instance, 'moveOn', newMoveOn)
+      update.push(updateHashField(spirit.instance, 'moveOn', newMoveOn))
+
+      await Promise.all(update)
+
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
+      }
 
       const newTimer =
         setTimeout(() =>

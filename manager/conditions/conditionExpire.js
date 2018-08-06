@@ -1,69 +1,82 @@
 const checkKeyExistance = require('../../redis/checkKeyExistance')
-const getOneFromHash = require('../../redis/getOneFromHash')
-const getFieldsFromHash = require('../../redis/getFieldsFromHash')
-const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeHash = require('../../redis/removeHash')
+const getAllFromHash = require('../../redis/getAllFromHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
-const informPlayers = require('../../utils/informPlayers')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const handleExpire = require('./components/handleExpire')
 const deleteCondition = require('./deleteCondition')
 
 module.exports = async (conditionInstance) => {
   try {
-    const bearer = await getOneFromHash(conditionInstance, 'bearer')
-    const bearerExists = await checkKeyExistance(bearer)
+    const condition = await getAllFromHash(conditionInstance)
+    const bearerExists = await checkKeyExistance(condition.bearer)
 
     if (bearerExists) {
-      const [player, type, conditions] = await getFieldsFromHash(
-        bearer,
-        ['player', 'type', 'conditions']
-      )
+      const update = []
+      const inform = []
 
-      if (conditions.length) {
+      const bearer = await getAllFromHash(condition.bearer)
+      bearer.instance = condition.bearer
+      console.log(bearer.conditions)
+      if (bearer.conditions.length) {
         let index
-        const conditionToExpire = conditions.filter((condition, i) => {
+        const conditionToExpire = bearer.conditions.filter((condition, i) => {
           if (condition.instance === conditionInstance) {
             index = i
             return true
           }
         })[0]
 
-        const update = [
+        const [interimUpdate, interimInform] = await handleExpire(bearer, condition)
+
+        update.push(...interimUpdate)
+        inform.push(...interimInform)
+
+        update.push(
           updateHashFieldArray(
-            bearer,
+            bearer.instance,
             'remove',
             'conditions',
             conditionToExpire,
             index
           ),
-          removeFromActiveSet('conditions', conditionInstance),
-          removeHash(conditionInstance)
-        ]
+          deleteCondition(conditionInstance)
+        )
 
-        if (type !== 'spirit' && !conditionToExpire.hidden) {
-          update.push(
-            deleteCondition(conditionInstance),
-            informPlayers(
-              [player],
-              {
-                command: 'character_condition_remove',
-                condition: conditionInstance
-              }
-            )
+        if (!conditionToExpire.hidden) {
+          inform.push(
+            {
+              function: informNearbyPlayers,
+              parameters: [
+                bearer,
+                {
+                  command: 'map_condition_remove',
+                  conditionInstance: conditionInstance,
+                  bearerInstance: condition.bearer
+                }
+              ]
+            }
           )
         }
 
         console.log({
           event: 'condition_expire',
           condition: conditionInstance,
-          bearer: bearer
+          bearer: bearer.instance
         })
 
         await Promise.all(update)
+
+        for (const informObject of inform) {
+          const informFunction = informObject.function
+          await informFunction(...informObject.parameters)
+        }
       }
     }
     else {
       await deleteCondition(conditionInstance)
     }
+
+    return true
   }
   catch (err) {
     console.error(err)

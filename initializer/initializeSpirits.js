@@ -45,11 +45,13 @@ async function initializeSpirits(id, managers) {
                   }
                   else {
                     killer = Object.assign(
-                      {}, killerInfo, {instance: spirits[i].lastAttackedBy.instance}
+                      {},
+                      killerInfo,
+                      {instance: spirits[i].lastAttackedBy.instance}
                     )
                   }
 
-                  spiritDeath(spirits[i], killer)
+                  spiritDeath(spirit, killer)
                 }
                 else {
                   spiritExpire(spirits[i])

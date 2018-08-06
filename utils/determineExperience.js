@@ -21,7 +21,7 @@ module.exports = (
     xp += (ingredient.rarity * ingredient.count)
   }
 
-  xp *= (aptitude * 0.05)
+  xp = xp + Math.round(xp * (aptitude * 0.05))
 
   return xp
 }

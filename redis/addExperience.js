@@ -1,40 +1,84 @@
-const selectRedisClient = require('./selectRedisClient')
 const scripts = require('../lua/scripts')
 const adjustLeaderboards = require('../utils/adjustLeaderboards')
+const informNearbyPlayers = require('../utils/informNearbyPlayers')
+const informPlayers = require('../utils/informPlayers')
+const getOneFromList = require('./getOneFromList')
+const incrementHashField = require('./incrementHashField')
+const selectRedisClient = require('./selectRedisClient')
 
-module.exports = (instance, region, type, xp, coven = '') => {
-  return new Promise(async (resolve, reject) => {
+module.exports = (entity, xpGain) => {
+  return new Promise((resolve, reject) => {
     try {
-      if (!instance || typeof instance !== 'string') {
-        throw new Error('Invalid instance: ' + instance)
+      if (!entity.instance || typeof entity.instance !== 'string') {
+        throw new Error('Invalid instance: ' + entity.instance)
       }
-      else if (!region || typeof region !== 'string') {
-        throw new Error('Invalid region: ' + region)
+      else if (typeof xpGain !== 'number' || isNaN(xpGain)) {
+        throw new Error('Invalid xp: ' + xpGain)
       }
-      else if (!type || typeof type !== 'string') {
-        throw new Error('Invalid type: ' + type)
-      }
-      else if (typeof xp !== 'number' || isNaN(xp)) {
-        throw new Error('Invalid xp: ' + xp)
-      }
-      else if (coven) {
+      else if (entity.coven) {
         if (typeof coven !== 'string') {
-          throw new Error('Invalid coven: ' + coven)
+          throw new Error('Invalid coven: ' + entity.coven)
         }
       }
 
-      const client = selectRedisClient(instance)
+      const update = []
+      const inform = []
 
-      await adjustLeaderboards(instance, region, type, xp, coven)
+      const client = selectRedisClient(entity.instance)
 
       client.evalsha(
-        [scripts.addExperience.sha, 1, instance, xp],
-        (err, results) => {
+        [scripts.addExperience.sha, 1, entity.instance, xpGain],
+        async (err, results) => {
           if (err) {
             throw new Error(err)
           }
           else {
-            resolve(JSON.parse(results))
+            const [newXp, newLevel] = JSON.parse(results)
+
+            inform.push(
+              {
+                function: informPlayers,
+                parameters: [
+                  [entity.player],
+                  {
+                    command: 'character_xp_gain',
+                    xpGain: xpGain,
+                    newXp: newXp
+                  }
+                ]
+              }
+            )
+
+            if (newLevel) {
+              const baseEnergyByLevel =
+                await getOneFromList('constants', 'baseEnergyByLevel')
+
+              update.push(
+                incrementHashField(entity.instance, 'silver', 100),
+                incrementHashField(entity.instance, 'unspentPoints', 1)
+              )
+
+              inform.push(
+                {
+                  function: informNearbyPlayers,
+                  parameters: [
+                    entity,
+                    {
+                      command: 'map_level_up',
+                      instance: entity.instance,
+                      level: newLevel,
+                      baseEnergy: baseEnergyByLevel[newLevel - 1],
+                    }
+                  ]
+                }
+              )
+            }
+
+            const interimUpdate = adjustLeaderboards(entity, xpGain)
+
+            update.push(...interimUpdate)
+
+            resolve([update, inform])
           }
         }
       )

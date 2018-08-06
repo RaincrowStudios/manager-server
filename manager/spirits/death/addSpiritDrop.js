@@ -7,9 +7,12 @@ const createMapToken = require('../../../utils/createMapToken')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const generateDropCoords = require('./generateDropCoords')
 
-module.exports = (spirit) => {
+module.exports = async (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const update = []
+      const inform = []
+
       const drops = spirit.drop ? spirit.drop : []
       if (spirit.carrying && spirit.carrying.length) {
         drops.push(...spirit.carrying)
@@ -52,23 +55,25 @@ module.exports = (spirit) => {
               ),
               addToActiveSet('collectibles', instance),
               addToGeohash('collectibles', instance, latitude, longitude),
-              informNearbyPlayers(
-                spirit.latitude,
-                spirit.longitude,
-                {
-                  command: 'map_collectible_drop',
-                  spirit: spirit.instance,
-                  token: createMapToken(instance, collectible),
-                }
-              )
+            )
+
+            inform.push(
+              {
+                function: informNearbyPlayers,
+                parameters: [
+                  spirit,
+                  {
+                    command: 'map_token_add',
+                    token: createMapToken(instance, collectible),
+                  }
+                ]
+              }
             )
           }
         }
-
-        await Promise.all(update)
       }
 
-      resolve(true)
+      resolve([update, inform])
     }
     catch (err) {
       reject(err)

@@ -1,11 +1,10 @@
 const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
+const getAllFromHash = require('../../../redis/getAllFromHash')
 const getOneFromList = require('../../../redis/getOneFromList')
 const incrementHashField = require('../../../redis/getOneFromList')
 const determineExperience = require('../../../utils/determineExperience')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
-const informPlayers = require('../../../utils/informPlayers')
-const levelUp = require('../../../utils/levelUp')
 const determineTargets = require('../target/determineTargets')
 const basicAttack = require('./basicAttack')
 const checkSuccess = require('./checkSuccess')
@@ -17,8 +16,9 @@ const spiritSpell = require('./spiritSpell')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let spell
-      let inform = []
+      const update = []
+      const inform = []
+
       let [target, actions] = await determineTargets(spirit)
 
       if (target.type === 'spirit') {
@@ -29,46 +29,71 @@ module.exports = (spirit) => {
       if (target) {
         if (!checkSuccess(spirit, target)) {
           if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
-            inform.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
+            update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
           }
-          if (target.type === 'witch' || target.type === 'vampire') {
-            inform.push(
-              informNearbyPlayers(
-                spirit.latitude,
-                spirit.longitude,
+
+          inform.unshift(
+            {
+              function: informNearbyPlayers,
+              parameters: [
+                spirit,
                 {
-                  command: 'map_spirit_fail',
-                  instance: spirit.instance,
-                  spirit: spirit.id,
+                  command: 'map_spell_cast',
+                  casterInstance: spirit.instance,
+                  caster: spirit.id,
+                  targetInstance: '',
+                  target: '',
+                  spell: '',
+                  base: '',
+                  result: 'failed'
                 }
-              )
-            )
-          }
+              ]
+            }
+          )
         }
         else {
           const action = determineAction(actions)
+
           if (action) {
             if (target === 'discover') {
-              await spiritDiscover(spirit, action)
+              const [interimUpdate, interimInform] =
+                await spiritDiscover(spirit, action)
+
+              update.push(...interimUpdate)
+              inform.push(...interimInform)
+            }
+            else if (action === 'attack') {
+              const [interimUpdate, interimInform] =
+                await basicAttack(spirit, target)
+
+              update.push(...interimUpdate)
+              inform.push(...interimInform)
+            }
+            else if (action === 'collect') {
+              const [interimUpdate, interimInform] =
+                await spiritCollect(spirit, target)
+
+              update.push(...interimUpdate)
+              inform.push(...interimInform)
             }
             else {
-              switch (action) {
-                case 'attack':
-                  await basicAttack(spirit, target)
-                  break
-                case 'collect':
-                  await spiritCollect(spirit, target)
-                  break
-                default:
-                  spell = await getOneFromList('spells', action)
-                  await spiritSpell(spirit, target, spell)
-                  break
-              }
+              const spell = await getOneFromList('spells', action)
+
+              const [interimUpdate, interimInform] =
+                await spiritSpell(spirit, target, spell)
+
+              update.push(...interimUpdate)
+              inform.push(...interimInform)
             }
           }
+
           if (spirit.owner) {
-            const xpMultipliers =
-              await getOneFromList('constants', 'xpMultipliers')
+            const [summoner, xpMultipliers] = await Promise.all([
+              getAllFromHash(spirit.owner),
+              getOneFromList('constants', 'xpMultipliers')
+            ])
+
+            summoner.instance = spirit.owner
 
             const xpGain = determineExperience(
               xpMultipliers,
@@ -77,34 +102,26 @@ module.exports = (spirit) => {
               spirit
             )
 
-            const [xp, newLevel] = await addExperience(
-              spirit.owner, spirit.dominion, 'witch', xpGain, spirit.coven
-            )
+            const [xpUpdate, xpInform] = await addExperience(summoner, xpGain)
 
-            inform = [
-              incrementHashField(spirit.instance, 'xpGained', xpGain),
-              informPlayers(
-                [spirit.player],
-                {
-                  command: 'character_spirit_action',
-                  spirit: spirit.id,
-                  action: spell ? spell.id : action,
-                  xp: xp
-                }
-              )
-            ]
+            update.push(...xpUpdate)
+            inform.push(...xpInform)
 
-            if (newLevel) {
-              inform.push(levelUp(spirit.owner, newLevel))
-            }
+            update.push(incrementHashField(spirit.instance, 'xpGained', xpGain))
           }
         }
       }
       else if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
-        await addFieldToHash(spirit.instance, 'bloodlustCount', 0)
+        update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
       }
 
-      await Promise.all(inform)
+      await Promise.all(update)
+
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
+      }
+
       resolve(true)
     }
     catch (err) {

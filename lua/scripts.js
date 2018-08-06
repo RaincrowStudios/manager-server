@@ -15,6 +15,9 @@ const scripts = {
   },
   updateHashFieldArray: {
     script: fs.readFileSync(__dirname + '/updateHashFieldArray.lua', {encoding:'utf8'})
+  },
+  updateHashFieldObject: {
+    script: fs.readFileSync(__dirname + '/updateHashFieldObject.lua', {encoding:'utf8'})
   }
 }
 

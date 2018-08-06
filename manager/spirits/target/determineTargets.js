@@ -95,7 +95,7 @@ module.exports = (spirit) => {
             const conditions = await Promise.all(
               target.conditions
                 .filter(condition => condition.instance)
-                .map(instance => getAllFromHash(instance))
+                .map(condition => getAllFromHash(condition.instance))
             )
             target.conditions = [
               ...target.conditions.filter(condition => !condition.instance),
@@ -143,7 +143,7 @@ module.exports = (spirit) => {
      for (let i = 0; i < spirit.actionTree.length; i++) {
        const [targetCategory, type] = spirit.actionTree[i].target.split(':')
        const conditions = spirit.actionTree[i].conditions
-        let target
+        let target, summonerAttacker
         switch (targetCategory) {
           case 'discover':
             resolve([spirit, spirit.actionTree[i].actions])
@@ -193,11 +193,18 @@ module.exports = (spirit) => {
           case 'summonerPortalAttacker':
             target = targetPortals(spirit, nearTargets, targetCategory)
             break
+          case 'summonerAttacker':
+            summonerAttacker =
+              await getOneFromHash(spirit.owner, 'lastAttackedBy')
+            if (summonerAttacker) {
+              target = nearTargets
+                .filter(target => target.instance === summonerAttacker.instance)[0]
+              }
+            break
           case 'vampires':
           case 'witches':
           case 'summoner':
-          case 'summonerAttacker':
-            target = await targetCharacters(spirit, nearTargets, targetCategory, conditions)
+            target = targetCharacters(spirit, nearTargets, targetCategory, conditions)
             break
           case 'deadAllies':
           case 'deadAll':

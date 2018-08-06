@@ -5,7 +5,6 @@ const removeHash= require('../../redis/removeHash')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const createMapToken = require('../../utils/createMapToken')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
-const informPlayers = require('../../utils/informPlayers')
 
 module.exports = async (instance) => {
   try {
@@ -13,14 +12,6 @@ module.exports = async (instance) => {
     const character = await getAllFromHash(condition.bearer)
 
     const update = [
-      informPlayers(
-        [character.player],
-        {
-          command: 'character_condition_remove',
-          instance: instance,
-          condition: condition.id
-        }
-      ),
       removeFromActiveSet('conditions', instance),
       removeHash(instance),
       updateHashFieldArray(
@@ -32,19 +23,42 @@ module.exports = async (instance) => {
       )
     ]
 
+    const inform = [
+      {
+        function: informNearbyPlayers,
+        parameters: [
+          character,
+          {
+            command: 'map_condition_remove',
+            bearerInstance: condition.bearer,
+            conditionInstance: instance
+          }
+        ]
+      }
+    ]
+
     if (condition.status === 'invisible') {
-      informNearbyPlayers(
-        character.fuzzyLatitude,
-        character.fuzzyLongitude,
+      inform.push(
         {
-          command: 'map_character_add',
-          token: createMapToken(condition.bearer, character)
+          function: informNearbyPlayers,
+          parameters: [
+            character,
+            {
+              command: 'map_token_add',
+              token: createMapToken(condition.bearer, character)
+            },
+            [condition.bearer]
+          ]
         }
-      ),
-      [condition.bearer]
+      )
     }
 
     await Promise.all(update)
+
+    for (const informObject of inform) {
+      const informFunction = informObject.function
+      await informFunction(...informObject.parameters)
+    }
 
     const conditionTimers =
       timers.by('instance', instance)

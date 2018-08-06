@@ -2,17 +2,18 @@ const adjustEnergy = require('../../../redis/adjustEnergy')
 const checkKeyExistance = require('../../../redis/checkKeyExistance')
 const getOneFromList = require('../../../redis/getOneFromList')
 const updateHashField = require('../../../redis/updateHashField')
-const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
-const informPlayers = require('../../../utils/informPlayers')
+const informNearbyPlayersUnion = require('../../../utils/informNearbyPlayersUnion')
 const determineCritical = require('./determineCritical')
 const determineSelf = require('./determineSelf')
-const resolveTargetDestruction = require('./resolveTargetDestruction')
 const spiritSpellNormal = require('./spiritSpellNormal')
 const spiritSpellSpecial = require('./spiritSpellSpecial')
 
 module.exports = (spirit, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const update = []
+      const inform = []
+
       const [spiritExists, targetExists, baseCrit] = await Promise.all([
         checkKeyExistance(spirit.instance),
         checkKeyExistance(target.instance),
@@ -20,38 +21,36 @@ module.exports = (spirit, target, spell) => {
       ])
 
       if (spiritExists && targetExists) {
-        const result = { total: 0, critical: false, conditions: [] }
-        if (spell.special) {
-          const {total, conditions} =
-            await spiritSpellSpecial(spirit, target, spell)
+        const result = { total: 0, critical: false }
+        let total, interimUpdate, interimInform
 
-          result.total += total
-          result.conditions.push(...conditions)
+        if (spell.special) {
+          [total, interimUpdate, interimInform] =
+            spiritSpellSpecial(spirit, target, spell)
         }
         else {
-          const {total, conditions} =
-            await spiritSpellNormal(spirit, target, spell)
-
-          result.total += total
-          result.conditions.push(...conditions)
+          [total, interimUpdate, interimInform] =
+            spiritSpellNormal(spirit, target, spell)
         }
+
+        result.total += total
+        update.push(...interimUpdate)
+        inform.push(...interimInform)
 
         if (determineCritical(spirit, target, baseCrit)) {
           result.critical = true
           if (spell.special) {
-            const {total, conditions} =
-              await spiritSpellSpecial(spirit, target, spell)
-
-            result.total += total
-            result.conditions.push(...conditions)
+            [total, interimUpdate, interimInform] =
+              spiritSpellSpecial(spirit, target, spell)
           }
           else {
-            const {total, conditions} =
-              await spiritSpellNormal(spirit, target, spell)
-
-            result.total += total
-            result.conditions.push(...conditions)
+            [total, interimUpdate, interimInform] =
+              spiritSpellNormal(spirit, target, spell)
           }
+
+          result.total += total
+          update.push(...interimUpdate)
+          inform.push(...interimInform)
         }
 
         if (
@@ -70,41 +69,44 @@ module.exports = (spirit, target, spell) => {
         if (spell.self) {
           selfEnergy = determineSelf(spell, result.total)
         }
-        const [[spiritEnergy, spiritState], [targetEnergy, targetState]] =
-          await Promise.all(
-            adjustEnergy(spirit.instance, selfEnergy),
-            adjustEnergy(target.instance, result.total)
-          )
 
-        const update = [
-          informNearbyPlayers(
-            spirit.latitude,
-            spirit.longitude,
-            {
-              command: 'map_spirit_action',
-              targetInstance: target.instance,
-              target: target.id ? target.id : target.displayName,
-              targetEnergy: targetEnergy,
-              targetState: targetEnergy,
-              spiritInstance: spirit.instance,
-              spirit: spirit.id,
-              spiritEnergy: spiritEnergy,
-              spiritState: spiritState,
-              spell: spell.id,
-              base: spell.base ? spell.base : false
-            }
-          )
-        ]
-
-        if (spirit.state !== 'dead') {
-          update.push(
-            updateHashField(
-              spirit.instance,
-              'previousTarget',
-              { instance: target.instance, type: 'spirit' }
-            )
-          )
+        if (
+          result.total < 0 &&
+          target.conditions &&
+          target.conditions
+            .filter(condition => condition.status === 'reflective').length
+        ) {
+          result.reflected = Math.round(result.total / 2)
+          selfEnergy += result.reflected
         }
+
+        inform.unshift(
+          {
+            function: informNearbyPlayersUnion,
+            parameters: [
+              spirit,
+              target,
+              {
+                command: 'map_spell_cast',
+                casterInstance: spirit.instance,
+                caster: spirit.id,
+                targetInstance: target.instance,
+                target: target.id ? target.id : target.displayName,
+                spell: spell.id,
+                base: spell.base ? spell.base : '',
+                result: result
+              }
+            ]
+          }
+        )
+
+        update.push(
+          updateHashField(
+            spirit.instance,
+            'previousTarget',
+            { instance: target.instance, type: target.type }
+          )
+        )
 
         if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
           const bloodlustCount = spirit.bloodlustCount ?
@@ -115,8 +117,7 @@ module.exports = (spirit, target, spell) => {
           )
         }
 
-
-        if (target.type === 'spirit' && targetState !== 'dead') {
+        if (result.total < 0) {
           update.push(
             updateHashField(
               target.instance,
@@ -125,34 +126,43 @@ module.exports = (spirit, target, spell) => {
             )
           )
         }
-
-        if (target.type !== 'spirit') {
+        else if (result.total > 0) {
           update.push(
-            informPlayers(
-              [target.player],
-              {
-                command: 'character_spell_hit',
-                instance: spirit.instance,
-                caster: spirit.id,
-                type: spirit.type,
-                degree: spirit.degree,
-                spell: spell.id,
-                base: spell.base,
-                result: result,
-                energy: targetEnergy,
-                state: targetState
-              }
+            updateHashField(
+              target.instance,
+              'lastHealedBy',
+              { instance: spirit.instance, type: 'spirit' }
             )
           )
         }
 
-        await Promise.all(update)
+        const [energyUpdate, energyInform] =
+          await adjustEnergy(spirit, selfEnergy, spirit)
 
-        if (targetState === 'dead') {
-          await resolveTargetDestruction(spirit, target, spell)
+        update.push(...energyUpdate)
+        inform.push(...energyInform)
+
+        if (
+          result.total > 0 &&
+          spirit.conditions
+            .filter(condition => condition.status === 'mary').length
+        ) {
+          const [targetEnergyUpdate, targetEnergyInform] =
+            await adjustEnergy(target, result.total * -1, spirit)
+
+          update.push(...targetEnergyUpdate)
+          inform.push(...targetEnergyInform)
+        }
+        else {
+          const [targetEnergyUpdate, targetEnergyInform] =
+            await adjustEnergy(target, result.total, spirit)
+
+          update.push(...targetEnergyUpdate)
+          inform.push(...targetEnergyInform)
         }
       }
-      resolve(true)
+
+      resolve([update, inform])
     }
     catch (err) {
       reject(err)

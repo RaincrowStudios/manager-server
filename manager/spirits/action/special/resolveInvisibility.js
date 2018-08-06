@@ -4,21 +4,25 @@ const addCondition = require('../addCondition')
 module.exports = (caster, target, spell, ingredients) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const result = { total: 0, conditions: ['spell_invisibility'] }
+      const total = 0
 
-      await Promise.all([
-        addCondition(caster, target, spell, ingredients),
-        informNearbyPlayers(
-          caster.latitude,
-          caster.longitude,
-          {
-            command: 'map_character_remove',
-            instance: caster.instance
-          },
-          [caster.player]
-        ),
-      ])
-      resolve(result)
+      const [update, inform] = addCondition(caster, target, spell, ingredients)
+
+      inform.push(
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            caster,
+            {
+              command: 'map_character_remove',
+              instance: caster.instance
+            },
+            [caster.instance]
+          ]
+        }
+      )
+
+      resolve([total, update, inform])
     }
     catch (err) {
       reject(err)
