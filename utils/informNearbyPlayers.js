@@ -1,19 +1,21 @@
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const getOneFromHash = require('../redis/getOneFromHash')
 const getOneFromList = require('../redis/getOneFromList')
 const getNearbyFromGeohash = require('../redis/getNearbyFromGeohash')
 const informPlayers = require('./informPlayers')
 
-module.exports = (entity, message, exclude = []) => {
+module.exports = (entity, message, trueSightCheck = 0, exclude = []) => {
   return new Promise(async (resolve, reject) => {
     try {
       let playersToInform
+
       if (entity.location) {
         const occupants = await getOneFromHash(entity.location, 'occupants')
 
         playersToInform = await Promise.all(
           occupants
             .filter(occupant => !exclude.includes(occupant.instance))
-            .map(occupant => getOneFromHash(occupant.instance, 'player'))
+            .map(occupant => getFieldsFromHash(occupant.instance, ['player', 'conditions']))
         )
       }
       else {
@@ -29,8 +31,26 @@ module.exports = (entity, message, exclude = []) => {
         playersToInform =
           await Promise.all(nearCharacters
             .filter(instance => !exclude.includes(instance))
-            .map(instance => getOneFromHash(instance, 'player'))
+            .map(instance => getFieldsFromHash(instance, ['player', 'conditions']))
           )
+      }
+
+      if (trueSightCheck === 1) {
+        playersToInform = playersToInform
+          .filter(player =>
+              Object.values(player[1]).map(condition => condition.status).includes('truesight')
+            )
+            .map(player => player[0])
+      }
+      else if (trueSightCheck === 2) {
+        playersToInform = playersToInform
+          .filter(player =>
+              !Object.values(player[1]).map(condition => condition.status).includes('truesight')
+            )
+            .map(player => player[0])
+      }
+      else {
+        playersToInform = playersToInform.map(player => player[0])
       }
 
       await informPlayers(playersToInform, message)

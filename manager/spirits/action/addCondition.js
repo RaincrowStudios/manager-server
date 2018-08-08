@@ -110,20 +110,19 @@ module.exports = (caster, target, spell) => {
       )
     )
 
-    if (!spell.condition.hidden) {
-      inform.push(
-        {
-          function: informNearbyPlayers,
-          parameters: [
-            target,
-            {
-              command: 'map_condition_remove',
-              instance: oldConditions[0].instance
-            }
-          ]
-        }
-      )
-    }
+    inform.push(
+      {
+        function: informNearbyPlayers,
+        parameters: [
+          target,
+          {
+            command: 'map_condition_remove',
+            instance: oldConditions[0].instance
+          },
+          spell.condition.hidden ? 1 : 0
+        ]
+      }
+    )
   }
 
   update.push(
@@ -139,22 +138,22 @@ module.exports = (caster, target, spell) => {
     )
   )
 
-  if (!spell.condition.hidden) {
-    inform.push(
-      {
-        function: informNearbyPlayers,
-        parameters: [
-          target,
-          {
-            command: 'map_condition_add',
-            bearerInstance: target.instance,
-            conditionInstance: condition.instance,
-            condition: condition.id
-          }
-        ]
-      }
-    )
-  }
+
+  inform.push(
+    {
+      function: informNearbyPlayers,
+      parameters: [
+        target,
+        {
+          command: 'map_condition_add',
+          bearerInstance: target.instance,
+          conditionInstance: condition.instance,
+          condition: condition.id
+        },
+        spell.condition.hidden ? 1 : 0
+      ]
+    }
+  )
 
   return [update, inform]
 }

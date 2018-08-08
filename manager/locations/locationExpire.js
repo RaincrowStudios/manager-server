@@ -22,8 +22,8 @@ module.exports = async (locationInstance) => {
           location.latitude,
           location.longitude,
           {
-            command: 'map_location_remove',
-            instance: locationInstance
+            command: 'map_token_remove',
+            token: locationInstance
           }
         ),
         removeFromAll('locations', locationInstance)

@@ -86,7 +86,10 @@ module.exports = async (portalInstance) => {
             {
               command: 'map_token_add',
               token: createMapToken(spirit.instance, spirit)
-            }
+            },
+            Object.values(spirit.conditions)
+              .filter(condition => condition.status === 'invisible').length ?
+              1 : 0
           ]
         }
       ]

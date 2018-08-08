@@ -31,13 +31,14 @@ module.exports = async (instance) => {
             command: 'map_condition_remove',
             bearerInstance: condition.bearer,
             conditionInstance: instance
-          }
+          },
+          condition.hidden ? 1 : 0
         ]
       }
     ]
 
     if (condition.status === 'invisible') {
-      inform.push(
+      inform.unshift(
         {
           function: informNearbyPlayers,
           parameters: [
@@ -46,6 +47,7 @@ module.exports = async (instance) => {
               command: 'map_token_add',
               token: createMapToken(condition.bearer, character)
             },
+            2,
             [condition.bearer]
           ]
         }

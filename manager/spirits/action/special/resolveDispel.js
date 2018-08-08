@@ -7,6 +7,7 @@ module.exports = (caster, target, spell) => {
   const total = 0
   const update = []
   const inform = []
+  let wasInvisible = false
 
   if (target.conditions && Object.values(target.conditions).length) {
     const dispellableConditions =
@@ -46,21 +47,26 @@ module.exports = (caster, target, spell) => {
       )
 
       if (dispellableConditions[i].status === 'invisible') {
-        inform.push(
-          {
-            function: informNearbyPlayers,
-            parameters: [
-              target,
-              {
-                command: 'map_token_add',
-                token: createMapToken(target.instance, target)
-              },
-              [target.instance]
-            ]
-          }
-        )
+        wasInvisible = true
       }
     }
+  }
+
+  if (wasInvisible) {
+    inform.unshift(
+      {
+        function: informNearbyPlayers,
+        parameters: [
+          target,
+          {
+            command: 'map_token_add',
+            token: createMapToken(target.instance, target)
+          },
+          2,
+          [target.instance]
+        ]
+      }
+    )
   }
 
   return [total, update, inform]
