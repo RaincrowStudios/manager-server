@@ -20,7 +20,7 @@ module.exports = (entity, energyChange, killer = {}) => {
 
       client.evalsha(
         [scripts.adjustEnergy.sha, 1, entity.instance, energyChange],
-        (err, result) => {
+        async (err, result) => {
           if (err) {
             throw new Error(err)
           }
@@ -45,7 +45,7 @@ module.exports = (entity, energyChange, killer = {}) => {
             )
 
             if (newState === 'dead') {
-              const [interimUpdate, interimInform] = handleDeath(entity, killer)
+              const [interimUpdate, interimInform] = await handleDeath(entity, killer)
 
               update.push(...interimUpdate)
               inform.push(...interimInform)

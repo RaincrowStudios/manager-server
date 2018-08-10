@@ -4,6 +4,7 @@ const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
 const informPlayers = require('../../utils/informPlayers')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
 const addSpiritBounty = require('./death/addSpiritBounty')
 const addSpiritDrop = require('./death/addSpiritDrop')
@@ -16,7 +17,7 @@ module.exports = (entity, killer) => {
 
       const spiritInfo = await getOneFromList('spirits', entity.id)
       const spirit = Object.assign(
-        {}, spiritInfo, spirit
+        {}, spiritInfo, entity 
       )
 
       if (spirit.owner) {
@@ -35,6 +36,19 @@ module.exports = (entity, killer) => {
         )
 
         inform.push(
+          {
+            function: informNearbyPlayers,
+            parameters: [
+              spirit,
+              {
+                command: 'map_token_remove',
+                instance: spirit.instance,
+              },
+              Object.values(spirit.conditions)
+                .filter(condition => condition.status === 'invisible').length ?
+                1 : 0
+            ]
+          },
           {
             function: informPlayers,
             parameters: [
@@ -58,7 +72,7 @@ module.exports = (entity, killer) => {
 
         update.push(
           removeFromAll('spirits', spirit.instance),
-          deleteAllConditions(spirit.conditions)
+          deleteAllConditions(Object.values(spirit.conditions))
         )
 
         const spiritTimers = timers.by('instance', spirit.instance)

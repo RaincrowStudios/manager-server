@@ -3,7 +3,7 @@ module.exports = (spirit, target) => {
 
   let focus = parseInt(spirit.focus, 10)
   if (spirit.conditions && Object.values(spirit.conditions).length) {
-    for (const condition of spirit.conditions) {
+    for (const condition of Object.values(spirit.conditions)) {
       if (condition.focus) {
         focus += parseInt(condition.focus, 10)
       }
@@ -15,7 +15,7 @@ module.exports = (spirit, target) => {
   if (target !== 'area') {
     ward += parseInt(target.ward, 10)
     if (target !== 'area' && target.conditions && Object.values(target.conditions).length) {
-      for (const condition of target.conditions) {
+      for (const condition of Object.values(target.conditions)) {
         if (condition.ward) {
           ward =+ parseInt(condition.ward, 10)
         }

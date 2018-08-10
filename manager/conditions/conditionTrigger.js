@@ -20,6 +20,12 @@ async function conditionTrigger (conditionInstance) {
       const update = []
       const inform = []
       const bearer = await getAllFromHash(condition.bearer)
+
+      if(!bearer){
+        deleteCondition(conditionInstance)
+        return true
+      }
+
       bearer.instance = condition.bearer
 
       let caster, spell = ''

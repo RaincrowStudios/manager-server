@@ -170,7 +170,7 @@ module.exports = async (portalInstance) => {
         {
           function: informNearbyPlayers,
           parameters: [
-            [portal.latitude, portal.longitude],
+            portal,
             {
               command: 'map_token_remove',
               instance: portalInstance

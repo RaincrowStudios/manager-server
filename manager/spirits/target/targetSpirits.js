@@ -1,6 +1,6 @@
 module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
   let nearSpirits = nearTargets
-    .filter(spirit => spirit.type !== 'spirit')
+    .filter(target => target.type === 'spirit')
 
   if (targetingConditions && targetingConditions.length) {
     nearSpirits = nearSpirits
@@ -8,7 +8,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
         for (const targetingCondition of targetingConditions) {
           if (
             target.conditions &&
-            target.conditions
+            Object.values(target.conditions)
               .map(condition => condition.id)
               .includes(targetingCondition)
           ) {

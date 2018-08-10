@@ -22,9 +22,8 @@ async function spiritAction(spiritInstance) {
       )
 
       if (
-        !spirit.conditions
-          .map(condition => condition.status)
-          .includes('silenced')
+        !Object.values(spirit.conditions)
+          .filter(condition => condition.status === 'silenced').length
       ) {
         await resolveSpiritAction(spirit)
       }
