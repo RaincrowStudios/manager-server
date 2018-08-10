@@ -20,13 +20,25 @@ module.exports = (spirit) => {
       const inform = []
 
       let [target, actions] = await determineTargets(spirit)
+      let action = false 
+      
+      if(target) {
+        action = determineAction(actions)
+      }
+console.log(action)
+      if (target === 'discover') {
+        const [interimUpdate, interimInform] =
+          await spiritDiscover(spirit, action)
 
-      if (target.type === 'spirit') {
+        update.push(...interimUpdate)
+        inform.push(...interimInform)
+      }
+      else if (target.type === 'spirit') {
         const spiritInfo = await getOneFromList('spirits', target.id)
         target = Object.assign({}, spiritInfo, target)
       }
 
-      if (target) {
+      if (target && target !== 'discover') {
         if (!checkSuccess(spirit, target)) {
           if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
             update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
@@ -52,17 +64,8 @@ module.exports = (spirit) => {
           )
         }
         else {
-          const action = determineAction(actions)
-
           if (action) {
-            if (target === 'discover') {
-              const [interimUpdate, interimInform] =
-                await spiritDiscover(spirit, action)
-
-              update.push(...interimUpdate)
-              inform.push(...interimInform)
-            }
-            else if (action === 'attack') {
+            if (action === 'attack') {
               const [interimUpdate, interimInform] =
                 await basicAttack(spirit, target)
 
@@ -85,29 +88,6 @@ module.exports = (spirit) => {
               update.push(...interimUpdate)
               inform.push(...interimInform)
             }
-          }
-
-          if (spirit.owner) {
-            const [summoner, xpMultipliers] = await Promise.all([
-              getAllFromHash(spirit.owner),
-              getOneFromList('constants', 'xpMultipliers')
-            ])
-
-            summoner.instance = spirit.owner
-
-            const xpGain = determineExperience(
-              xpMultipliers,
-              'action',
-              false,
-              spirit
-            )
-
-            const [xpUpdate, xpInform] = await addExperience(summoner, xpGain)
-
-            update.push(...xpUpdate)
-            inform.push(...xpInform)
-
-            update.push(incrementHashField(spirit.instance, 'xpGained', xpGain))
           }
         }
       }

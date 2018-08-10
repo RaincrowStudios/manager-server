@@ -4,6 +4,7 @@ const getValidSpawns = require('../../../utils/getValidSpawns')
 module.exports = (spirit, discovery) => {
   return new Promise(async (resolve, reject) => {
     try {
+
       const spawnList = await getValidSpawns(spirit.latitude, spirit.longitude)
 
       const discoveryPool = spawnList[discovery.type + 's'][discovery.rarity]

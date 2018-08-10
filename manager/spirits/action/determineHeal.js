@@ -7,7 +7,7 @@ module.exports = (spirit, target, range) => {
   )
 
   if (spirit.conditions && Object.values(spirit.conditions).length) {
-    for (const condition of spirit.conditions) {
+    for (const condition of Object.values(spirit.conditions)) {
       if (condition.healing) {
         total += parseInt(condition.healing, 10)
       }
@@ -15,7 +15,7 @@ module.exports = (spirit, target, range) => {
   }
 
   if (target.conditions && Object.values(target.conditions).length) {
-    for (const condition of target.conditions) {
+    for (const condition of Object.values(target.conditions)) {
       if (condition.healing) {
         total += parseInt(condition.healing, 10)
       }

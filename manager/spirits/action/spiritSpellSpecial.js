@@ -1,21 +1,31 @@
+const resolveBanish = require('./special/resolveBanish')
 const resolveDispel = require('./special/resolveDispel')
 const resolveGreater = require('./special/resolveGreater')
 
-module.exports = (caster, target, spell, ingredients) => {
+module.exports = (caster, target, spell) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let result
+      const update = []
+      const inform = []
+      let interimTotal, interimUpdate, interimInform
       switch (spell.special) {
+        case 'banish':
+          [interimTotal, interimUpdate, interimInform] = await resolveBanish(caster, target, spell)
+          break
         case 'dispel':
-          result = await resolveDispel(caster, target, ingredients)
+          [interimTotal, interimUpdate, interimInform] = resolveDispel(caster, target, spell)
           break
         case 'greater':
-          result = await resolveGreater(caster, target, spell, ingredients)
+          [interimTotal, interimUpdate, interimInform] = await resolveGreater(caster, target, spell)
           break
         default:
           break
       }
-      resolve(result)
+      const total = interimTotal
+      update.push(...interimUpdate)
+      inform.push(...interimInform)
+
+      resolve([total, update, inform])
     }
     catch (err) {
       reject(err)

@@ -26,7 +26,7 @@ module.exports = (spirit, target, spell) => {
 
         if (spell.special) {
           [total, interimUpdate, interimInform] =
-            spiritSpellSpecial(spirit, target, spell)
+            await spiritSpellSpecial(spirit, target, spell)
         }
         else {
           [total, interimUpdate, interimInform] =
@@ -39,18 +39,8 @@ module.exports = (spirit, target, spell) => {
 
         if (determineCritical(spirit, target, baseCrit)) {
           result.critical = true
-          if (spell.special) {
-            [total, interimUpdate, interimInform] =
-              spiritSpellSpecial(spirit, target, spell)
-          }
-          else {
-            [total, interimUpdate, interimInform] =
-              spiritSpellNormal(spirit, target, spell)
-          }
 
-          result.total += total
-          update.push(...interimUpdate)
-          inform.push(...interimInform)
+          result.total *= 2 
         }
 
         if (

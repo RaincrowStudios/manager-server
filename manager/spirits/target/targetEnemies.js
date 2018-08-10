@@ -22,9 +22,9 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
         for (const targetingCondition of targetingConditions) {
           if (
             target.conditions &&
-            target.conditions
-              .map(condition => condition.id)
-              .includes(targetingCondition)
+            Object.values(target.conditions)
+              .filter(condition => condition.id === targetingCondition)
+              .length
           ) {
             return true
           }
