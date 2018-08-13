@@ -1,9 +1,5 @@
-const addExperience = require('../../../redis/addExperience')
 const addFieldToHash = require('../../../redis/addFieldToHash')
-const getAllFromHash = require('../../../redis/getAllFromHash')
 const getOneFromList = require('../../../redis/getOneFromList')
-const incrementHashField = require('../../../redis/getOneFromList')
-const determineExperience = require('../../../utils/determineExperience')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const determineTargets = require('../target/determineTargets')
 const basicAttack = require('./basicAttack')
@@ -20,12 +16,8 @@ module.exports = (spirit) => {
       const inform = []
 
       let [target, actions] = await determineTargets(spirit)
-      let action = false 
-      
-      if(target) {
-        action = determineAction(actions)
-      }
-console.log(action)
+      const action = determineAction(actions)
+
       if (target === 'discover') {
         const [interimUpdate, interimInform] =
           await spiritDiscover(spirit, action)
@@ -33,12 +25,12 @@ console.log(action)
         update.push(...interimUpdate)
         inform.push(...interimInform)
       }
-      else if (target.type === 'spirit') {
-        const spiritInfo = await getOneFromList('spirits', target.id)
-        target = Object.assign({}, spiritInfo, target)
-      }
+      else if (target) {
+        if (target.type === 'spirit') {
+          const spiritInfo = await getOneFromList('spirits', target.id)
+          target = Object.assign({}, spiritInfo, target)
+        }
 
-      if (target && target !== 'discover') {
         if (!checkSuccess(spirit, target)) {
           if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
             update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
@@ -55,8 +47,8 @@ console.log(action)
                   caster: spirit.id,
                   targetInstance: '',
                   target: '',
-                  spell: '',
-                  base: '',
+                  spell: action.id ? action.id : action,
+                  baseSpell: action.base ? action.base :  '',
                   result: 'failed'
                 }
               ]

@@ -57,7 +57,7 @@ module.exports = (spirit, target) => {
                 targetInstance: target.instance,
                 target: target.id ? target.id : target.displayName,
                 spell: 'attack',
-                base: '',
+                baseSpell: '',
                 result: { total: damage, critical: critical }
               }
             ]
