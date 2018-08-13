@@ -128,7 +128,9 @@ module.exports = (spirit) => {
         let target, summonerAttacker
         switch (targetCategory) {
           case 'discover':
-            resolve(['discover', spirit.actionTree[i].actions])
+            if (spirit.carrying.length < spirit.maxCarry) {
+              resolve(['discover', spirit.actionTree[i].actions])
+            }
             break
           case 'self':
             target = spirit

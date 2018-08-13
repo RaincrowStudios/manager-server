@@ -1,5 +1,6 @@
 const axios = require('axios')
 const key = require('../keys/keys')
+const getOneFromList = require('../redis/getOneFromList')
 
 module.exports = (latitude, longitude) => {
   return new Promise(async (resolve, reject) => {
@@ -13,26 +14,23 @@ module.exports = (latitude, longitude) => {
         key.google
       )
       const country = address.data.results
-        .filter(result =>
-          result.types.includes('country')
-        )[0]
+        .filter(result => result.types.includes('country'))[0]
 
-      let dominion
       if (country) {
-        dominion = country.address_components[0].long_name
+        const code = country.address_components[0].short_name.toLowerCase()
+        const spawnZone = await getOneFromList('countries', code)
+
+        if (typeof spawnZone === 'number' && !isNaN(spawnZone)) {
+          const spawnList = await getOneFromList('zones', spawnZone.toString())
+          resolve(spawnList)
+        }
       }
       else {
-        dominion = false
+        resolve (false)
       }
-
-      if (!dominion) {
-        dominion = false
-      }
-
-        resolve(dominion)
-      }
-      catch (err) {
-        reject(err)
-      }
-    })
-  }
+    }
+    catch (err) {
+      reject(err)
+    }
+  })
+}
