@@ -23,7 +23,7 @@ async function initializeSpirits(id, managers) {
               await addFieldToHash(spirits[i], 'manager', id)
 
               if (!spirit ||
-                spirit.expireOn !== 0 && spirit.expireOn < currentTime) {
+                spirit.expiresOn !== 0 && spirit.expiresOn < currentTime) {
                 spiritExpire(spirits[i])
               }
               else if (spirit.energy <= 0) {
@@ -59,16 +59,16 @@ async function initializeSpirits(id, managers) {
               }
               else {
                 let expireTimer
-                if (spirit.expireOn) {
+                if (spirit.expiresOn) {
                   expireTimer =
                     setTimeout(() =>
                       spiritExpire(spirits[i]),
-                      spirit.expireOn - currentTime
+                      spirit.expiresOn - currentTime
                     )
                 }
 
                 let moveTimer
-                if (spirit.expireOn) {
+                if (spirit.expiresOn) {
                   moveTimer =
                     setTimeout(() =>
                       spiritMove(spirits[i]),

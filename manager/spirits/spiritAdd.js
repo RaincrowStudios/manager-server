@@ -7,11 +7,11 @@ module.exports = (spiritInstance, spirit) => {
   const currentTime = Date.now()
   const timer = {instance: spiritInstance}
 
-  if (spirit.expireOn) {
+  if (spirit.expiresOn) {
     const expireTimer =
       setTimeout(() =>
         spiritExpire(spiritInstance),
-        spirit.expireOn - currentTime
+        spirit.expiresOn - currentTime
       )
 
     timer.expireTimer = expireTimer

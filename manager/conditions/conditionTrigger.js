@@ -26,15 +26,12 @@ async function conditionTrigger (conditionInstance) {
         return true
       }
 
-      bearer.instance = condition.bearer
-
       let caster, spell = ''
       if (condition.caster) {
         [caster, spell] = await Promise.all([
           getAllFromHash(condition.caster),
           getOneFromList('spells', condition.id)
         ])
-        caster.instance = condition.caster
       }
 
       const total = resolveCondition(spell.condition.overTime)

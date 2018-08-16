@@ -1,13 +1,12 @@
 const timers = require('../../database/timers')
 const addToGeohash = require('../../redis/addToGeohash')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
-const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeFromList = require('../../redis/removeFromList')
 const removeHash = require('../../redis/removeHash')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informPlayers = require('../../utils/informPlayers')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const generateNewCoordinates = require('./components/generateNewCoordinates')
 
 module.exports = (idleTimerInstance) => {
@@ -16,59 +15,66 @@ module.exports = (idleTimerInstance) => {
       const idleTimer = await getAllFromHash(idleTimerInstance)
 
       if (idleTimer) {
-        const [characterInfo, occupants] = await Promise.all([
-          getFieldsFromHash(
-            idleTimer.character,
-            ['player', 'fuzzyLatitude', 'fuzzyLongitude']),
-          getOneFromHash(idleTimer.location, 'occupants')
-        ])
+        const character = await getAllFromHash(idleTimer.character)
 
-        const [bootedPlayer, fuzzyLatitude, fuzzyLongitude] = characterInfo
+        character.instance = idleTimer.character
 
-        const index = occupants
-          .map(occupant => occupant.instance)
-          .indexOf(idleTimer.character)
-
-        const playersInLocation = await Promise.all(
-          occupants.map(occupant => getOneFromHash(occupant.instance, 'player'))
+        const [newLatitude, newLongitude] = generateNewCoordinates(
+          character.fuzzyLatitude,
+          character.fuzzyLongitude
         )
 
-        const [newLatitude, newLongitude] =
-          generateNewCoordinates(fuzzyLatitude, fuzzyLongitude)
-
-        await Promise.all([
+        const update = [
           addToGeohash(
             'characters',
-            idleTimer.character,
-            fuzzyLatitude,
-            fuzzyLongitude
-          ),
-          informPlayers(
-            [bootedPlayer],
-            {
-              command: 'character_boot_to_map',
-              latitude: newLatitude,
-              longitude: newLongitude
-            }
-          ),
-          informPlayers(
-            playersInLocation.filter(player => player !== bootedPlayer),
-            {
-              command: 'location_character_boot',
-              instance: idleTimer.character
-            },
+            character.instance,
+            newLatitude,
+            newLongitude
           ),
           removeFromActiveSet('idleTimers', idleTimerInstance),
           removeFromList('idleTimers', idleTimer.character),
           removeHash(idleTimerInstance),
-          updateHashFieldArray(
+          updateHashFieldObject(
             idleTimer.location,
             'remove',
             'occupants',
-            idleTimer.character,
-            index
+            idleTimer.character
           )
-        ])
+        ]
+
+        const inform = [
+          {
+            function: informPlayers,
+            parameters: [
+              [character.player],
+              {
+                command: 'character_location_boot',
+                latitude: newLatitude,
+                longitude: newLongitude
+              }
+            ]
+          },
+          {
+            function: informNearbyPlayers,
+            parameters: [
+              character,
+              {
+                command: 'map_token_remove',
+                instance: character.instance,
+              },
+              Object.values(character.conditions)
+                .filter(condition => condition.status === 'invisible').length ?
+                1 : 0
+            ]
+          }
+        ]
+
+        await Promise.all(update)
+
+        for (const informObject of inform) {
+          const informFunction = informObject.function
+          await informFunction(...informObject.parameters)
+        }
       }
 
       const idleTimers = timers.by('instance', idleTimerInstance)

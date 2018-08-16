@@ -1,8 +1,7 @@
 const timers = require('../../database/timers')
-const getOneFromHash = require('../../redis/getOneFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informPlayers = require('../../utils/informPlayers')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
@@ -17,21 +16,27 @@ module.exports = (entity, killer) => {
 
       const spiritInfo = await getOneFromList('spirits', entity.id)
       const spirit = Object.assign(
-        {}, spiritInfo, entity 
+        {}, spiritInfo, entity
       )
 
-      if (spirit.owner) {
-        const activeSpirits =
-          await getOneFromHash(spirit.owner, 'activeSpirits')
-        const index = activeSpirits.indexOf(spirit.instance)
-
+      if (spirit.location) {
         update.push(
-          updateHashFieldArray(
+          updateHashFieldObject(
+            spirit.location,
+            'remove',
+            'spirits',
+            spirit.instance
+          )
+        )
+      }
+
+      if (spirit.owner) {
+        update.push(
+          updateHashFieldObject(
             spirit.owner,
             'remove',
             'activeSpirits',
-            spirit.instance,
-            index
+            spirit.instance
           )
         )
 

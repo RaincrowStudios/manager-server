@@ -13,7 +13,6 @@ module.exports = (bearer, condition) => {
 
       if (spell.condition.onExpiration) {
         const caster = getAllFromHash(condition.caster)
-        caster.instance = condition.caster
 
         const expireEnergy = resolveCondition(spell.condition.onExpiration)
 

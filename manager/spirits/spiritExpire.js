@@ -1,8 +1,7 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
@@ -15,21 +14,26 @@ module.exports = async (spiritInstance) => {
       const update = []
       const inform = []
 
-      let activeSpirits
-      if (instanceInfo.owner) {
-        activeSpirits = await getOneFromHash(instanceInfo.owner, 'activeSpirits')
-      }
-
       update.push(
         removeFromAll('spirits', spiritInstance)
       )
+
+      if (instanceInfo.location) {
+        update.push(
+          updateHashFieldObject(
+            instanceInfo.location,
+            'remove',
+            'spirits',
+            spiritInstance
+          )
+        )
+      }
 
       if (instanceInfo.conditions) {
         update.push(deleteAllConditions(instanceInfo.conditions))
       }
 
-      if (activeSpirits) {
-        const index = activeSpirits.indexOf(spiritInstance)
+      if (instanceInfo.owner) {
         update.push[
           informPlayers(
             [instanceInfo.player],
@@ -39,12 +43,11 @@ module.exports = async (spiritInstance) => {
               displayName: instanceInfo.displayName
             }
           ),
-          updateHashFieldArray(
+          updateHashFieldObject(
             instanceInfo.owner,
             'remove',
             'activeSpirits',
-            spiritInstance,
-            index
+            spiritInstance
           )
         ]
       }
@@ -57,7 +60,10 @@ module.exports = async (spiritInstance) => {
             {
               command: 'map_token_remove',
               instance: spiritInstance
-            }
+            },
+            Object.values(instanceInfo.conditions)
+              .filter(condition => condition.status === 'invisible').length ?
+              1 : 0
           ]
         }
       )
@@ -69,6 +75,7 @@ module.exports = async (spiritInstance) => {
         await informFunction(...informObject.parameters)
       }
     }
+
     const spiritTimers = timers.by('instance', spiritInstance)
     if (spiritTimers) {
       clearTimeout(spiritTimers.expireTimer)

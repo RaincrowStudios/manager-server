@@ -25,22 +25,14 @@ module.exports = (spirit) => {
         const location = await getAllFromHash(spirit.location)
 
         const nearInstances = [
-          ...location.occupants.map(occupant => occupant.instance),
-          ...location.spirits.map(spirit => spirit.instance)
+          ...Object.keys(location.occupants),
+          ...Object.keys(location.spirits)
+            .filter(instance => instance !== spirit.instance)
         ]
 
-        const nearInfo = await Promise.all(
+        nearTargets = await Promise.all(
           nearInstances.map(instance => getAllFromHash(instance))
         )
-
-        nearTargets = nearInfo
-         .map((target, i) => {
-            if (target) {
-              target.instance = nearInstances[i]
-              return target
-            }
-          })
-          .filter(target => target && target.state !== 'dead')
       }
       else {
         const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
@@ -71,61 +63,60 @@ module.exports = (spirit) => {
             )
           ])
 
-       const nearInstances =
-        [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]
-         .filter(instance => instance !== spirit.instance)
+        const nearInstances =
+          [...nearCharacters, ...nearCollectibles, ...nearPortals, ...nearSpirits]
+            .filter(instance => instance !== spirit.instance)
 
-       const nearInfo = await Promise.all(
-         nearInstances.map(instance => getAllFromHash(instance))
-       )
+        nearTargets = await Promise.all(
+          nearInstances.map(instance => getAllFromHash(instance))
+        )
 
-       nearTargets = nearInfo
-        .map((target, i) => {
-           if (target) {
-             target.instance = nearInstances[i]
-             return target
-           }
-         })
-         .filter(target => target && target.state !== 'dead')
-       }
+        nearTargets = nearTargets
+          .filter(target => target && target.state !== 'dead')
+      }
 
       if (spirit.attributes && spirit.attributes.includes('sentinel')) {
         const nearEnemies = nearTargets
-        .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
-        .filter(target => !spirit.coven ||
-          (target.coven !== spirit.coven &&
-            !spirit.allies.map(ally => ally.coven).includes(target.coven)
+          .filter(target => target.instance !== spirit.instance &&
+            target.instance !== spirit.owner
           )
-        )
-        .map(target => target.instance)
-
-      const update = []
-      if (nearEnemies.length && spirit.sentinelList) {
-        const newEnemies = nearEnemies
-          .filter(instance => !spirit.sentinelList.includes(instance))
-
-        if (newEnemies.length) {
-          update.push(
-            informPlayers(
-              [spirit.player],
-              {
-                command: 'character_spirit_sentinel',
-                instance: spirit.instance,
-                spirit: spirit.id
-              }
+          .filter(target => !spirit.coven ||
+            (target.coven !== spirit.coven &&
+              !spirit.allies.map(ally => ally.coven).includes(target.coven)
             )
           )
+          .map(target => target.instance)
+
+        const sentinelUpdate = []
+        if (nearEnemies.length && spirit.sentinelList) {
+          const newEnemies = nearEnemies
+            .filter(instance => !spirit.sentinelList.includes(instance))
+
+          if (newEnemies.length) {
+            sentinelUpdate.push(
+              informPlayers(
+                [spirit.player],
+                {
+                  command: 'character_spirit_sentinel',
+                  instance: spirit.instance,
+                  spirit: spirit.id
+                }
+              )
+            )
+          }
+
+          sentinelUpdate.push(
+            updateHashField(spirit.instance, 'sentinelList', nearEnemies)
+          )
+          await Promise.all(sentinelUpdate)
         }
       }
-      update.push(updateHashField(spirit.instance, 'sentinelList', nearEnemies)
-      )
-      await Promise.all(update)
-    }
 
-     for (let i = 0; i < spirit.actionTree.length; i++) {
-       const [targetCategory, type] = spirit.actionTree[i].target.split(':')
-       const conditions = spirit.actionTree[i].conditions
+      for (let i = 0; i < spirit.actionTree.length; i++) {
+        const [targetCategory, type] = spirit.actionTree[i].target.split(':')
+        const conditions = spirit.actionTree[i].conditions
         let target, summonerAttacker
+
         switch (targetCategory) {
           case 'discover':
             if (spirit.carrying.length < spirit.maxCarry) {

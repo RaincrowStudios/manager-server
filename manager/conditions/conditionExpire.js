@@ -12,7 +12,6 @@ module.exports = async (conditionInstance) => {
     if (bearer) {
       const update = []
       const inform = []
-      bearer.instance = condition.bearer
 
       const [interimUpdate, interimInform] = await handleExpire(bearer, condition)
 

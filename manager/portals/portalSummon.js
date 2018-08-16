@@ -6,6 +6,7 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const createInstanceId = require('../../utils/createInstanceId')
 const createMapToken = require('../../utils/createMapToken')
 const determineExperience = require('../../utils/determineExperience')
@@ -33,7 +34,7 @@ module.exports = async (portalInstance) => {
       spirit.latitude = portal.latitude
       spirit.longitude = portal.longitude
       spirit.createdOn = currentTime
-      spirit.expireOn = spirit.duration > 0 ?
+      spirit.expiresOn = spirit.duration > 0 ?
         currentTime + (spirit.duration * 3600000) : 0
 
       let moveOn
@@ -130,21 +131,23 @@ module.exports = async (portalInstance) => {
         update.push(...xpUpdate)
         inform.push(...xpInform)
 
-        const index = summoner.activePortals.indexOf(portalInstance)
-
         update.push(
-          updateHashFieldArray(
+          updateHashFieldObject(
             portal.owner,
             'remove',
             'activePortals',
             portalInstance,
-            index
           ),
-          updateHashFieldArray(
+          updateHashFieldObject(
             portal.owner,
             'add',
             'activeSpirits',
-            spirit.instance
+            spirit.instance,
+            {
+              instance: spirit.instance,
+              summonedOn: spirit.createdOn,
+              expiresOn: spirit.expiresOn
+            }
           )
         )
       }

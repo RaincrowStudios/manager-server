@@ -19,9 +19,7 @@ async function spiritMove(spiritInstance) {
 
       const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
 
-      const spirit = Object.assign(
-        {}, spiritInfo, instanceInfo, {instance: spiritInstance}
-      )
+      const spirit = Object.assign({}, spiritInfo, instanceInfo)
 
       if (
         !Object.values(spirit.conditions)

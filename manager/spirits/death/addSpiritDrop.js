@@ -47,6 +47,7 @@ module.exports = async (spirit) => {
               addObjectToHash(
                 instance,
                 {
+                  instance: instance,
                   id: collectible.id,
                   type: collectible.type,
                   latitude: latitude,
@@ -64,7 +65,7 @@ module.exports = async (spirit) => {
                   spirit,
                   {
                     command: 'map_token_add',
-                    token: createMapToken(instance, collectible),
+                    token: createMapToken(collectible),
                   }
                 ]
               }
