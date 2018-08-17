@@ -35,20 +35,6 @@ module.exports = (entity, xpGain) => {
           else {
             const [newXp, newLevel] = JSON.parse(results)
 
-            inform.push(
-              {
-                function: informPlayers,
-                parameters: [
-                  [entity.player],
-                  {
-                    command: 'character_xp_gain',
-                    xpGain: xpGain,
-                    newXp: newXp
-                  }
-                ]
-              }
-            )
-
             if (newLevel) {
               const baseEnergyByLevel =
                 await getOneFromList('constants', 'baseEnergyByLevel')
@@ -66,8 +52,8 @@ module.exports = (entity, xpGain) => {
                     {
                       command: 'map_level_up',
                       instance: entity.instance,
-                      level: newLevel,
-                      baseEnergy: baseEnergyByLevel[newLevel - 1],
+                      newLevel: newLevel,
+                      newBaseEnergy: baseEnergyByLevel[newLevel - 1],
                     }
                   ]
                 }

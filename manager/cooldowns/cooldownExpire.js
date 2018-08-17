@@ -1,8 +1,8 @@
-const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash = require('../../redis/removeHash')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informPlayers = require('../../utils/informPlayers')
 
 module.exports = async (cooldownInstance) => {
@@ -10,12 +10,7 @@ module.exports = async (cooldownInstance) => {
     const cooldown = await getAllFromHash(cooldownInstance)
 
     if (cooldown) {
-      const [player, cooldownList] =
-        await getFieldsFromHash(cooldown.bearer, ['player', 'cooldownList'])
-
-      const index = cooldownList
-        .map(oldCooldown => oldCooldown.spell)
-        .indexOf(cooldown.spell)
+      const player = await getOneFromHash(cooldown.bearer, 'player')
 
       await Promise.all([
         informPlayers(
@@ -27,12 +22,11 @@ module.exports = async (cooldownInstance) => {
         ),
         removeFromActiveSet('cooldowns', cooldownInstance),
         removeHash(cooldownInstance),
-        updateHashFieldArray(
+        updateHashFieldObject(
           cooldown.bearer,
           'remove',
-          'cooldownList',
-          cooldown,
-          index
+          'cooldowns',
+          cooldownInstance
         )
       ])
     }

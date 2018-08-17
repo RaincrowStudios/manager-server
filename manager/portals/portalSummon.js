@@ -150,9 +150,6 @@ module.exports = async (portalInstance) => {
             }
           )
         )
-      }
-
-      if (spirit.player) {
         inform.push(
           {
             function: informPlayers,
@@ -162,13 +159,17 @@ module.exports = async (portalInstance) => {
                 command: 'character_spirit_summoned',
                 instance: spirit.instance,
                 spirit: spirit.id,
+                createdOn: spirit.createdOn,
+                expiresOn: spirit.expiresOn,
+                state: spirit.state,
+                xpGain: xpGain,
                 portalInstance: portalInstance
               }
             ]
           }
         )
       }
-
+      
       inform.push(
         {
           function: informNearbyPlayers,
