@@ -35,8 +35,6 @@ module.exports = (entity, energyChange, killer = {}) => {
                   {
                     command: 'map_energy_change',
                     instance: entity.instance,
-                    oldEnergy: entity.energy,
-                    oldState: entity.state,
                     newEnergy: newEnergy,
                     newState: newState
                   }

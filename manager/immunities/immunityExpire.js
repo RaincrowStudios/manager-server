@@ -1,28 +1,32 @@
 const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash = require('../../redis/removeHash')
-const updateHashFieldArray = require('../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 
 module.exports = async (immunityInstance) => {
   try {
     const immunity = await getAllFromHash(immunityInstance)
 
     if (immunity) {
-      const immunityList = await getOneFromHash(immunity.bearer, 'immunityList')
-      const index = immunityList
-        .map(item => item.caster)
-        .indexOf(immunity.caster)
+      const bearer = await getAllFromHash(immunity.bearer)
 
       await Promise.all([
+        informNearbyPlayers(
+          bearer,
+          {
+            command: 'map_immunity_remove',
+            instance: bearer.instance,
+            immunity: immunity.caster
+          }
+        ),
         removeFromActiveSet('immunities', immunityInstance),
         removeHash(immunityInstance),
-        updateHashFieldArray(
+        updateHashFieldObject(
           immunity.bearer,
           'remove',
-          'immunityList',
-          immunity,
-          index
+          'immunities',
+          immunityInstance
         )
       ])
     }

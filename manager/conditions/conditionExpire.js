@@ -36,8 +36,10 @@ module.exports = async (conditionInstance) => {
               bearer,
               {
                 command: 'map_condition_remove',
-                instance: conditionInstance
-              }
+                instance: condition.bearer,
+                conditionInstance: conditionInstance
+              },
+              condition.hidden ? 1 : 0
             ]
           }
         )

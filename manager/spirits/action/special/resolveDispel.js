@@ -40,7 +40,8 @@ module.exports = (caster, target, spell) => {
             target,
             {
               command: 'map_condition_remove',
-              instance: dispellableConditions[index].instance
+              instance: target.instance,
+              conditionInstance: dispellableConditions[index].instance
             }
           ]
         }

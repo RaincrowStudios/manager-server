@@ -29,7 +29,7 @@ module.exports = async (instance) => {
           character,
           {
             command: 'map_condition_remove',
-            bearerInstance: condition.bearer,
+            instance: condition.bearer,
             conditionInstance: instance
           },
           condition.hidden ? 1 : 0

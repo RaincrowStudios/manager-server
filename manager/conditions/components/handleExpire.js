@@ -26,7 +26,7 @@ module.exports = (bearer, condition) => {
                 bearer,
                 {
                   command: 'map_condition_trigger',
-                  bearerInstance: condition.bearer,
+                  instance: condition.bearer,
                   conditionInstance: condition.instance
                 }
               ]
