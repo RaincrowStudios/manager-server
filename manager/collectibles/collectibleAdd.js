@@ -4,13 +4,15 @@ const collectibleExpire = require('./collectibleExpire')
 module.exports = (instance, collectible) => {
   const currentTime = Date.now()
 
-  const expireTimer =
-    setTimeout(() =>
-      collectibleExpire(instance),
-      collectible.expiresOn - currentTime
-    )
+  if (collectible.expiresOn) {
+    const expireTimer =
+      setTimeout(() =>
+        collectibleExpire(instance),
+        collectible.expiresOn - currentTime
+      )
 
-  timers.insert({instance, expireTimer})
+    timers.insert({instance, expireTimer})
+  }
 
   return true
 }

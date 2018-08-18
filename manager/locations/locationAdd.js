@@ -7,11 +7,11 @@ module.exports = (locationInstance, location) => {
 
     const expireTimer =
       setTimeout(() =>
-        locationExpire(locationInstance), location.expiresOn - currentTime
+        locationExpire(locationInstance), location.rewardOn - currentTime
       )
 
     timers.insert({locationInstance, expireTimer})
-    
+
     return true
   }
   catch (err) {

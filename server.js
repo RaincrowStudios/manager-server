@@ -25,7 +25,9 @@ const server = net.createServer(socket => {
   })
 
   socket.on('error', err => {
-    console.error(err)
+    if (err.code !== 'ECONNRESET') {
+      console.error(err)
+    }
   })
 })
 
