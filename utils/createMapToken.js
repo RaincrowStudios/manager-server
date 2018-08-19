@@ -5,7 +5,6 @@ module.exports = (info) => {
       token = {
         instance: info.instance,
         type: info.type,
-        subtype: info.tier > 0 ? 'greater' : 'lesser',
         degree: info.degree,
         latitude: info.latitude,
         longitude: info.longitude
@@ -26,7 +25,6 @@ module.exports = (info) => {
       token = {
         instance: info.instance,
         type: info.type,
-        subtype: info.tier > 0 ? 'greater' : 'lesser',
         degree: info.degree,
         latitude: info.latitude,
         longitude: info.longitude
