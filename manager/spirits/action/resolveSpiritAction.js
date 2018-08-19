@@ -3,8 +3,10 @@ const getOneFromList = require('../../../redis/getOneFromList')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const determineTargets = require('../target/determineTargets')
 const basicAttack = require('./basicAttack')
+const checkFizzle = require('./checkFizzle')
 const checkSuccess = require('./checkSuccess')
 const determineAction = require('./determineAction')
+const handleConfusion = require('./handleConfusion')
 const spiritCollect = require('./spiritCollect')
 const spiritDiscover = require('./spiritDiscover')
 const spiritSpell = require('./spiritSpell')
@@ -16,7 +18,7 @@ module.exports = (spirit) => {
       const inform = []
 
       let [target, actions] = await determineTargets(spirit)
-      const action = determineAction(actions)
+      let action = determineAction(actions)
 
       if (target === 'discover') {
         const [interimUpdate, interimInform] =
@@ -31,7 +33,15 @@ module.exports = (spirit) => {
           target = Object.assign({}, spiritInfo, target)
         }
 
-        if (!checkSuccess(spirit, target)) {
+        if (
+          spirit.conditions &&
+          Object.values(spirit.conditions)
+            .filter(condition => condition.status === 'confused').length
+        ) {
+          [target, action] = await handleConfusion(spirit)
+        }
+
+        if (checkFizzle(spirit, target)) {
           if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
             update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
           }
@@ -49,7 +59,43 @@ module.exports = (spirit) => {
                   target: '',
                   spell: action.id ? action.id : action,
                   baseSpell: action.base ? action.base :  '',
-                  result: 'failed'
+                  result: {
+                    total: 0,
+                    critical: false,
+                    reflected: 0,
+                    effect: 'fizzle',
+                    xpGain: 0
+                  }
+                }
+              ]
+            }
+          )
+        }
+        else if (!checkSuccess(spirit, target)) {
+          if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
+            update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
+          }
+
+          inform.unshift(
+            {
+              function: informNearbyPlayers,
+              parameters: [
+                spirit,
+                {
+                  command: 'map_spell_cast',
+                  casterInstance: spirit.instance,
+                  caster: spirit.id,
+                  targetInstance: '',
+                  target: '',
+                  spell: action.id ? action.id : action,
+                  baseSpell: action.base ? action.base :  '',
+                  result: {
+                    total: 0,
+                    critical: false,
+                    reflected: 0,
+                    effect: 'fail',
+                    xpGain: 0
+                  }
                 }
               ]
             }
