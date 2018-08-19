@@ -18,12 +18,27 @@ module.exports = (spirit, target) => {
         getOneFromList('constants', 'baseCrit')
       ])
       let critical = false
+      let reflected = 0
       if (spiritExists && targetExists) {
         let damage = determineDamage(spirit, target, spirit.attack)
 
         if (determineCritical(spirit, target, baseCrit)) {
           critical = true
           damage += determineDamage(spirit, target, spirit.attack)
+        }
+
+        if (
+          target.conditions &&
+          Object.values(target.conditions)
+            .filter(condition => condition.status === 'reflective').length
+        ) {
+          reflected = Math.round(damage / 2)
+          
+          const [selfEnergyUpdate, selfEnergyInform] =
+            await adjustEnergy(spirit, reflected, spirit)
+
+          update.push(...selfEnergyUpdate)
+          inform.push(...selfEnergyInform)
         }
 
         const [targetEnergyUpdate, targetEnergyInform] =
@@ -58,7 +73,13 @@ module.exports = (spirit, target) => {
                 target: target.id ? target.id : target.displayName,
                 spell: 'attack',
                 baseSpell: '',
-                result: { total: damage, critical: critical }
+                result: {
+                  total: damage,
+                  critical: critical,
+                  reflected: reflected,
+                  effect: 'success',
+                  xpGain: 0
+                }
               }
             ]
           }

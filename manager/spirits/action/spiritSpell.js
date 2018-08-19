@@ -21,7 +21,7 @@ module.exports = (spirit, target, spell) => {
       ])
 
       if (spiritExists && targetExists) {
-        const result = { total: 0, critical: false }
+        const result = { total: 0, critical: false, reflected: 0, effect: 'success', xpGain: 0 }
         let total, interimUpdate, interimInform
 
         if (spell.special) {
@@ -40,7 +40,7 @@ module.exports = (spirit, target, spell) => {
         if (determineCritical(spirit, target, baseCrit)) {
           result.critical = true
 
-          result.total *= 2 
+          result.total *= 2
         }
 
         if (
