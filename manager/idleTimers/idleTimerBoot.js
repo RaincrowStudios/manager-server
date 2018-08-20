@@ -83,6 +83,13 @@ module.exports = (idleTimerInstance) => {
         timers.remove(idleTimers)
       }
 
+      informLogger({
+        route: 'popLeave',
+        pop_id: idleTimer.location,
+        character_id: character.instance,
+        boot: true 
+      })
+
       resolve(true)
     }
     catch (err) {
