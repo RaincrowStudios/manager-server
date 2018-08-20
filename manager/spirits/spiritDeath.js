@@ -91,6 +91,16 @@ module.exports = (entity, killer) => {
           timers.remove(spiritTimers)
         }
 
+        informLogger({
+          character_id: spirit.owner,
+          spirit_id: spirit.id,
+          latitude: spirit.latitude,
+          longitude: spirit.longitude,
+          killed_by: "",
+          attacker_id: killer.id,
+          spell_used: ""
+        })
+
         resolve([update, inform])
       }
     }

@@ -1,4 +1,5 @@
 const timers = require('../../database/timers')
+const informLogger = require('../../utils/informLogger')
 const spiritExpire = require('./spiritExpire')
 const spiritMove = require('./spiritMove')
 const spiritAction = require('./spiritAction')
@@ -36,5 +37,17 @@ module.exports = (spiritInstance, spirit) => {
   timer.actionTimer = actionTimer
 
   timers.insert(timer)
+  
+  informLogger({
+  	character_id: spirit.owner,
+    spirit_id: spiritInstance,
+    latitude: spirit.summonLat,
+    longitude: spirit.summonLong,
+    ingredient_1: "",
+    ingredient_2: "",
+    ingredient_3: "",
+    pop_id: ""
+  })
+
   return true
 }
