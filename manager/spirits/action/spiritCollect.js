@@ -1,5 +1,5 @@
 const removeFromAll = require('../../../redis/removeFromAll')
-const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../../redis/updateHashFieldObject')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 
 module.exports = (spirit, collectible) => {
@@ -15,43 +15,20 @@ module.exports = (spirit, collectible) => {
         parseInt(min, 10)
       )
 
-      const index = spirit.carrying
-        .map(carried => carried.id)
-        .indexOf(collectible.id)
-
       update.push(
         removeFromAll('collectibles', collectible.instance),
+        updateHashFieldObject(
+          spirit.instance,
+          'add',
+          'carrying',
+          collectible.id,
+          {
+            type: collectible.type,
+            count: spirit.carrying[collectible.id].count ?
+              spirit.carrying[collectible.id].count + count : count
+          }
+        )
       )
-
-      if (index >= 0) {
-        update.push(
-          updateHashFieldArray(
-            spirit.instance,
-            'replace',
-            'carrying',
-            {
-              id: collectible.id,
-              type: collectible.type,
-              count: spirit.carrying[index].count + count
-            },
-            index
-          )
-        )
-      }
-      else {
-        update.push(
-          updateHashFieldArray(
-            spirit.instance,
-            'add',
-            'carrying',
-            {
-              id: collectible.id,
-              type: collectible.type,
-              count: count
-            }
-          )
-        )
-      }
 
       inform.push(
         {

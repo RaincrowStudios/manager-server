@@ -14,27 +14,24 @@ module.exports = async (spirit) => {
       const inform = []
 
       const drops = spirit.drop ? spirit.drop : []
-      if (spirit.carrying && spirit.carrying.length) {
-        drops.push(...spirit.carrying)
-      }
 
-      if (drops.length) {
+      if (drops.length || Object.keys(spirit.carrying)) {
         const update = []
+        const ids = []
 
-        const collectibles = await Promise.all(drops.map(drop => {
+        for (const drop of drops) {
           const roll = Math.floor((Math.random() * 100) + 1)
 
           if (!drop.chance || roll <= drop.chance) {
-            if (drop.id === 'coll_silver') {
-              return new Promise((resolve) => {
-                resolve({id: 'coll_silver', type: 'silver'})
-              })
-            }
-            else {
-              return getOneFromList('collectibles', drop.id)
-            }
+            ids.push(drop.id)
           }
-        }))
+        }
+
+        ids.push(Object.keys(spirit.carrying))
+
+        const collectibles = await Promise.all(
+          ids.map(id => getOneFromList('collectibles', id))
+        )
 
         for (const collectible of collectibles) {
           if (collectible) {

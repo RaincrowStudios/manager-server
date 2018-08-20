@@ -1,5 +1,5 @@
 const getOneFromList = require('../../../redis/getOneFromList')
-const updateHashFieldArray = require('../../../redis/updateHashFieldArray')
+const updateHashFieldObject = require('../../../redis/updateHashFieldObject')
 const getValidSpawns = require('../../../utils/getValidSpawns')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 
@@ -28,39 +28,20 @@ module.exports = (spirit, discovery) => {
           parseInt(min, 10)
         )
 
-        const index = spirit.carrying
-          .map(carried => carried.id)
-          .indexOf(collectible.id)
 
-        if (index >= 0) {
-          update.push(
-            updateHashFieldArray(
-              spirit.instance,
-              'replace',
-              'carrying',
-              {
-                id: collectible.id,
-                type: collectible.type,
-                count: spirit.carrying[index].count + count
-              },
-              index
-            )
+        update.push(
+          updateHashFieldObject(
+            spirit.instance,
+            'add',
+            'carrying',
+            collectible.id,
+            {
+              type: collectible.type,
+              count: spirit.carrying[collectible.id].count ?
+                spirit.carrying[collectible.id].count + count : count
+            }
           )
-        }
-        else {
-          update.push(
-            updateHashFieldArray(
-              spirit.instance,
-              'add',
-              'carrying',
-              {
-                id: collectible.id,
-                type: collectible.type,
-                count: count
-              }
-            )
-          )
-        }
+        )
 
         inform.push(
           {

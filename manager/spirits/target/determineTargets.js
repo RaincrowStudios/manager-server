@@ -119,7 +119,11 @@ module.exports = (spirit) => {
 
         switch (targetCategory) {
           case 'discover':
-            if (spirit.carrying.length < spirit.maxCarry) {
+            if (
+              Object.keys(spirit.carrying).reduce((accumulator, carried) => {
+                return accumulator + carried.count
+              }, 0) < spirit.maxCarry
+            ) {
               resolve(['discover', spirit.actionTree[i].actions])
             }
             break
@@ -148,7 +152,11 @@ module.exports = (spirit) => {
             }
             break
           case 'collectible':
-            if (spirit.carrying.length < spirit.maxCarry) {
+            if (
+              Object.keys(spirit.carrying).reduce((accumulator, carried) => {
+                return accumulator + carried.count
+              }, 0) < spirit.maxCarry
+            ) {
               target = targetCollectibles(spirit, nearTargets, type)
             }
             break
