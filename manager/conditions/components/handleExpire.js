@@ -17,7 +17,7 @@ module.exports = (bearer, condition) => {
         const expireEnergy = resolveCondition(spell.condition.onExpiration)
 
         const [energyUpdate, energyInform] =
-          await adjustEnergy(bearer, expireEnergy, caster)
+          await adjustEnergy(bearer, expireEnergy, caster, spell.id)
 
           inform.unshift(
             {

@@ -51,7 +51,7 @@ async function conditionTrigger (conditionInstance) {
       )
 
       const [energyUpdate, energyInform] =
-        await adjustEnergy(bearer, total, caster)
+        await adjustEnergy(bearer, total, caster, spell.id)
 
       update.push(...energyUpdate)
       inform.push(...energyInform)

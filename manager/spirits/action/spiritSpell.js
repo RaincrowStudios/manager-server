@@ -125,7 +125,7 @@ module.exports = (spirit, target, spell) => {
         }
 
         const [energyUpdate, energyInform] =
-          await adjustEnergy(spirit, selfEnergy, spirit)
+          await adjustEnergy(spirit, selfEnergy, spirit, spell.id)
 
         update.push(...energyUpdate)
         inform.push(...energyInform)
@@ -136,14 +136,14 @@ module.exports = (spirit, target, spell) => {
             .filter(condition => condition.status === 'mary').length
         ) {
           const [targetEnergyUpdate, targetEnergyInform] =
-            await adjustEnergy(target, result.total * -1, spirit)
+            await adjustEnergy(target, result.total * -1, spirit, spell.id)
 
           update.push(...targetEnergyUpdate)
           inform.push(...targetEnergyInform)
         }
         else {
           const [targetEnergyUpdate, targetEnergyInform] =
-            await adjustEnergy(target, result.total, spirit)
+            await adjustEnergy(target, result.total, spirit, spell.id)
 
           update.push(...targetEnergyUpdate)
           inform.push(...targetEnergyInform)
