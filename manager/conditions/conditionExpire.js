@@ -45,6 +45,27 @@ module.exports = async (conditionInstance) => {
         )
       }
 
+      if (
+        condition.status === 'truesight' &&
+        !Object.value(bearer.conditions)
+          .filter(condition => condition.status === 'truesight').length
+      ) {
+        inform.push(
+          {
+            function: informNearbyPlayers,
+            parameters: [
+              bearer,
+              {
+                command: 'map_condition_remove',
+                instance: condition.bearer,
+                conditionInstance: conditionInstance
+              },
+              condition.hidden ? 1 : 0
+            ]
+          }
+        )
+      }
+
       console.log({
         event: 'condition_expire',
         condition: conditionInstance,
