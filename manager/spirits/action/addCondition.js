@@ -149,7 +149,8 @@ module.exports = (caster, target, spell) => {
           command: 'map_condition_add',
           instance: target.instance,
           conditionInstance: condition.instance,
-          condition: condition.id
+          condition: condition.id,
+          expiresOn: condition.expiresOn
         },
         spell.condition.hidden ? 1 : 0
       ]
