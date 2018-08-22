@@ -119,7 +119,6 @@ module.exports = (caster, target, spell) => {
             command: 'map_condition_remove',
             instance: target.instance,
             conditionInstance: oldConditions[0].instance,
-            condition: condition.id,
           },
           spell.condition.hidden ? 1 : 0
         ]
@@ -151,6 +150,7 @@ module.exports = (caster, target, spell) => {
           instance: target.instance,
           conditionInstance: condition.instance,
           condition: condition.id,
+          status: condition.status || '',
           expiresOn: condition.expiresOn
         },
         spell.condition.hidden ? 1 : 0
