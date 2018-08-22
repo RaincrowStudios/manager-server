@@ -51,7 +51,8 @@ module.exports = async (caster, target, spell) => {
             {
               command: 'map_condition_remove',
               instance: target.instance,
-              conditionInstance: dispellableConditions[index].instance
+              conditionInstance: dispellableConditions[index].instance,
+              condition: dispellableConditions[index].id
             }
           ]
         }

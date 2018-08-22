@@ -1,6 +1,10 @@
+const getEntriesFromList = require('../../redis/getEntriesFromList')
+const getNearbyFromGeohash = require('../../redis/getNearbyFromGeohash')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const informPlayers = require('../../utils/informPlayers')
 const handleExpire = require('./components/handleExpire')
 const deleteCondition = require('./deleteCondition')
 
@@ -37,7 +41,8 @@ module.exports = async (conditionInstance) => {
               {
                 command: 'map_condition_remove',
                 instance: condition.bearer,
-                conditionInstance: conditionInstance
+                conditionInstance: conditionInstance,
+                condition: condition.id,
               },
               condition.hidden ? 1 : 0
             ]
@@ -50,20 +55,53 @@ module.exports = async (conditionInstance) => {
         !Object.value(bearer.conditions)
           .filter(condition => condition.status === 'truesight').length
       ) {
-        inform.push(
-          {
-            function: informNearbyPlayers,
-            parameters: [
-              bearer,
-              {
-                command: 'map_condition_remove',
-                instance: condition.bearer,
-                conditionInstance: conditionInstance
-              },
-              condition.hidden ? 1 : 0
-            ]
-          }
+        const [displayRadius, displayCount] =
+          await getEntriesFromList(
+            'constants',
+            ['displayRadius', 'displayCount']
+          )
+
+        const [nearCharacters, nearSpirits] = await Promise.all(
+          getNearbyFromGeohash(
+            'characters',
+            bearer.latitude,
+            bearer.longitude,
+            displayRadius,
+            displayCount
+          ),
+          getNearbyFromGeohash(
+            'characters',
+            bearer.latitude,
+            bearer.longitude,
+            displayRadius,
+            displayCount
+          )
         )
+
+        const nearInstances = [...nearCharacters, ...nearSpirits]
+          .filter(instance => instance !== bearer.instance)
+
+        for (const instance of nearInstances) {
+          const conditions = await getOneFromHash(instance, 'conditions')
+
+          if (
+            Object.values(conditions)
+              .filter(condition => condition.status === 'invisible').length
+          ) {
+            inform.push(
+              {
+                function: informPlayers,
+                parameters: [
+                  [bearer.player],
+                  {
+                    command: 'map_token_remove',
+                    instance: instance
+                  }
+                ]
+              }
+            )
+          }
+        }
       }
 
       console.log({
