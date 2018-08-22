@@ -5,6 +5,7 @@ const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeFromList = require('../../redis/removeFromList')
 const removeHash = require('../../redis/removeHash')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const informLogger = require('../../utils/informLogger')
 const informPlayers = require('../../utils/informPlayers')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const generateNewCoordinates = require('./components/generateNewCoordinates')
@@ -69,6 +70,15 @@ module.exports = (idleTimerInstance) => {
           }
         ]
 
+        update.push(
+          informLogger({
+            route: 'popLeave',
+            pop_id: idleTimer.location,
+            character_id: character.instance,
+            boot: true
+          })
+        )
+
         await Promise.all(update)
 
         for (const informObject of inform) {
@@ -82,13 +92,6 @@ module.exports = (idleTimerInstance) => {
         clearTimeout(idleTimers.bootTimer)
         timers.remove(idleTimers)
       }
-
-      informLogger({
-        route: 'popLeave',
-        pop_id: idleTimer.location,
-        character_id: character.instance,
-        boot: true 
-      })
 
       resolve(true)
     }
