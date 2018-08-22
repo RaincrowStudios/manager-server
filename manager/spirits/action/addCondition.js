@@ -147,6 +147,8 @@ module.exports = (caster, target, spell) => {
         target,
         {
           command: 'map_condition_add',
+          caster: caster.id,
+          type: caster.type,
           instance: target.instance,
           conditionInstance: condition.instance,
           condition: condition.id,
