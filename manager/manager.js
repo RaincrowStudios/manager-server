@@ -5,7 +5,6 @@ const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
 const consumableAdd = require('./consumables/consumableAdd')
-const conditionDispel = require('./conditions/conditionDispel')
 const idleTimerAdd = require('./idleTimers/idleTimerAdd')
 const immunityAdd = require('./immunities/immunityAdd')
 const locationAdd = require('./locations/locationAdd')
@@ -34,9 +33,6 @@ async function manager(message) {
     let timersToClear
     const instanceManager = await getOneFromHash(message.instance, 'manager')
     switch (message.command) {
-      case 'dispel':
-        conditionDispel(message.instance)
-        break
       case 'remove':
         timersToClear = timers.by('instance', message.instance)
 
