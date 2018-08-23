@@ -11,6 +11,7 @@ const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
 const spiritAdd = require('./spirits/spiritAdd')
 const spiritDeath = require('./spirits/spiritDeath')
+const informLogger = require('../utils/informLogger')
 
 const addTimers = {
   collectible: collectibleAdd,
@@ -60,7 +61,14 @@ async function manager(message) {
     return true
   }
   catch (err) {
-    console.error(err)
+    console.error('ERROR!!!!', err)
+    
+    informLogger({
+      route: 'error',
+      error_code: err.message,
+      source: 'manager-server',
+      content: err.stack
+    })
   }
 }
 

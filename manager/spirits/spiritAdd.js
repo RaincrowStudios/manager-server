@@ -39,6 +39,7 @@ module.exports = (spiritInstance, spirit) => {
   timers.insert(timer)
   
   informLogger({
+    route: 'spiritSummon',
   	character_id: spirit.owner,
     spirit_id: spiritInstance,
     latitude: spirit.summonLat,

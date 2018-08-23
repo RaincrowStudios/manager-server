@@ -12,7 +12,6 @@ module.exports = (entity, energyChange, killer = {}) => {
       else if (typeof energyChange !== 'number' || isNaN(energyChange)) {
         throw new Error('Invalid energy: ' + energyChange)
       }
-
       const update = []
       const inform = []
 

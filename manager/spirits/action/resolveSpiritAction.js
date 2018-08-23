@@ -41,7 +41,7 @@ module.exports = (spirit) => {
           [target, action] = await handleConfusion(spirit)
         }
 
-        if (checkFizzle(spirit, target)) {
+        if (checkFizzle(spirit, target, action)) {
           if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
             update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
           }

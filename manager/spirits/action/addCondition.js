@@ -7,6 +7,7 @@ const conditionAdd = require('../../conditions/conditionAdd')
 const deleteCondition = require('../../conditions/deleteCondition')
 
 module.exports = (caster, target, spell) => {
+try {
   const currentTime = Date.now()
   const update = []
   const inform = []
@@ -105,6 +106,7 @@ module.exports = (caster, target, spell) => {
     (spell.condition.stackable &&
       oldConditions.length >= spell.condition.stackable)
   ) {
+console.log('here')
     update.push(
       deleteCondition(oldConditions[0].instance),
       updateHashFieldObject(
@@ -132,10 +134,11 @@ module.exports = (caster, target, spell) => {
     )
   }
 
+  conditionAdd(condition.instance, condition)
+
   update.push(
     addObjectToHash(condition.instance, condition),
     addToActiveSet('conditions', condition.instance),
-    conditionAdd(condition.instance, condition),
     updateHashFieldObject(
       target.instance,
       'add',
@@ -165,6 +168,7 @@ module.exports = (caster, target, spell) => {
       ]
     }
   )
-
+console.log('EEEEEEEEE', [update, inform])
   return [update, inform]
+} catch (err) {console.log(err)}
 }

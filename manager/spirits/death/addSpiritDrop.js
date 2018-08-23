@@ -27,7 +27,7 @@ module.exports = async (spirit) => {
           }
         }
 
-        ids.push(Object.keys(spirit.carrying))
+        ids.push(...Object.keys(spirit.carrying))
 
         const collectibles = await Promise.all(
           ids.map(id => getOneFromList('collectibles', id))

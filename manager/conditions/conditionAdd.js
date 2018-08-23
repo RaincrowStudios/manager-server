@@ -1,6 +1,7 @@
 const timers = require('../../database/timers')
 const conditionExpire = require('./conditionExpire')
 const conditionTrigger = require('./conditionTrigger')
+const informLogger = require('../../utils/informLogger')
 
 module.exports = (conditionInstance, condition) => {
   try {
@@ -32,5 +33,11 @@ module.exports = (conditionInstance, condition) => {
   }
   catch (err) {
     console.error(err)
+    informLogger({
+      route: 'error',
+      error_code: err.message,
+      source: 'manager-server',
+      content: err.stack
+    })
   }
 }
