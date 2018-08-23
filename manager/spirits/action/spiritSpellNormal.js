@@ -17,6 +17,8 @@ module.exports = (spirit, target, spell) => {
   }
 
   if (spell.condition) {
+ console.log('SPELL', spell.id)   
+  
     [update, inform] = addCondition(spirit, target, spell)
   }
 

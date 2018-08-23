@@ -4,6 +4,7 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const informLogger = require('../../utils/informLogger')
 const resolveCondition = require('./components/resolveCondition')
 const deleteCondition = require('./deleteCondition')
 

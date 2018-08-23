@@ -5,6 +5,7 @@ const getOneFromHash = require('../../redis/getOneFromHash')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
+const informLogger = require('../../utils/informLogger')
 const handleExpire = require('./components/handleExpire')
 const deleteCondition = require('./deleteCondition')
 
@@ -124,5 +125,11 @@ module.exports = async (conditionInstance) => {
   }
   catch (err) {
     console.error(err)
+    informLogger({
+      route: 'error',
+      error_code: err.message,
+      source: 'manager-server',
+      content: err.stack
+    })
   }
 }

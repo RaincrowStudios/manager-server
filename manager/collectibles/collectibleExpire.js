@@ -1,6 +1,7 @@
 const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromAll = require('../../redis/getAllFromHash')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const informLogger = require('../../utils/informLogger')
 
 module.exports = async (collectibleInstance) => {
   try {
@@ -40,5 +41,11 @@ module.exports = async (collectibleInstance) => {
   }
   catch (err) {
     console.error(err)
+    informLogger({
+      route: 'error',
+      error_code: err.message,
+      source: 'manager-server',
+      content: err.stack
+    })
   }
 }
