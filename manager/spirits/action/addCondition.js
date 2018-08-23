@@ -10,7 +10,7 @@ module.exports = (caster, target, spell) => {
   const currentTime = Date.now()
   const update = []
   const inform = []
-  let duration
+  let duration = 0
 
   target.conditions = target.conditions || {}
   if (typeof spell.condition.duration === 'string') {
@@ -49,7 +49,7 @@ module.exports = (caster, target, spell) => {
     caster: caster.instance,
     bearer: target.instance,
     createdOn: currentTime,
-    expiresOn: duration > 0 ? currentTime + (duration * 1000) : 0
+    expiresOn: duration ? currentTime + (duration * 1000) : 0
   }
 
   if (spell.condition.overTime) {
@@ -69,25 +69,30 @@ module.exports = (caster, target, spell) => {
     condition.tick = spell.condition.tick
   }
 
-  for (const modifier of spell.condition.modifiers) {
-    for (const keyValue of Object.entries(modifier)) {
-      if (keyValue[0] !== 'status' && typeof keyValue[1] === 'string') {
-        const parts = keyValue[1].split('*')
-        const mod = parts[0]
-        const subparts = parts[1].split(':')
+  if (spell.condition.modifiers) {
+    for (const modifier of spell.condition.modifiers) {
+      for (const keyValue of Object.entries(modifier)) {
+        if (keyValue[0] !== 'status' && typeof keyValue[1] === 'string') {
+          const parts = keyValue[1].split('*')
+          const mod = parts[0]
+          const subparts = parts[1].split(':')
 
-        let property
-        if (subparts[0] === 'caster') {
-          property = caster
-        }
-        else if (subparts[0] === 'target') {
-          property = target
-        }
+          let property
+          if (subparts[0] === 'caster') {
+            property = caster
+          }
+          else if (subparts[0] === 'target') {
+            property = target
+          }
 
-        condition[keyValue[0]] = mod * property[subparts[1]]
-      }
-      else {
-        condition[keyValue[0]] = keyValue[1]
+          condition[keyValue[0]] = condition[keyValue[0]] ?
+            condition[keyValue[0]] + (mod * property[subparts[1]]) :
+            mod * property[subparts[1]]
+        }
+        else {
+          condition[keyValue[0]] =  condition[keyValue[0]] ?
+            condition[keyValue[0]] + keyValue[1] : keyValue[1]
+        }
       }
     }
   }

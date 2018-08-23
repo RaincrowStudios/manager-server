@@ -5,7 +5,7 @@ const determineHeal = require('./determineHeal')
 module.exports = (spirit, target, spell) => {
   let update = []
   let inform = []
-  let total
+  let total = 0
 
   if (spell.range) {
     if (spell.range.includes('#')) {

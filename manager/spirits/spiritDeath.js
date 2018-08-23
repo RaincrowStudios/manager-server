@@ -2,6 +2,7 @@ const timers = require('../../database/timers')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const informLogger = require('../../utils/informLogger')
 const informPlayers = require('../../utils/informPlayers')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
@@ -91,15 +92,17 @@ module.exports = (entity, killer) => {
           timers.remove(spiritTimers)
         }
 
-        informLogger({
-          character_id: spirit.owner,
-          spirit_id: spirit.id,
-          latitude: spirit.latitude,
-          longitude: spirit.longitude,
-          killed_by: "",
-          attacker_id: killer.id,
-          spell_used: ""
-        })
+        update.push(
+          informLogger({
+            character_id: spirit.owner,
+            spirit_id: spirit.id,
+            latitude: spirit.latitude,
+            longitude: spirit.longitude,
+            killed_by: '',
+            attacker_id: killer.id,
+            spell_used: ''
+          })
+        )
 
         resolve([update, inform])
       }
