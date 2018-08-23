@@ -124,6 +124,7 @@ module.exports = (caster, target, spell) => {
             command: 'map_condition_remove',
             instance: target.instance,
             conditionInstance: oldConditions[0].instance,
+            status: oldConditions[0].status || '',
           },
           spell.condition.hidden ? 1 : 0
         ]
