@@ -79,9 +79,9 @@ module.exports = (spirit, target, spell) => {
                 casterInstance: spirit.instance,
                 caster: spirit.id,
                 targetInstance: target.instance,
-                target: target.id ? target.id : target.displayName,
+                target: target.displayName || target.id,
                 spell: spell.id,
-                base: spell.base ? spell.base : '',
+                base: spell.base || '',
                 result: result
               }
             ]

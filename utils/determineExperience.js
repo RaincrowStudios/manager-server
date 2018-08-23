@@ -6,7 +6,7 @@ module.exports = (
   caster = {},
   ingredients = []
 ) => {
-  let aptitude = caster.aptitude ? caster.aptitude : 0
+  let aptitude = caster.aptitude || 0
 
   let xp = target[xpMultipliers[category].base] * xpMultipliers[category].multiplier
 

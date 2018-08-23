@@ -23,8 +23,8 @@ module.exports = (entity, message, trueSightCheck = 0, exclude = []) => {
 
         const nearCharacters = await getNearbyFromGeohash(
           'characters',
-          entity.fuzzyLatitude ? entity.fuzzyLatitude : entity.latitude,
-          entity.fuzzyLongitude ? entity.fuzzyLongitude : entity.longitude,
+          entity.fuzzyLatitude || entity.latitude,
+          entity.fuzzyLongitude || entity.longitude,
           displayRadius
         )
 

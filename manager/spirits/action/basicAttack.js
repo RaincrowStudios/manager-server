@@ -70,7 +70,7 @@ module.exports = (spirit, target) => {
                 casterInstance: spirit.instance,
                 caster: spirit.id,
                 targetInstance: target.instance,
-                target: target.id ? target.id : target.displayName,
+                target: target.displayName || target.id,
                 spell: 'attack',
                 baseSpell: '',
                 result: {

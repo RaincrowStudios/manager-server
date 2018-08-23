@@ -24,14 +24,14 @@ module.exports = (entity, target, message, trueSightCheck = 0, exclude = []) => 
         const [nearCharacters1, nearCharacters2] = await Promise.all([
             getNearbyFromGeohash(
             'characters',
-            entity.fuzzyLatitude ? entity.fuzzyLatitude : entity.latitude,
-            entity.fuzzyLongitude ? entity.fuzzyLongitude : entity.longitude,
+            entity.fuzzyLatitude || entity.latitude,
+            entity.fuzzyLongitude || entity.longitude,
             displayRadius
           ),
           getNearbyFromGeohash(
             'characters',
-            target.fuzzyLatitude ? target.fuzzyLatitude : target.latitude,
-            target.fuzzyLongitude ? target.fuzzyLongitude : target.longitude,
+            target.fuzzyLatitude || target.latitude,
+            target.fuzzyLongitude || target.longitude,
             displayRadius
           )
         ])

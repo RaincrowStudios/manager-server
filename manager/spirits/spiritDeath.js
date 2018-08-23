@@ -62,9 +62,9 @@ module.exports = (entity, killer) => {
                 command: 'character_spirit_banished',
                 instance: spirit.instance,
                 spirit: spirit.id,
-                killer: killer.id ? killer.id : killer.displayName,
+                killer: killer.displayName || killer.id,
                 type: killer.type,
-                owner: killer.owner ? killer.owner : ''
+                owner: killer.owner || ''
               }
             ]
           }

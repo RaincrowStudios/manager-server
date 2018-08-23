@@ -57,8 +57,8 @@ module.exports = (spirit) => {
                   caster: spirit.id,
                   targetInstance: '',
                   target: '',
-                  spell: action.id ? action.id : action,
-                  baseSpell: action.base ? action.base :  '',
+                  spell: action.id || action,
+                  baseSpell: action.base ||  '',
                   result: {
                     total: 0,
                     critical: false,
@@ -87,8 +87,8 @@ module.exports = (spirit) => {
                   caster: spirit.id,
                   targetInstance: '',
                   target: '',
-                  spell: action.id ? action.id : action,
-                  baseSpell: action.base ? action.base :  '',
+                  spell: action.id || action,
+                  baseSpell: action.base ||  '',
                   result: {
                     total: 0,
                     critical: false,

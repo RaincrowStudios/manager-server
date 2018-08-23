@@ -12,7 +12,7 @@ module.exports = (caster, target, spell) => {
   const inform = []
   let duration
 
-  target.conditions = target.conditions ? target.conditions : []
+  target.conditions = target.conditions || {}
   if (typeof spell.condition.duration === 'string') {
     if (spell.condition.duration.includes('-')) {
       const range = spell.condition.duration.split('-')
