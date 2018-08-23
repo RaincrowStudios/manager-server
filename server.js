@@ -21,7 +21,10 @@ startup()
 
 const server = net.createServer(socket => {
   socket.on('data', data => {
+    console.log('=============================================================')
     console.log(data)
+    console.log(JSON.parse(data))
+    console.log('=============================================================')
     manager(JSON.parse(data))
   })
 
