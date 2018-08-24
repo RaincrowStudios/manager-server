@@ -86,7 +86,7 @@ module.exports = async (portalInstance) => {
             portal,
             {
               command: 'map_token_add',
-              token: createMapToken(spirit.instance, spirit)
+              token: createMapToken(spirit)
             },
             Object.values(spirit.conditions)
               .filter(condition => condition.status === 'invisible').length ?
@@ -169,7 +169,7 @@ module.exports = async (portalInstance) => {
           }
         )
       }
-      
+
       inform.push(
         {
           function: informNearbyPlayers,

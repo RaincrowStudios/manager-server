@@ -105,16 +105,27 @@ module.exports = (caster, target, spell) => {
     (spell.condition.stackable &&
       oldConditions.length >= spell.condition.stackable)
   ) {
+    let oldestCondition
+    for (const oldCondition of oldConditions) {
+      if (!oldestCondition) {
+        oldestCondition = oldCondition
+      }
+      else if (oldCondition.createdOn < oldestCondition.createdOn) {
+        oldestCondition = oldCondition
+      }
+    }
 
     update.push(
-      deleteCondition(oldConditions[0].instance),
+      deleteCondition(oldestCondition.instance),
       updateHashFieldObject(
         target.instance,
         'remove',
         'conditions',
-        oldConditions[0].instance
+        oldestCondition.instance
       )
     )
+
+    delete target.conditions[oldestCondition.instance]
 
     inform.push(
       {
@@ -124,8 +135,8 @@ module.exports = (caster, target, spell) => {
           {
             command: 'map_condition_remove',
             instance: target.instance,
-            conditionInstance: oldConditions[0].instance,
-            status: oldConditions[0].status || '',
+            conditionInstance: oldestCondition.instance,
+            status: oldestCondition.status || '',
           },
           spell.condition.hidden ? 1 : 0
         ]
@@ -167,6 +178,8 @@ module.exports = (caster, target, spell) => {
       ]
     }
   )
+
+  target.conditions[condition.instance] = condition
 
   return [update, inform]
 }

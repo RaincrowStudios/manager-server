@@ -36,10 +36,9 @@ async function manager(message) {
     switch (message.command) {
       case 'remove':
         timersToClear = timers.by('instance', message.instance)
-
         if (timersToClear) {
           for (const key of Object.keys(timersToClear)) {
-            if (key !== 'instance') {
+            if (key !== 'meta' && typeof timersToClear[key] === 'object') {
               clearTimeout(timersToClear[key])
             }
           }
@@ -62,7 +61,7 @@ async function manager(message) {
   }
   catch (err) {
     console.error('ERROR!!!!', err)
-    
+
     informLogger({
       route: 'error',
       error_code: err.message,
