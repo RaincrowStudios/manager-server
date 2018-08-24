@@ -1,10 +1,16 @@
 module.exports = (spirit, target, range) => {
-  const [min, max] = range.split('-')
+  let total
+  if (typeof range === 'number') {
+    total = range
+  }
+  else {
+    const [min, max] = range.split('-')
 
-  let total = Math.floor(
-    Math.random() *
-    (parseInt(max, 10) - parseInt(min, 10) + 1) + parseInt(min, 10)
-  )
+    total = Math.floor(
+      Math.random() *
+      (parseInt(max, 10) - parseInt(min, 10) + 1) + parseInt(min, 10)
+    )
+  }
 
   let power = parseInt(spirit.power, 10)
   let resilience = parseInt(target.resilience, 10)
