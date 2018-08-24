@@ -27,7 +27,7 @@ module.exports = (spirit) => {
               longitude: newCoords[1]
             },
             {
-              command: 'map_spirit_move',
+              command: 'map_token_move',
               token: createMapToken(spirit)
             },
             Object.values(spirit.conditions)
