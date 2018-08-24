@@ -16,10 +16,9 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
       .filter(target => {
         for (const targetingCondition of targetingConditions) {
           if (
-            target.conditions &&
-            target.conditions
-              .map(condition => condition.id)
-              .includes(targetingCondition)
+            Object.values(target.conditions) &&
+            Object.values(target.conditions)
+              .filter(condition => condition.id === targetingCondition)[0]
           ) {
             return true
           }
