@@ -94,6 +94,7 @@ module.exports = (entity, killer) => {
 
         update.push(
           informLogger({
+            route: 'spiritExit',
             character_id: spirit.owner,
             spirit_id: spirit.id,
             latitude: spirit.latitude,
