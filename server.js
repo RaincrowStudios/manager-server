@@ -21,11 +21,11 @@ startup()
 
 const server = net.createServer(socket => {
   socket.on('data', data => {
-    console.log('=============================================================')
-    console.log(data)
-    console.log(JSON.parse(data))
-    console.log('=============================================================')
-    manager(JSON.parse(data))
+    const messages = data.toString().split('$%$%').filter(message => message)
+
+    for (const message of messages) {
+      manager(JSON.parse(message))
+    }
   })
 
   socket.on('error', err => {
