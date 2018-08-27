@@ -66,7 +66,7 @@ async function spiritAction(spiritInstance) {
     return true
   }
   catch (err) {
-    console.leg(spirit.id)
+    console.error(spiritInstance)
     console.error(err)
     informLogger({
       route: 'error',
