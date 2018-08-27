@@ -13,8 +13,13 @@ module.exports = (latitude, longitude) => {
         '&key=' +
         key.google
       )
+
+      console.log(address.data.results)
+
       const country = address.data.results
         .filter(result => result.types.includes('country'))[0]
+
+      console.log(country)
 
       if (country) {
         const code = country.address_components[0].short_name.toLowerCase()
@@ -26,7 +31,7 @@ module.exports = (latitude, longitude) => {
         }
       }
       else {
-        resolve (false)
+        resolve(false)
       }
     }
     catch (err) {

@@ -12,57 +12,58 @@ module.exports = (spirit, discovery) => {
 
       const spawnList = await getValidSpawns(spirit.latitude, spirit.longitude)
 
-      console.log(spawnList)
+      if (spawnList) {
+        const discoveryPool =
+          spawnList[discovery.type + 's'][parseInt(discovery.rarity, 10)]
 
-      const discoveryPool = spawnList[discovery.type + 's'][parseInt(discovery.rarity, 10)]
+        if (discoveryPool && discoveryPool.length) {
+          collectible = discoveryPool[
+            Math.floor(Math.random() * discoveryPool.length)
+          ]
 
-      if (discoveryPool && discoveryPool.length) {
-        collectible = discoveryPool[
-          Math.floor(Math.random() * discoveryPool.length)
-        ]
+          collectible = await getOneFromList('collectibles', collectible.id)
 
-        collectible = await getOneFromList('collectibles', collectible.id)
+          const [min, max] = collectible.range.split('-')
 
-        const [min, max] = collectible.range.split('-')
-
-        const count = Math.floor(
-          Math.random() * (parseInt(max, 10) - parseInt(min, 10) + 1) +
-          parseInt(min, 10)
-        )
+          const count = Math.floor(
+            Math.random() * (parseInt(max, 10) - parseInt(min, 10) + 1) +
+            parseInt(min, 10)
+          )
 
 
-        update.push(
-          updateHashFieldObject(
-            spirit.instance,
-            'add',
-            'carrying',
-            collectible.id,
+          update.push(
+            updateHashFieldObject(
+              spirit.instance,
+              'add',
+              'carrying',
+              collectible.id,
+              {
+                type: collectible.type,
+                count: spirit.carrying[collectible.id].count ?
+                  spirit.carrying[collectible.id].count + count : count
+              }
+            )
+          )
+
+          inform.push(
             {
-              type: collectible.type,
-              count: spirit.carrying[collectible.id].count ?
-                spirit.carrying[collectible.id].count + count : count
+              function: informNearbyPlayers,
+              parameters: [
+                spirit,
+                {
+                  command: 'map_spell_cast',
+                  casterInstance: spirit.instance,
+                  caster: spirit.id,
+                  targetInstance: '',
+                  target: '',
+                  spell: 'discover',
+                  baseSpell: '',
+                  result: discovery.type
+                }
+              ]
             }
           )
-        )
-
-        inform.push(
-          {
-            function: informNearbyPlayers,
-            parameters: [
-              spirit,
-              {
-                command: 'map_spell_cast',
-                casterInstance: spirit.instance,
-                caster: spirit.id,
-                targetInstance: '',
-                target: '',
-                spell: 'discover',
-                baseSpell: '',
-                result: discovery.type
-              }
-            ]
-          }
-        )
+        }
       }
 
       resolve([update, inform])
