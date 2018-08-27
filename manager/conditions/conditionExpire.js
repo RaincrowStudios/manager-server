@@ -105,12 +105,6 @@ module.exports = async (conditionInstance) => {
         }
       }
 
-      console.log({
-        event: 'condition_expire',
-        condition: conditionInstance,
-        bearer: bearer.instance
-      })
-
       await Promise.all(update)
 
       for (const informObject of inform) {
