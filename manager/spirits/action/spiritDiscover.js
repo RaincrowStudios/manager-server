@@ -12,6 +12,8 @@ module.exports = (spirit, discovery) => {
 
       const spawnList = await getValidSpawns(spirit.latitude, spirit.longitude)
 
+      console.log(spawnList)
+
       const discoveryPool = spawnList[discovery.type + 's'][parseInt(discovery.rarity, 10)]
 
       if (discoveryPool && discoveryPool.length) {
