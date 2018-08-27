@@ -21,7 +21,7 @@ module.exports = (spirit) => {
 
       if (target) {
         let action = determineAction(actions)
-        if (target === 'discover') {
+        if (target === 'discover' && action) {
           const [interimUpdate, interimInform] =
             await spiritDiscover(spirit, action)
 
