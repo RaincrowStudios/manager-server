@@ -66,6 +66,7 @@ module.exports = (spirit, discovery) => {
       resolve([update, inform])
     }
     catch (err) {
+      console.error(discovery)
       reject(err)
     }
   })

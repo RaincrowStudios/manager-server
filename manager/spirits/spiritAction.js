@@ -3,6 +3,7 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashField = require('../../redis/updateHashField')
+const informLogger = require('../../utils/informLogger')
 const resolveSpiritAction = require('./action/resolveSpiritAction')
 
 async function spiritAction(spiritInstance) {
@@ -65,7 +66,14 @@ async function spiritAction(spiritInstance) {
     return true
   }
   catch (err) {
+    console.leg(spirit.id)
     console.error(err)
+    informLogger({
+      route: 'error',
+      error_code: err.message,
+      source: 'manager-server',
+      content: err.stack
+    })
   }
 }
 
