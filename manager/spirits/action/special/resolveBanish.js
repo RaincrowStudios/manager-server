@@ -1,6 +1,6 @@
 const informPlayers = require('../../../../utils/informPlayers')
 
-module.exports = (caster, target) => {
+module.exports = (target) => {
   return new Promise(async (resolve, reject) => {
     try {
       const total = 0
@@ -12,9 +12,9 @@ module.exports = (caster, target) => {
       const longitude = (Math.random() > 0.5 ? 1 : -1) *
         Math.floor(Math.random() * 180)  + Math.random()
 
-      
+
       const inform = [{
-        function: informPlayers, 
+        function: informPlayers,
           parameters: [
           [target.player],
           {

@@ -7,7 +7,7 @@ const informNearbyPlayers = require('../../../../utils/informNearbyPlayers')
 const informPlayers = require('../../../../utils/informPlayers')
 const deleteCondition = require('../../../conditions/deleteCondition')
 
-module.exports = async (caster, target, spell) => {
+module.exports = async (target, spell) => {
   const total = 0
   const update = []
   const inform = []
