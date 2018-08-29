@@ -34,12 +34,15 @@ function initializeConditions(id, managers) {
                   )
                 }
 
-              const triggerTimer =
-                setTimeout(() =>
-                  conditionTrigger(conditions[i]),
-                  condition.triggerOn > currentTime ?
-                    condition.triggerOn - currentTime : 0
-                )
+              let triggerTimer
+              if (condition.triggerOn) {
+                triggerTimer =
+                  setTimeout(() =>
+                    conditionTrigger(conditions[i]),
+                    condition.triggerOn > currentTime ?
+                      condition.triggerOn - currentTime : 0
+                  )
+              }
 
               const previousTimers = timers.by('instance', conditions[i])
               if (previousTimers) {

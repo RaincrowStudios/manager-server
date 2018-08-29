@@ -19,11 +19,13 @@ async function initializeSpirits(id, managers) {
             const currentTime = Date.now()
             const spirit = await getAllFromHash(spirits[i])
 
-            if (!managers.includes(spirit.manager)) {
+            if (!spirit) {
+              spiritExpire(spirits[i])
+            }
+            else if (!managers.includes(spirit.manager)) {
               await addFieldToHash(spirits[i], 'manager', id)
 
-              if (!spirit ||
-                spirit.expiresOn !== 0 && spirit.expiresOn < currentTime) {
+              if (spirit.expiresOn !== 0 && spirit.expiresOn < currentTime) {
                 spiritExpire(spirits[i])
               }
               else if (spirit.energy <= 0) {
