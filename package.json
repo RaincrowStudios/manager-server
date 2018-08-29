@@ -18,12 +18,12 @@
     "lured": "^1.0.3",
     "ping": "^0.2.2",
     "redis": "^2.8.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
     "eslint": "^4.19.1",
     "eslint-plugin-node": "^6.0.1",
-    "nodemon": "^1.17.5"
+    "nodemon": "^1.18.3"
   }
 }
