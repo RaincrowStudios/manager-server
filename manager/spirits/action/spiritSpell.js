@@ -142,7 +142,7 @@ module.exports = (spirit, target, spell) => {
         }
         else {
           const [targetEnergyUpdate, targetEnergyInform] =
-            await adjustEnergy(target, result.total, spirit, spell.id)
+            await adjustEnergy(target, result.total, spirit)
 
           update.push(...targetEnergyUpdate)
           inform.push(...targetEnergyInform)

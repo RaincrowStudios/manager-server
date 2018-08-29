@@ -39,7 +39,7 @@ module.exports = (spirit, discovery) => {
               collectible.id,
               {
                 type: collectible.type,
-                count: spirit.carrying[collectible.id].count ?
+                count: spirit.carrying[collectible.id] ?
                   spirit.carrying[collectible.id].count + count : count
               }
             )
@@ -69,7 +69,6 @@ module.exports = (spirit, discovery) => {
       resolve([update, inform])
     }
     catch (err) {
-      console.error(discovery)
       reject(err)
     }
   })

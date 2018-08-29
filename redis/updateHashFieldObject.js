@@ -14,7 +14,7 @@ module.exports = (instance, command, field, key, value = {}) => {
         throw new Error('Invalid field: ' + field)
       }
       else if (!key || typeof key !== 'string') {
-        throw new Error('Invalid value: ' + key)
+        throw new Error('Invalid key: ' + key)
       }
       else if (value === undefined) {
         throw new Error('Invalid value: ' + value)

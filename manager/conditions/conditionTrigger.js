@@ -27,12 +27,10 @@ async function conditionTrigger (conditionInstance) {
         return true
       }
 
-      let caster, spell = ''
-      if (condition.caster) {
-        [caster, spell] = await Promise.all([
-          getAllFromHash(condition.caster),
-          getOneFromList('spells', condition.id)
-        ])
+      const spell = await getOneFromList('spells', condition.id)
+
+      if (!spell.condition.overTime) {
+        console.log(condition.id)
       }
 
       const total = resolveCondition(spell.condition.overTime)
@@ -52,7 +50,7 @@ async function conditionTrigger (conditionInstance) {
       )
 
       const [energyUpdate, energyInform] =
-        await adjustEnergy(bearer, total, caster, spell.id)
+        await adjustEnergy(bearer, total, condition)
 
       update.push(...energyUpdate)
       inform.push(...energyInform)

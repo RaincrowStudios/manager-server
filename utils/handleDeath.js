@@ -2,6 +2,7 @@ const deleteAllConditions = require('../manager/conditions/deleteAllConditions')
 const portalDestroy = require('../manager/portals/portalDestroy')
 const spiritDeath = require('../manager/spirits/spiritDeath')
 const updateHashFieldObject = require('../redis/updateHashFieldObject')
+const informPlayers = require('./informPlayers')
 
 module.exports = (target, killer) => {
   return new Promise(async (resolve, reject) => {
@@ -34,7 +35,22 @@ module.exports = (target, killer) => {
         }
 
         update.push(
-          deleteAllConditions(target.conditions)
+          deleteAllConditions(Object.values(target.conditions))
+        )
+
+        inform.push(
+          {
+            function: informPlayers,
+            parameters: [
+              [target.player],
+              {
+                command: 'character_death',
+                displayName: target.displayName,
+                spirit: killer.caster ? killer.caster.spirit : killer.id,
+                spell: killer.caster ? killer.id : ''
+              }
+            ]
+          }
         )
       }
 

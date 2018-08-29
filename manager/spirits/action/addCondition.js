@@ -6,7 +6,7 @@ const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const conditionAdd = require('../../conditions/conditionAdd')
 const deleteCondition = require('../../conditions/deleteCondition')
 
-module.exports = (caster, target, spell) => {
+module.exports = (spirit, target, spell) => {
   const currentTime = Date.now()
   const update = []
   const inform = []
@@ -27,7 +27,7 @@ module.exports = (caster, target, spell) => {
 
       let property
       if (subparts[0] === 'caster') {
-        property = caster
+        property = spirit
       }
       else if (subparts[0] === 'target') {
         property = target
@@ -46,7 +46,11 @@ module.exports = (caster, target, spell) => {
   const condition = {
     instance: createInstanceId(),
     id: spell.id,
-    caster: caster.instance,
+    caster: {
+      instance: spirit.instance,
+      spirit: spirit.id,
+      ownerDisplay: spirit.owner || ''
+    },
     bearer: target.instance,
     createdOn: currentTime,
     expiresOn: duration ? currentTime + (duration * 1000) : 0
@@ -79,7 +83,7 @@ module.exports = (caster, target, spell) => {
 
           let property
           if (subparts[0] === 'caster') {
-            property = caster
+            property = spirit
           }
           else if (subparts[0] === 'target') {
             property = target
@@ -166,8 +170,8 @@ module.exports = (caster, target, spell) => {
         target,
         {
           command: 'map_condition_add',
-          caster: caster.id,
-          type: caster.type,
+          caster: spirit.id,
+          type: spirit.type,
           instance: target.instance,
           conditionInstance: condition.instance,
           condition: condition.id,
