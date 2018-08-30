@@ -51,7 +51,7 @@ async function manager(message) {
         break
       case 'death':
         if (instanceManager === process.env.INSTANCE_ID) {
-          deathTimers[message.type](message.instance, message.killer)
+          deathTimers[message.type](message.entity, message.killer)
         }
         break
       default:
