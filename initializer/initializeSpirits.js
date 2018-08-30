@@ -53,10 +53,10 @@ async function initializeSpirits(id, managers) {
                     )
                   }
 
-                  spiritDeath(spirit, killer)
+                  await spiritDeath(spirit, killer)
                 }
                 else {
-                  spiritExpire(spirits[i])
+                  await spiritExpire(spirits[i])
                 }
               }
               else {

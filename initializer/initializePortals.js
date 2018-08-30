@@ -15,22 +15,27 @@ async function initializePortals(id, managers) {
           const currentTime = Date.now()
           const portal = await getAllFromHash(portals[i])
 
-          if (!managers.includes(portal.manager)) {
-            await addFieldToHash(portals[i], 'manager', id)
+          if (portal) {
+            if (!managers.includes(portal.manager)) {
+              await addFieldToHash(portals[i], 'manager', id)
 
-            if (portal && portal.energy > 0) {
-              const summonTimer =
-                setTimeout(() =>
-                  portalSummon(portals[i]),
-                  portal.summonOn > currentTime ?
-                    portal.summonOn - currentTime : 0
-                )
+              if (portal.energy > 0) {
+                const summonTimer =
+                  setTimeout(() =>
+                    portalSummon(portals[i]),
+                    portal.summonOn > currentTime ?
+                      portal.summonOn - currentTime : 0
+                  )
 
-              timers.insert({instance: portals[i], summonTimer})
+                timers.insert({instance: portals[i], summonTimer})
+              }
+              else {
+                portalDelete(portals[i])
+              }
             }
-            else {
-              portalDelete(portals[i])
-            }
+          }
+          else {
+            portalDelete(portals[i])
           }
         }
       }
