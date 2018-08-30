@@ -1,12 +1,20 @@
+const getOneFromList = require('../../../redis/getOneFromList')
 const removeFromAll = require('../../../redis/removeFromAll')
 const updateHashFieldObject = require('../../../redis/updateHashFieldObject')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 
-module.exports = (spirit, collectible) => {
+module.exports = (spirit, collectibleInstanceInfo) => {
   return new Promise(async (resolve, reject) => {
     try {
       const update = []
       const inform = []
+
+      const collectibleInfo =
+        await getOneFromList('collectibles', collectibleInstanceInfo.id)
+
+      const collectible = Object.assign(
+        {}, collectibleInfo, collectibleInstanceInfo
+      )
 
       const [min, max] = collectible.range.split('-')
 
@@ -24,7 +32,7 @@ module.exports = (spirit, collectible) => {
           collectible.id,
           {
             type: collectible.type,
-            count: spirit.carrying[collectible.id].count ?
+            count: spirit.carrying[collectible.id] ?
               spirit.carrying[collectible.id].count + count : count
           }
         )
@@ -49,7 +57,7 @@ module.exports = (spirit, collectible) => {
               command: 'map_spell_cast',
               casterInstance: spirit.instance,
               caster: spirit.id,
-              targetInstance: '',
+              targetInstance: collectible.instance,
               target: '',
               spell: 'collect',
               baseSpell: '',

@@ -29,102 +29,104 @@ module.exports = (spirit) => {
           inform.push(...interimInform)
         }
         else if (action) {
-          if (target.type === 'spirit') {
-            const spiritInfo = await getOneFromList('spirits', target.id)
-            target = Object.assign({}, spiritInfo, target)
-          }
+          if (action === 'collect') {
+            const [interimUpdate, interimInform] =
+              await spiritCollect(spirit, target)
 
-          if (
-            spirit.conditions &&
-            Object.values(spirit.conditions)
-              .filter(condition => condition.status === 'confused').length
-          ) {
-            [target, action] = await handleConfusion(spirit)
-          }
-
-          if (checkFizzle(spirit, target, action)) {
-            if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
-              update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
-            }
-
-            inform.unshift(
-              {
-                function: informNearbyPlayers,
-                parameters: [
-                  spirit,
-                  {
-                    command: 'map_spell_cast',
-                    casterInstance: spirit.instance,
-                    caster: spirit.id,
-                    targetInstance: '',
-                    target: '',
-                    spell: action.id || action,
-                    baseSpell: action.base ||  '',
-                    result: {
-                      total: 0,
-                      critical: false,
-                      reflected: 0,
-                      effect: 'fizzle',
-                      xpGain: 0
-                    }
-                  }
-                ]
-              }
-            )
-          }
-          else if (!checkSuccess(spirit, target)) {
-            if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
-              update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
-            }
-
-            inform.unshift(
-              {
-                function: informNearbyPlayers,
-                parameters: [
-                  spirit,
-                  {
-                    command: 'map_spell_cast',
-                    casterInstance: spirit.instance,
-                    caster: spirit.id,
-                    targetInstance: '',
-                    target: '',
-                    spell: action.id || action,
-                    baseSpell: action.base ||  '',
-                    result: {
-                      total: 0,
-                      critical: false,
-                      reflected: 0,
-                      effect: 'fail',
-                      xpGain: 0
-                    }
-                  }
-                ]
-              }
-            )
+            update.push(...interimUpdate)
+            inform.push(...interimInform)
           }
           else {
-            if (action === 'attack') {
-              const [interimUpdate, interimInform] =
-                await basicAttack(spirit, target)
-
-              update.push(...interimUpdate)
-              inform.push(...interimInform)
+            if (target.type === 'spirit') {
+              const spiritInfo = await getOneFromList('spirits', target.id)
+              target = Object.assign({}, spiritInfo, target)
             }
-            else if (action === 'collect') {
-              const [interimUpdate, interimInform] =
-                await spiritCollect(spirit, target)
 
-              update.push(...interimUpdate)
-              inform.push(...interimInform)
+            if (
+              spirit.conditions &&
+              Object.values(spirit.conditions)
+                .filter(condition => condition.status === 'confused').length
+            ) {
+              [target, action] = await handleConfusion(spirit)
+            }
+
+            if (checkFizzle(spirit, target, action)) {
+              if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
+                update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
+              }
+
+              inform.unshift(
+                {
+                  function: informNearbyPlayers,
+                  parameters: [
+                    spirit,
+                    {
+                      command: 'map_spell_cast',
+                      casterInstance: spirit.instance,
+                      caster: spirit.id,
+                      targetInstance: '',
+                      target: '',
+                      spell: action.id || action,
+                      baseSpell: action.base ||  '',
+                      result: {
+                        total: 0,
+                        critical: false,
+                        reflected: 0,
+                        effect: 'fizzle',
+                        xpGain: 0
+                      }
+                    }
+                  ]
+                }
+              )
+            }
+            else if (!checkSuccess(spirit, target)) {
+              if (spirit.attributes && spirit.attributes.includes('bloodlust')) {
+                update.push(addFieldToHash(spirit.instance, 'bloodlustCount', 0))
+              }
+
+              inform.unshift(
+                {
+                  function: informNearbyPlayers,
+                  parameters: [
+                    spirit,
+                    {
+                      command: 'map_spell_cast',
+                      casterInstance: spirit.instance,
+                      caster: spirit.id,
+                      targetInstance: '',
+                      target: '',
+                      spell: action.id || action,
+                      baseSpell: action.base ||  '',
+                      result: {
+                        total: 0,
+                        critical: false,
+                        reflected: 0,
+                        effect: 'fail',
+                        xpGain: 0
+                      }
+                    }
+                  ]
+                }
+              )
             }
             else {
-              const spell = await getOneFromList('spells', action)
+              if (action === 'attack') {
+                const [interimUpdate, interimInform] =
+                  await basicAttack(spirit, target)
 
-              const [interimUpdate, interimInform] =
-                await spiritSpell(spirit, target, spell)
+                update.push(...interimUpdate)
+                inform.push(...interimInform)
+              }
+              else {
+                const spell = await getOneFromList('spells', action)
 
-              update.push(...interimUpdate)
-              inform.push(...interimInform)
+                const [interimUpdate, interimInform] =
+                  await spiritSpell(spirit, target, spell)
+
+                update.push(...interimUpdate)
+                inform.push(...interimInform)
+              }
             }
           }
         }
