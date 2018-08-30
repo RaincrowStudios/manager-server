@@ -29,6 +29,7 @@ module.exports = async (portalInstance) => {
         { instance: createInstanceId() }
       )
 
+      spirit.manager = process.env.INSTANCE_ID
       spirit.summonLat = portal.latitude
       spirit.summonLong = portal.longitude
       spirit.latitude = portal.latitude
@@ -80,6 +81,16 @@ module.exports = async (portalInstance) => {
       )
 
       const inform = [
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            portal,
+            {
+              command: 'map_portal_summon',
+              instance: portalInstance
+            }
+          ]
+        },
         {
           function: informNearbyPlayers,
           parameters: [
@@ -169,19 +180,6 @@ module.exports = async (portalInstance) => {
           }
         )
       }
-
-      inform.push(
-        {
-          function: informNearbyPlayers,
-          parameters: [
-            portal,
-            {
-              command: 'map_token_remove',
-              instance: portalInstance
-            }
-          ]
-        }
-      )
 
       update.push(spiritAdd(spirit.instance, spirit))
 
