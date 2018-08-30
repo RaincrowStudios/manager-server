@@ -1,7 +1,8 @@
 const getOneFromList = require('../../../redis/getOneFromList')
 const removeFromAll = require('../../../redis/removeFromAll')
 const updateHashFieldObject = require('../../../redis/updateHashFieldObject')
-const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
+const informNearbyPlayersUnion =
+  require('../../../utils/informNearbyPlayersUnion')
 
 module.exports = (spirit, collectibleInstanceInfo) => {
   return new Promise(async (resolve, reject) => {
@@ -40,28 +41,14 @@ module.exports = (spirit, collectibleInstanceInfo) => {
 
       inform.push(
         {
-          function: informNearbyPlayers,
-          parameters: [
-            collectible,
-            {
-              command: 'map_token_remove',
-              instance: collectible.instance
-            }
-          ]
-        },
-        {
-          function: informNearbyPlayers,
+          function: informNearbyPlayersUnion,
           parameters: [
             spirit,
+            collectible,
             {
-              command: 'map_spell_cast',
-              casterInstance: spirit.instance,
-              caster: spirit.id,
-              targetInstance: collectible.instance,
-              target: '',
-              spell: 'collect',
-              baseSpell: '',
-              result: collectible.type
+              command: 'map_spirit_collect',
+              instance: spirit.instance,
+              collectible: collectible.instance
             }
           ]
         }
