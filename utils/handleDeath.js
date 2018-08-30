@@ -9,13 +9,9 @@ module.exports = (target, killer) => {
     try {
       const update = []
       const inform = []
-      let interimUpdate, interimInform
 
       if (target.type === 'spirit') {
-        [interimUpdate, interimInform] = await spiritDeath(target, killer)
-
-        update.push(...interimUpdate)
-        inform.push(...interimInform)
+        await spiritDeath(target, killer)
       }
       else if (target.type === 'portal') {
         update.push(portalDestroy(target, killer))

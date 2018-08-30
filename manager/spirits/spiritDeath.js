@@ -15,9 +15,9 @@ module.exports = (entity, killer) => {
       const update = []
       const inform = []
 
-      const spiritInfo = await getOneFromList('spirits', entity.id)
+      const spiritTemplate = await getOneFromList('spirits', entity.id)
       const spirit = Object.assign(
-        {}, spiritInfo, entity
+        {}, spiritTemplate, entity
       )
 
       if (spirit.location) {
@@ -108,7 +108,14 @@ module.exports = (entity, killer) => {
           })
         )
 
-        resolve([update, inform])
+        await Promise.all(update)
+
+        for (const informObject of inform) {
+          const informFunction = informObject.function
+          await informFunction(...informObject.parameters)
+        }
+
+        resolve(true)
       }
     }
     catch (err) {
