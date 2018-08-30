@@ -44,6 +44,7 @@ module.exports = (spirit, target, spell) => {
   duration = parseInt(duration, 10)
 
   const condition = {
+    manager: process.env.INSTANCE_ID,
     instance: createInstanceId(),
     id: spell.id,
     caster: {
