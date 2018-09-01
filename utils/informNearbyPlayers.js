@@ -13,9 +13,9 @@ module.exports = (entity, message, trueSightCheck = 0, exclude = []) => {
         const occupants = await getOneFromHash(entity.location, 'occupants')
 
         playersToInform = await Promise.all(
-          occupants
-            .filter(occupant => !exclude.includes(occupant.instance))
-            .map(occupant => getFieldsFromHash(occupant.instance, ['player', 'conditions']))
+          Object.keys(occupants)
+            .filter(instance => !exclude.includes(instance))
+            .map(instance => getFieldsFromHash(instance, ['player', 'conditions']))
         )
       }
       else {

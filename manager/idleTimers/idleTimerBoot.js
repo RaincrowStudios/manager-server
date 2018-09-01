@@ -5,10 +5,10 @@ const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeFromList = require('../../redis/removeFromList')
 const removeHash = require('../../redis/removeHash')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const generateNewCoordinates = require('../../utils/generateNewCoordinates')
 const informLogger = require('../../utils/informLogger')
 const informPlayers = require('../../utils/informPlayers')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
-const generateNewCoordinates = require('./components/generateNewCoordinates')
 
 module.exports = (idleTimerInstance) => {
   return new Promise(async (resolve, reject) => {
@@ -17,8 +17,6 @@ module.exports = (idleTimerInstance) => {
 
       if (idleTimer) {
         const character = await getAllFromHash(idleTimer.character)
-
-        character.instance = idleTimer.character
 
         const [newLatitude, newLongitude] = generateNewCoordinates(
           character.fuzzyLatitude,
