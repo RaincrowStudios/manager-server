@@ -155,7 +155,6 @@ module.exports = async (portalInstance) => {
             'activeSpirits',
             spirit.instance,
             {
-              instance: spirit.instance,
               summonedOn: spirit.createdOn,
               expiresOn: spirit.expiresOn
             }
