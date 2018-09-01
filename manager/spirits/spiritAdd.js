@@ -37,17 +37,17 @@ module.exports = (spiritInstance, spirit) => {
   timer.actionTimer = actionTimer
 
   timers.insert(timer)
-  
+
   informLogger({
     route: 'spiritSummon',
-  	character_id: spirit.owner,
+    character_id: spirit.owner,
     spirit_id: spiritInstance,
     latitude: spirit.summonLat,
     longitude: spirit.summonLong,
-    ingredient_1: "",
-    ingredient_2: "",
-    ingredient_3: "",
-    pop_id: ""
+    ingredient_1: '',
+    ingredient_2: '',
+    ingredient_3: '',
+    pop_id: ''
   })
 
   return true
