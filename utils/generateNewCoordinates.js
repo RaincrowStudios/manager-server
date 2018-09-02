@@ -1,5 +1,4 @@
-const checkGeohashOutOfRange =
-  require('../../../utils/checkGeohashOutOfRange')
+const checkGeohashOutOfRange = require('./checkGeohashOutOfRange')
 
 module.exports = (latitude, longitude) => {
   let newLatitude =
