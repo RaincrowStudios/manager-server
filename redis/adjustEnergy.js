@@ -17,6 +17,13 @@ module.exports = (entity, energyChange, killer = {}) => {
 
       const client = selectRedisClient(entity.instance)
 
+      if (
+        entity.type === 'spirit' &&
+        entity.energy + energyChange > entity.baseEnergy
+      ) {
+        energyChange = entity.baseEnergy
+      }
+
       client.evalsha(
         [scripts.adjustEnergy.sha, 1, entity.instance, energyChange],
         async (err, result) => {
@@ -42,7 +49,8 @@ module.exports = (entity, energyChange, killer = {}) => {
             )
 
             if (newState === 'dead') {
-              const [interimUpdate, interimInform] = await handleDeath(entity, killer)
+              const [interimUpdate, interimInform] =
+                await handleDeath(entity, killer)
 
               update.push(...interimUpdate)
               inform.push(...interimInform)
