@@ -3,16 +3,14 @@ module.exports = (caster, target, spell) => {
     return true
   }
 
-  if (caster.instance === target.instance) {
-    target.type = 'self'
-  }
-
-  if (target !== 'area') {
-    if (spell.targetTypes && !spell.targetTypes.includes(target.type)) {
-      return true
-    }
-    else if (spell.targetStates && !spell.targetStates.includes(target.state)) {
-      return true
+  if (target !== 'area' && spell.restrictions) {
+    for (const resriction of spell.restrictions) {
+      if (resriction.type && resriction.type !== target.type) {
+        return true
+      }
+      else if (resriction.status && resriction.status !== target.status) {
+        return true
+      }
     }
   }
 
