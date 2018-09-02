@@ -1,5 +1,6 @@
 const getNearbyFromGeohash = require('../../../redis/getNearbyFromGeohash')
 const getAllFromHash = require('../../../redis/getAllFromHash')
+const getOneFromHash = require('../../../redis/getOneFromHash')
 const targetAll = require('../target/targetAll')
 const targetAllies = require('../target/targetAllies')
 const targetCharacters = require('../target/targetCharacters')
@@ -20,29 +21,25 @@ module.exports = (spirit) => {
             'characters',
             spirit.latitude,
             spirit.longitude,
-            spirit.visionRange,
-            50
+            spirit.visionRange
           ),
           getNearbyFromGeohash(
             'collectibles',
             spirit.latitude,
             spirit.longitude,
-            spirit.visionRange,
-            50
+            spirit.visionRange
           ),
           getNearbyFromGeohash(
             'portals',
             spirit.latitude,
             spirit.longitude,
-            spirit.visionRange,
-            50
+            spirit.visionRange
           ),
           getNearbyFromGeohash(
             'spirits',
             spirit.latitude,
             spirit.longitude,
-            spirit.visionRange,
-            50
+            spirit.visionRange
           )
         ])
 
@@ -94,6 +91,8 @@ module.exports = (spirit) => {
     else {
       for (let i = 0; i < spirit.moveTree.length; i++) {
         const [directionCategory, type] = spirit.moveTree[i].split(':')
+        let summonerTarget
+
         switch (directionCategory) {
           case 'flee':
             destination = await determineFlee(spirit, nearTargets)
@@ -124,6 +123,15 @@ module.exports = (spirit) => {
                   targetSpirits(spirit, nearTargets, directionCategory) :
                   await targetCharacters(spirit, nearTargets, directionCategory)
             }
+            break
+          case 'summonerTarget':
+            summonerTarget =
+              await getOneFromHash(spirit.owner, 'previousTarget')
+
+            if (summonerTarget) {
+              destination = nearTargets
+                .filter(target => target.instance === summonerTarget.instance)[0]
+              }
             break
           case 'collectible':
             if (

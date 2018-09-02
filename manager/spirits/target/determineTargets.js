@@ -115,7 +115,7 @@ module.exports = (spirit) => {
       for (let i = 0; i < spirit.actionTree.length; i++) {
         const [targetCategory, type] = spirit.actionTree[i].target.split(':')
         const conditions = spirit.actionTree[i].conditions
-        let target, summonerAttacker
+        let target, summonerAttacker, summonerTarget
 
         switch (targetCategory) {
           case 'discover':
@@ -182,6 +182,14 @@ module.exports = (spirit) => {
             if (summonerAttacker) {
               target = nearTargets
                 .filter(target => target.instance === summonerAttacker.instance)[0]
+              }
+            break
+          case 'summonerTarget':
+            summonerTarget =
+              await getOneFromHash(spirit.owner, 'previousTarget')
+            if (summonerTarget) {
+              target = nearTargets
+                .filter(target => target.instance === summonerTarget.instance)[0]
               }
             break
           case 'vampires':
