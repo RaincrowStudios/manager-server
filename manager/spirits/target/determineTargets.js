@@ -152,12 +152,14 @@ module.exports = (spirit) => {
             }
             break
           case 'collectible':
-            if (
-              Object.keys(spirit.carrying).reduce((accumulator, carried) => {
-                return accumulator + carried.count
-              }, 0) < spirit.maxCarry
-            ) {
-              target = targetCollectibles(spirit, nearTargets, type)
+            if (!spirit.location) {
+              if (
+                Object.keys(spirit.carrying).reduce((accumulator, carried) => {
+                  return accumulator + carried.count
+                }, 0) < spirit.maxCarry
+              ) {
+                target = targetCollectibles(spirit, nearTargets, type)
+              }
             }
             break
           case 'allies':
