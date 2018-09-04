@@ -70,7 +70,7 @@ async function initializeSpirits(id, managers) {
                 }
 
                 let moveTimer
-                if (spirit.expiresOn) {
+                if (spirit.moveOn) {
                   moveTimer =
                     setTimeout(() =>
                       spiritMove(spirits[i]),
