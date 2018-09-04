@@ -40,6 +40,10 @@ module.exports = (spirit) => {
             if (target.type === 'spirit') {
               const spiritInfo = await getOneFromList('spirits', target.id)
               target = Object.assign({}, spiritInfo, target)
+              
+              if(!target.owner) {
+                target = {...target, ...spiritInfo.wild}
+              }
             }
 
             if (

@@ -8,7 +8,6 @@ module.exports = (entity, message, trueSightCheck = 0, exclude = []) => {
   return new Promise(async (resolve, reject) => {
     try {
       let playersToInform
-
       if (entity.location) {
         const occupants = await getOneFromHash(entity.location, 'occupants')
 

@@ -1,7 +1,9 @@
 const timers = require('../../database/timers')
 const getOneFromList = require('../../redis/getOneFromList')
+const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const handleLoseLocation = require('../../utils/handleLoseLocation')
 const informPlayers = require('../../utils/informPlayers')
 const informLogger = require('../../utils/informLogger')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
@@ -19,6 +21,7 @@ module.exports = (entity, killer) => {
       const spirit = Object.assign(
         {}, spiritTemplate, entity
       )
+      const location = await getAllFromHash(spirit.location)
 
       if (spirit.location) {
         update.push(
@@ -29,6 +32,11 @@ module.exports = (entity, killer) => {
             spirit.instance
           )
         )
+        if(!Object.keys(location.spirits).length-1) {
+          const [controlUpdate, controlInform] = await handleLoseLocation(location) 
+          update.push(...controlUpdate)
+          inform.push(...controlInform)
+        }
       }
 
       if (spirit.owner) {
