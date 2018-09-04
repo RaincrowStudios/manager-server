@@ -5,7 +5,6 @@ module.exports = (info) => {
       token = {
         instance: info.instance,
         type: info.type,
-        tier: info.tier,
         latitude: info.latitude,
         longitude: info.longitude,
         physicalOnly: info.physicalOnly

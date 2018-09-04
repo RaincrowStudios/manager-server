@@ -1,16 +1,16 @@
 const timers = require('../../database/timers')
-const locationExpire = require('./locationExpire')
+const locationReward = require('./locationReward')
 
 module.exports = (locationInstance, location) => {
   try {
     const currentTime = Date.now()
 
-    const expireTimer =
+    const rewardTimer =
       setTimeout(() =>
-        locationExpire(locationInstance), location.rewardOn - currentTime
+        locationReward(locationInstance), location.rewardOn - currentTime
       )
 
-    timers.insert({locationInstance, expireTimer})
+    timers.insert({locationInstance, rewardTimer})
 
     return true
   }
