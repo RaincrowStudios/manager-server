@@ -20,11 +20,6 @@ else
     error("invalid command")
   end
 
-  if table.getn(object) > 0 then
-    redis.call('HSET', instance, field, cjson.encode(object))
-    return cjson.encode(object)
-  else
-    redis.call('HSET', instance, field, '{}')
-    return '{}'
-  end
+  redis.call('HSET', instance, field, cjson.encode(object))
+  return cjson.encode(object)
 end
