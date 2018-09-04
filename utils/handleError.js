@@ -1,6 +1,6 @@
 const informLogger = require('./informLogger')
 
-module.exports = (res, err) => {
+module.exports = (err) => {
   if (process.env.NODE_ENV === 'development') {
     console.error(err)
   }
@@ -10,6 +10,6 @@ module.exports = (res, err) => {
     source: 'game-server',
     content: err.stack
   })
-  const status = err.message[0] === '5' ? 500 : 400
-  return res.status(status).send(err.message)
+  
+  return true
 }
