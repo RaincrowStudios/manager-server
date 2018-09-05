@@ -3,7 +3,7 @@ const getOneFromList = require('../../redis/getOneFromList')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
-const handleLoseLocation = require('../../utils/handleLoseLocation')
+const handleLocationLose = require('../../utils/handleLocationLose')
 const informPlayers = require('../../utils/informPlayers')
 const informLogger = require('../../utils/informLogger')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
@@ -32,8 +32,8 @@ module.exports = (entity, killer) => {
             spirit.instance
           )
         )
-        if(!Object.keys(location.spirits).length-1) {
-          const [controlUpdate, controlInform] = await handleLoseLocation(location) 
+        if (!Object.keys(location.spirits).length - 1) {
+          const [controlUpdate, controlInform] = await handleLocationLose(location)
           update.push(...controlUpdate)
           inform.push(...controlInform)
         }
@@ -83,11 +83,15 @@ module.exports = (entity, killer) => {
         )
 
         if (!spirit.owner && killer.type !== 'spirit') {
-          update.push(addSpiritBounty(spirit, killer))
+          const [bountyUpdate, bountyInform] = await addSpiritBounty(spirit, killer)
+          update.push(...bountyUpdate)
+          inform.push(...bountyInform)
         }
 
         if (!spirit.location) {
-          update.push(addSpiritDrop(spirit, killer))
+          const [dropUpdate, dropInform] = await addSpiritDrop(spirit, killer)
+          update.push(...dropUpdate)
+          inform.push(...dropInform)
         }
 
         update.push(
