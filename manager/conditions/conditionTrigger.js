@@ -3,17 +3,19 @@ const adjustEnergy = require('../../redis/adjustEnergy')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
+const handleError = require('../../utils/handleError')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
-const informLogger = require('../../utils/informLogger')
+const informPlayers = require('../../utils/informPlayers')
+const generateDanceCoordinates = require('./components/generateDanceCoordinates')
 const resolveCondition = require('./components/resolveCondition')
 const deleteCondition = require('./deleteCondition')
 
 async function conditionTrigger (conditionInstance) {
   try {
     const currentTime = Date.now()
-    const condition = await getAllFromHash(conditionInstance)
+    const conditionInfo = await getAllFromHash(conditionInstance)
 
-    if (!condition || !condition.bearer) {
+    if (!conditionInfo || !conditionInfo.bearer) {
       deleteCondition(conditionInstance)
       return true
     }
@@ -22,18 +24,16 @@ async function conditionTrigger (conditionInstance) {
       const inform = []
       const bearer = await getAllFromHash(condition.bearer)
 
-      if(!bearer){
+      if (!bearer) {
         deleteCondition(conditionInstance)
         return true
       }
 
       const spell = await getOneFromList('spells', condition.id)
 
-      if (!spell.condition.overTime) {
-        console.log(condition.id)
-      }
-
-      const total = resolveCondition(spell.condition.overTime)
+      const condition = Object.assign(
+        {}, spell.condition, conditionInfo
+      )
 
       inform.unshift(
         {
@@ -49,11 +49,35 @@ async function conditionTrigger (conditionInstance) {
         }
       )
 
-      const [energyUpdate, energyInform] =
-        await adjustEnergy(bearer, total, condition)
+      if (condition.overTime) {
+        const total = resolveCondition(condition.overTime)
 
-      update.push(...energyUpdate)
-      inform.push(...energyInform)
+        const [energyUpdate, energyInform] =
+          await adjustEnergy(bearer, total, condition)
+
+        update.push(...energyUpdate)
+        inform.push(...energyInform)
+      }
+      else if (condition.status === 'magicDance') {
+        const [newLatitude, newLongitude] = generateDanceCoordinates(
+          bearer.latitude,
+          bearer.longitude
+        )
+
+        inform.push(
+          {
+            function: informPlayers,
+              parameters: [
+              [bearer.player],
+              {
+                command: 'character_spell_move',
+                latitude: newLatitude,
+                longitude: newLongitude
+              }
+            ]
+          }
+        )
+      }
 
       condition.triggerOn =
         currentTime + (condition.tick * 1000)
@@ -85,7 +109,7 @@ async function conditionTrigger (conditionInstance) {
     return true
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }
 
