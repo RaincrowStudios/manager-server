@@ -1,5 +1,6 @@
 const getOneFromHash = require('../redis/getOneFromHash')
 const informPlayers = require('../utils/informPlayers')
+const updateHashField = require('../redis/updateHashField')
 const updateHashFieldObject = require('../redis/updateHashFieldObject')
 
 module.exports = async (location) => {
@@ -28,6 +29,14 @@ module.exports = async (location) => {
           'remove',
           'locationsControlled',
           location.instance,
+        )
+      )
+
+      update.push(
+        updateHashField(
+          location.instance,
+          'controlledBy',
+          '',
         )
       )
 

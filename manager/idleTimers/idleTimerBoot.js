@@ -4,6 +4,7 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeFromList = require('../../redis/removeFromList')
 const removeHash = require('../../redis/removeHash')
+const updateHashField = require('../../redis/updateHashField')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const generateNewCoordinates = require('../../utils/generateNewCoordinates')
 const informLogger = require('../../utils/informLogger')
@@ -33,6 +34,11 @@ module.exports = (idleTimerInstance) => {
           removeFromActiveSet('idleTimers', idleTimerInstance),
           removeFromList('idleTimers', idleTimer.character),
           removeHash(idleTimerInstance),
+          updateHashField(
+            idleTimer.character,
+            'location',
+            ''
+          ),
           updateHashFieldObject(
             idleTimer.location,
             'remove',
