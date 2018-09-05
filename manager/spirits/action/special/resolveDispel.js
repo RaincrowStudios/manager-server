@@ -8,7 +8,7 @@ const informPlayers = require('../../../../utils/informPlayers')
 const deleteCondition = require('../../../conditions/deleteCondition')
 
 module.exports = async (target, spell) => {
-  const total = 0
+  let total = 0
   const update = []
   const inform = []
 
@@ -58,6 +58,15 @@ module.exports = async (target, spell) => {
             ]
           }
         )
+
+        if (dispellableConditions[i].onDispel) {
+          const [min, max] = dispellableConditions[i].onDispel.split('-')
+
+          total = Math.floor(
+            Math.random() *
+            (parseInt(max, 10) - parseInt(min, 10) + 1) + parseInt(min, 10)
+          )
+        }
 
         if (dispellableConditions[i].status === 'invisible') {
           wasInvisible = true
