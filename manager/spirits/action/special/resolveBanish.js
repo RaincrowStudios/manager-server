@@ -18,7 +18,7 @@ module.exports = (target) => {
           parameters: [
           [target.player],
           {
-            command: 'character_spell_banish',
+            command: 'character_spell_move',
             latitude: latitude,
             longitude: longitude
           }
