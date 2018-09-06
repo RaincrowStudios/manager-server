@@ -1,87 +1,38 @@
 const timers = require('../../database/timers')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromHash = require('../../redis/getOneFromHash')
-const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const incrementHashField = require('../../redis/incrementHashField')
-const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeFromAll = require('../../redis/removeFromAll')
-const removeFromList = require('../../redis/removeFromList')
-const removeHash = require('../../redis/removeHash')
-const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const handleError = require('../../utils/handleError')
+const handleLocationLose = require('../../utils/handleLocationLose')
 const informPlayers = require('../../utils/informPlayers')
-const determineRewardLocation = require('./components/determineRewardLocation')
+const spiritExpire = require('../spirits/spiritExpire')
 
 module.exports = async (locationInstance) => {
   try {
+    const currentTime = Date.now()
     const location = await getAllFromHash(locationInstance)
 
-    if (location) {
-      const currentTime = Date.now()
-      const update = [
-        informNearbyPlayers(
-          location.latitude,
-          location.longitude,
-          {
-            command: 'map_token_remove',
-            token: locationInstance
-          }
-        ),
-        removeFromAll('locations', locationInstance)
-      ]
+    if (location && location.controlledBy) {
+      const update = []
+      const inform = []
 
-      if (location.occupants.length) {
-        const [idleTimerInstances, occupants] = await Promise.all([
-          await Promise.all(
-            location.occupants.map(occupant =>
-              getOneFromList('idleTimers', occupant.instance)
-            )
-          ),
-          await Promise.all(
-            location.occupants.map(occupant =>
-              getFieldsFromHash(
-                occupant.instance,
-                ['player', 'latitude', 'longitude']
-              )
-            )
-          )
-        ])
-
-        for (const idleTimerInstance of idleTimerInstances) {
-          if (idleTimerInstance) {
-            update.push(
-              removeFromActiveSet('idleTimers', idleTimerInstance),
-              removeHash(idleTimerInstance)
-            )
-            const idleTimers = timers.by('instance', idleTimerInstance)
-            if (idleTimers) {
-              clearTimeout(idleTimers.bootTimer)
-              timers.remove(idleTimers)
-            }
-          }
-        }
-
-        update.push(
-          ...location.occupants.map(occupant =>
-            removeFromList('idleTimers', occupant.instance)
-          )
-        )
-
-        for (const occupant of occupants) {
+      if (Object.keys(location.spirits).length) {
+        for (const spiritInstance of Object.keys(location.spirits)) {
           update.push(
-            informPlayers(
-              [occupant[0]],
-              {
-                command: 'location_expire',
-                latitude: occupant[1],
-                longitude: occupant[2]
-              }
+            spiritExpire(spiritInstance),
+            updateHashFieldObject(
+              locationInstance,
+              'remove',
+              'spirits',
+              spiritInstance
             )
           )
         }
       }
 
-      const reward = determineRewardLocation(location)
+      const reward = await getOneFromList('constants', 'locationReward')
       if (reward) {
         const members = await getOneFromHash(location.controlledBy, 'members')
 
@@ -102,7 +53,7 @@ module.exports = async (locationInstance) => {
           )
         }
 
-        update.push(
+        inform.push(
           informPlayers(
             playersToInform,
             {
@@ -113,7 +64,16 @@ module.exports = async (locationInstance) => {
         )
       }
 
+      const [controlUpdate, controlInform] = await handleLocationLose(location)
+      update.push(...controlUpdate)
+      inform.push(...controlInform)
+
       await Promise.all(update)
+
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
+      }
     }
 
     location.rewardOn = currentTime + (86400000 * 9)
@@ -129,6 +89,6 @@ module.exports = async (locationInstance) => {
     return true
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }
