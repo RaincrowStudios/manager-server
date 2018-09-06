@@ -22,14 +22,14 @@ async function conditionTrigger (conditionInstance) {
     else {
       const update = []
       const inform = []
-      const bearer = await getAllFromHash(condition.bearer)
+      const bearer = await getAllFromHash(conditionInfo.bearer)
 
       if (!bearer) {
         deleteCondition(conditionInstance)
         return true
       }
 
-      const spell = await getOneFromList('spells', condition.id)
+      const spell = await getOneFromList('spells', conditionInfo.id)
 
       const condition = Object.assign(
         {}, spell.condition, conditionInfo
@@ -71,6 +71,7 @@ async function conditionTrigger (conditionInstance) {
               [bearer.player],
               {
                 command: 'character_spell_move',
+                spell: condition.id,
                 latitude: newLatitude,
                 longitude: newLongitude
               }
