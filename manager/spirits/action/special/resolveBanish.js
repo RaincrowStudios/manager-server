@@ -19,6 +19,7 @@ module.exports = (target) => {
           [target.player],
           {
             command: 'character_spell_move',
+            spell: 'spell_banish',
             latitude: latitude,
             longitude: longitude
           }
