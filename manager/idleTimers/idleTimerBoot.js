@@ -21,7 +21,9 @@ module.exports = (idleTimerInstance) => {
 
         const [newLatitude, newLongitude] = generateNewCoordinates(
           character.fuzzyLatitude,
-          character.fuzzyLongitude
+          character.fuzzyLongitude,
+          100,
+          500
         )
 
         const update = [

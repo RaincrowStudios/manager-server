@@ -4,8 +4,8 @@ const addToGeohash = require('../../../redis/addToGeohash')
 const addObjectToHash = require('../../../redis/addObjectToHash')
 const createInstanceId = require('../../../utils/createInstanceId')
 const createMapToken = require('../../../utils/createMapToken')
+const generateNewCoordinates = require('../../../generateNewCoordinates')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
-const generateDropCoords = require('./generateDropCoords')
 
 module.exports = async (spirit) => {
   return new Promise(async (resolve, reject) => {
@@ -38,7 +38,7 @@ module.exports = async (spirit) => {
             const instance = createInstanceId()
 
             const [latitude, longitude] =
-              generateDropCoords(spirit.latitude, spirit.longitude)
+              generateNewCoordinates(spirit.latitude, spirit.longitude, 10, 30)
 
             update.push(
               addObjectToHash(

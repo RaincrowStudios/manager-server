@@ -3,10 +3,10 @@ const adjustEnergy = require('../../redis/adjustEnergy')
 const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
+const generateNewCoordinates = require('../../utils/generateNewCoordinates')
 const handleError = require('../../utils/handleError')
 const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const informPlayers = require('../../utils/informPlayers')
-const generateDanceCoordinates = require('./components/generateDanceCoordinates')
 const resolveCondition = require('./components/resolveCondition')
 const deleteCondition = require('./deleteCondition')
 
@@ -59,9 +59,11 @@ async function conditionTrigger (conditionInstance) {
         inform.push(...energyInform)
       }
       else if (condition.status === 'magicDance') {
-        const [newLatitude, newLongitude] = generateDanceCoordinates(
+        const [newLatitude, newLongitude] = generateNewCoordinates(
           bearer.latitude,
-          bearer.longitude
+          bearer.longitude,
+          50,
+          100
         )
 
         inform.push(

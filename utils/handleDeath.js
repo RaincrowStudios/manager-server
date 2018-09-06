@@ -33,7 +33,9 @@ module.exports = (target, killer) => {
 
           const [newLatitude, newLongitude] = generateNewCoordinates(
             target.fuzzyLatitude || target.latitude,
-            target.fuzzyLongitude || target.longitude
+            target.fuzzyLongitude || target.longitude,
+            100,
+            500
           )
 
           inform.push(

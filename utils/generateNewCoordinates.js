@@ -1,19 +1,30 @@
 const checkGeohashOutOfRange = require('./checkGeohashOutOfRange')
 
-module.exports = (latitude, longitude) => {
+function precisionRound(number, precision) {
+  const factor = Math.pow(10, precision)
+  return Math.round(number * factor) / factor
+}
+
+module.exports = (latitude, longitude, min, max) => {
   let newLatitude =
-    latitude + (((Math.floor(Math.random() * (500 - 100)) + 100) * 0.00001) *
+    latitude + (((Math.floor(Math.random() * (max - min)) + min) * 0.00001) *
     (Math.random() < 0.5 ? -1 : 1))
 
   let newLongitude =
-    longitude + (((Math.floor(Math.random() * (500 - 100)) + 100) * 0.00001 *
+    longitude + (((Math.floor(Math.random() * (max - min)) + min) * 0.00001 *
     Math.cos(latitude * (Math.PI / 180)))  *
     (Math.random() < 0.5 ? -1 : 1))
 
-  if(checkGeohashOutOfRange(newLatitude, newLongitude)) {
+  if (checkGeohashOutOfRange(newLatitude, newLongitude)) {
     newLatitude = newLatitude + (Math.sign(newLatitude) * -0.01)
     newLongitude = newLongitude + (Math.sign(newLongitude) * -0.01)
   }
 
-  return [newLatitude, newLongitude]
+  const newCoords = [
+    precisionRound(newLatitude, 6),
+    precisionRound(newLongitude, 6)
+  ]
+
+
+  return newCoords
 }
