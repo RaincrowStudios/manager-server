@@ -33,7 +33,7 @@ module.exports = (entity, killer) => {
             spirit.instance
           )
         )
-        if (!Object.keys(location.spirits).length - 1) {
+        if (!(Object.keys(location.spirits).length - 1)) {
           const [controlUpdate, controlInform] = await handleLocationLose(location)
           update.push(...controlUpdate)
           inform.push(...controlInform)

@@ -4,7 +4,7 @@ const addToGeohash = require('../../../redis/addToGeohash')
 const addObjectToHash = require('../../../redis/addObjectToHash')
 const createInstanceId = require('../../../utils/createInstanceId')
 const createMapToken = require('../../../utils/createMapToken')
-const generateNewCoordinates = require('../../../generateNewCoordinates')
+const generateNewCoordinates = require('../../../utils/generateNewCoordinates')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 
 module.exports = async (spirit) => {
