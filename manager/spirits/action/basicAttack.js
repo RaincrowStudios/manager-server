@@ -35,14 +35,14 @@ module.exports = (spirit, target) => {
           reflected = Math.round(damage / 2)
 
           const [selfEnergyUpdate, selfEnergyInform] =
-            await adjustEnergy(spirit, reflected, spirit)
+            await adjustEnergy(spirit, reflected, spirit, 'attack')
 
           update.push(...selfEnergyUpdate)
           inform.push(...selfEnergyInform)
         }
 
         const [targetEnergyUpdate, targetEnergyInform] =
-          await adjustEnergy(target, damage, spirit)
+          await adjustEnergy(target, damage, spirit, 'attack')
 
         update.push(...targetEnergyUpdate)
         inform.push(...targetEnergyInform)

@@ -8,7 +8,7 @@ const generateNewCoordinates = require('./generateNewCoordinates')
 const informNearbyPlayers = require('./informNearbyPlayers')
 const informPlayers = require('./informPlayers')
 
-module.exports = (target, killer) => {
+module.exports = (target, killer, action = '') => {
   return new Promise(async (resolve, reject) => {
     try {
       const update = []
@@ -99,8 +99,8 @@ module.exports = (target, killer) => {
               {
                 command: 'character_death',
                 displayName: target.displayName,
-                spirit: killer.caster ? killer.caster.spirit : killer.id,
-                spell: killer.caster ? killer.id : ''
+                spirit: killer.id || '',
+                action: action
               }
             ]
           }

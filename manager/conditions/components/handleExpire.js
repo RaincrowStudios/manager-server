@@ -1,4 +1,5 @@
 const adjustEnergy = require('../../../redis/adjustEnergy')
+const getOneFromHash = require('../../../redis/getOneFromHash')
 const getOneFromList = require('../../../redis/getOneFromList')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 const resolveCondition = require('./resolveCondition')
@@ -11,10 +12,11 @@ module.exports = (bearer, condition) => {
       const inform = []
 
       if (spell.condition.onExpiration) {
+        const caster = await getOneFromHash(condition.caster)
         const expireEnergy = resolveCondition(spell.condition.onExpiration)
 
         const [energyUpdate, energyInform] =
-          await adjustEnergy(bearer, expireEnergy, condition)
+          await adjustEnergy(bearer, expireEnergy, caster, condition.id)
 
           inform.unshift(
             {

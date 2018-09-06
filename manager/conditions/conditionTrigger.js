@@ -1,6 +1,7 @@
 const timers = require('../../database/timers')
 const adjustEnergy = require('../../redis/adjustEnergy')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const generateNewCoordinates = require('../../utils/generateNewCoordinates')
@@ -50,10 +51,11 @@ async function conditionTrigger (conditionInstance) {
       )
 
       if (condition.overTime) {
+        const caster = await getOneFromHash(condition.caster)
         const total = resolveCondition(condition.overTime)
 
         const [energyUpdate, energyInform] =
-          await adjustEnergy(bearer, total, condition)
+          await adjustEnergy(bearer, total, caster, condition.id)
 
         update.push(...energyUpdate)
         inform.push(...energyInform)

@@ -3,7 +3,7 @@ const handleDeath = require('../utils/handleDeath')
 const informNearbyPlayers = require('../utils/informNearbyPlayers')
 const selectRedisClient = require('./selectRedisClient')
 
-module.exports = (entity, energyChange, killer = {}) => {
+module.exports = (entity, energyChange, killer = {}, action = '') => {
   return new Promise((resolve, reject) => {
     try {
       if (!entity.instance || typeof entity.instance !== 'string') {
@@ -50,7 +50,7 @@ module.exports = (entity, energyChange, killer = {}) => {
 
             if (newState === 'dead') {
               const [interimUpdate, interimInform] =
-                await handleDeath(entity, killer)
+                await handleDeath(entity, killer, action)
 
               update.push(...interimUpdate)
               inform.push(...interimInform)
