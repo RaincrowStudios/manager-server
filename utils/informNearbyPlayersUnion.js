@@ -11,11 +11,10 @@ module.exports = (entity, target, message, trueSightCheck = 0, exclude = []) => 
 
       if (entity.location) {
         const occupants = await getOneFromHash(entity.location, 'occupants')
-
         playersToInform = await Promise.all(
           Object.keys(occupants)
-            .filter(occupant => !exclude.includes(occupant.instance))
-            .map(occupant => getOneFromHash(occupant.instance, 'player'))
+            .filter(occupant => !exclude.includes(occupant))
+            .map(occupant => getOneFromHash(occupant, 'player'))
         )
       }
       else {
@@ -62,7 +61,7 @@ module.exports = (entity, target, message, trueSightCheck = 0, exclude = []) => 
             .map(player => player[0])
       }
       else {
-        playersToInform = playersToInform.map(player => player[0])
+        playersToInform = playersToInform.map(player => player)
       }
 
       await informPlayers(playersToInform, message)
