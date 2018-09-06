@@ -10,6 +10,7 @@ const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
 const addSpiritBounty = require('./death/addSpiritBounty')
 const addSpiritDrop = require('./death/addSpiritDrop')
+const handleDapper = require('./death/handleDapper')
 
 module.exports = (entity, killer) => {
   return new Promise(async (resolve, reject) => {
@@ -95,16 +96,24 @@ module.exports = (entity, killer) => {
         }
 
         update.push(
-          removeFromAll('spirits', spirit.instance),
           deleteAllConditions(Object.values(spirit.conditions))
         )
 
-        const spiritTimers = timers.by('instance', spirit.instance)
-        if (spiritTimers) {
-          clearTimeout(spiritTimers.expireTimer)
-          clearTimeout(spiritTimers.moveTimer)
-          clearTimeout(spiritTimers.actionTimer)
-          timers.remove(spiritTimers)
+        if (spirit.attributes.includes('dapper')) {
+          const [dapperUpdate, dapperInform] = await handleDapper(spirit, killer)
+          update.push(...dapperUpdate)
+          inform.push(...dapperInform)
+        }
+        else {
+          update.push(removeFromAll('spirits', spirit.instance))
+
+          const spiritTimers = timers.by('instance', spirit.instance)
+          if (spiritTimers) {
+            clearTimeout(spiritTimers.expireTimer)
+            clearTimeout(spiritTimers.moveTimer)
+            clearTimeout(spiritTimers.actionTimer)
+            timers.remove(spiritTimers)
+          }
         }
 
         update.push(
