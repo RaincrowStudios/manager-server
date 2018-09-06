@@ -96,7 +96,7 @@ module.exports = (entity, killer) => {
           deleteAllConditions(Object.values(spirit.conditions))
         )
 
-        if (spirit.attributes.includes('dapper')) {
+        if (spirit.attributes && spirit.attributes.includes('dapper')) {
           const [dapperUpdate, dapperInform] = await handleDapper(spirit, killer)
           update.push(...dapperUpdate)
           inform.push(...dapperInform)
