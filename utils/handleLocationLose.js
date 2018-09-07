@@ -1,4 +1,6 @@
 const getOneFromHash = require('../redis/getOneFromHash')
+const handleError = require('../utils/handleError')
+const informNearbyPlayers = require('../utils/informNearbyPlayers')
 const informPlayers = require('../utils/informPlayers')
 const updateHashField = require('../redis/updateHashField')
 const updateHashFieldObject = require('../redis/updateHashFieldObject')
@@ -50,12 +52,22 @@ module.exports = async (location) => {
               location: location.instance
             }
           ]
-        }
+        },
+        {
+        function: informNearbyPlayers,
+        parameters: [
+          { location: location.instance },
+          {
+            command: 'map_location_lost',
+            location: location.instance
+          }
+        ]
+      }
       )
     }
     return([update, inform])
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }
