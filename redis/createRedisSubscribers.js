@@ -29,6 +29,7 @@ module.exports = () => {
           const host = '10.' + ips[region] + '.1.255'
 
           ping.sys.probe(host, (isAlive) => {
+            console.log(isAlive)
             if (isAlive) {
               const subscriber = redis.createClient(
                 6379,
