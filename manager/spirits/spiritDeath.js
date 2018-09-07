@@ -85,16 +85,17 @@ module.exports = (entity, killer) => {
         )
 
         if (spirit.attributes && spirit.attributes.includes('dapper')) {
-          console.log('dapper')
           const [dapperUpdate, dapperInform] = await handleDapper(spirit, killer)
           update.push(...dapperUpdate)
           inform.push(...dapperInform)
         }
         else {
+          console.log('removing spirit')
           update.push(removeFromAll('spirits', spirit.instance))
 
           const spiritTimers = timers.by('instance', spirit.instance)
           if (spiritTimers) {
+            console.log('killing timers')
             clearTimeout(spiritTimers.expireTimer)
             clearTimeout(spiritTimers.moveTimer)
             clearTimeout(spiritTimers.actionTimer)
