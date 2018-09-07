@@ -15,8 +15,6 @@ const handleDapper = require('./death/handleDapper')
 module.exports = (entity, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log('killer', killer.displayName || killer.id)
-      console.log('spirit', entity.id)
       const update = []
       const inform = []
 
@@ -44,7 +42,6 @@ module.exports = (entity, killer) => {
       }
 
       if (spirit.owner) {
-        console.log('has owner')
         update.push(
           updateHashFieldObject(
             spirit.owner,
@@ -54,9 +51,16 @@ module.exports = (entity, killer) => {
           )
         )
 
-        const displayName = killer.owner ?
-          await getOneFromHash(killer.owner, 'displayName') :
-          await getOneFromHash(killer.caster, 'displayName')
+        let displayName
+        if (killer.displayName) {
+          displayName = killer.displayName
+        }
+        else if (killer.owner) {
+          displayName = await getOneFromHash(killer.owner, 'displayName')
+        }
+        else {
+          displayName = await getOneFromHash(killer.caster, 'displayName')
+        }
 
         inform.push(
           {
@@ -99,12 +103,10 @@ module.exports = (entity, killer) => {
         inform.push(...dapperInform)
       }
       else {
-        console.log('removing spirit')
         update.push(removeFromAll('spirits', spirit.instance))
 
         const spiritTimers = timers.by('instance', spirit.instance)
         if (spiritTimers) {
-          console.log('killing timers')
           clearTimeout(spiritTimers.expireTimer)
           clearTimeout(spiritTimers.moveTimer)
           clearTimeout(spiritTimers.actionTimer)

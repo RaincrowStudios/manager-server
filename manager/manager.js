@@ -11,7 +11,7 @@ const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
 const spiritAdd = require('./spirits/spiritAdd')
 const spiritDeath = require('./spirits/spiritDeath')
-const informLogger = require('../utils/informLogger')
+const handleError = require('../utils/handleError')
 
 const addTimers = {
   collectible: collectibleAdd,
@@ -31,7 +31,6 @@ const deathTimers = {
 
 async function manager(message) {
   try {
-    console.log(message.command, 'received')
     let timersToClear
     const instanceManager = await getOneFromHash(message.instance, 'manager')
     switch (message.command) {
@@ -51,8 +50,6 @@ async function manager(message) {
         addTimers[message.type](message.instance, message[message.type])
         break
       case 'death':
-      console.log(instanceManager)
-      console.log(process.env.INSTANCE_ID)
         if (instanceManager === process.env.INSTANCE_ID) {
           deathTimers[message.type](message.entity, message.killer)
         }
@@ -63,14 +60,7 @@ async function manager(message) {
     return true
   }
   catch (err) {
-    console.error('ERROR!!!!', err)
-
-    informLogger({
-      route: 'error',
-      error_code: err.message,
-      source: 'manager-server',
-      content: err.stack
-    })
+    return handleError(err)
   }
 }
 
