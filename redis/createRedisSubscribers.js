@@ -30,7 +30,6 @@ module.exports = () => {
           const host = ips[region] + production.redisAddress
 
           ping.sys.probe(host, (isAlive) => {
-            console.log(isAlive)
             if (isAlive) {
               const subscriber = redis.createClient(
                 6379,
@@ -38,12 +37,10 @@ module.exports = () => {
               )
 
               subscriber.on('ready', () => {
-                console.log('Subscriber ready')
                 subscriber.subscribe('manager')
               })
 
               subscriber.on('message', (channel, message) => {
-                console.log('Message from subscriber')
                 manager(JSON.parse(message))
               })
 
