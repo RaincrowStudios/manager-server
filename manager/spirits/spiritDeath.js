@@ -15,7 +15,8 @@ const handleDapper = require('./death/handleDapper')
 module.exports = (entity, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log('death command recieved')
+      console.log('killer', killer.displayName || killer.id)
+      console.log('spirit', entity.id)
       const update = []
       const inform = []
 

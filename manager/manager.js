@@ -31,7 +31,7 @@ const deathTimers = {
 
 async function manager(message) {
   try {
-    console.log('message received')
+    console.log(message.command, 'received')
     let timersToClear
     const instanceManager = await getOneFromHash(message.instance, 'manager')
     switch (message.command) {
