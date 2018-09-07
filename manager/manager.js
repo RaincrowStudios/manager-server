@@ -31,6 +31,7 @@ const deathTimers = {
 
 async function manager(message) {
   try {
+    console.log('message received')
     let timersToClear
     const instanceManager = await getOneFromHash(message.instance, 'manager')
     switch (message.command) {
@@ -50,6 +51,8 @@ async function manager(message) {
         addTimers[message.type](message.instance, message[message.type])
         break
       case 'death':
+      console.log(instanceManager)
+      console.log(process.env.INSTANCE_ID)
         if (instanceManager === process.env.INSTANCE_ID) {
           deathTimers[message.type](message.entity, message.killer)
         }

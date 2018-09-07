@@ -15,6 +15,7 @@ const handleDapper = require('./death/handleDapper')
 module.exports = (entity, killer) => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log('death command recieved')
       const update = []
       const inform = []
 
@@ -42,6 +43,7 @@ module.exports = (entity, killer) => {
       }
 
       if (spirit.owner) {
+        console.log('has owner')
         update.push(
           updateHashFieldObject(
             spirit.owner,
