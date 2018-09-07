@@ -47,7 +47,8 @@ module.exports = (spirit, target, spell) => {
     manager: process.env.INSTANCE_ID,
     instance: createInstanceId(),
     id: spell.id,
-    caster: spirit.instance,
+    spirit: spirit.id,
+    owner: spirit.owner,
     bearer: target.instance,
     createdOn: currentTime,
     expiresOn: duration ? currentTime + (duration * 1000) : 0

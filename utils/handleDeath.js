@@ -2,6 +2,7 @@ const timers = require('../database/timers')
 const deleteAllConditions = require('../manager/conditions/deleteAllConditions')
 const portalDestroy = require('../manager/portals/portalDestroy')
 const spiritDeath = require('../manager/spirits/spiritDeath')
+const getOneFromHash = require('../redis/getOneFromHash')
 const getOneFromList = require('../redis/getOneFromList')
 const updateHashFieldObject = require('../redis/updateHashFieldObject')
 const generateNewCoordinates = require('./generateNewCoordinates')
@@ -91,6 +92,10 @@ module.exports = (target, killer, action = '') => {
           deleteAllConditions(Object.values(target.conditions))
         )
 
+        const displayName = killer.owner ?
+          await getOneFromHash(killer.owner, 'displayName') :
+          await getOneFromHash(killer.caster, 'displayName')
+
         inform.push(
           {
             function: informPlayers,
@@ -98,8 +103,8 @@ module.exports = (target, killer, action = '') => {
               [target.player],
               {
                 command: 'character_death',
-                displayName: target.displayName,
-                spirit: killer.id || '',
+                displayName: displayName,
+                spirit: killer.type === 'spirit' ? killer.id : '',
                 action: action
               }
             ]

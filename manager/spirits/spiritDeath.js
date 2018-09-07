@@ -22,9 +22,10 @@ module.exports = (entity, killer) => {
       const spirit = Object.assign(
         {}, spiritTemplate, entity
       )
-      const location = await getAllFromHash(spirit.location)
 
       if (spirit.location) {
+        const location = await getAllFromHash(spirit.location)
+        
         update.push(
           updateHashFieldObject(
             spirit.location,
@@ -97,6 +98,7 @@ module.exports = (entity, killer) => {
         )
 
         if (spirit.attributes && spirit.attributes.includes('dapper')) {
+          console.log('dapper')
           const [dapperUpdate, dapperInform] = await handleDapper(spirit, killer)
           update.push(...dapperUpdate)
           inform.push(...dapperInform)
