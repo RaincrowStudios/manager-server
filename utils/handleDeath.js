@@ -16,7 +16,23 @@ module.exports = (target, killer, action = '') => {
       const inform = []
 
       if (target.type === 'spirit') {
-        await spiritDeath(target, killer)
+        update.push(spiritDeath(target, killer))
+
+        inform.push(
+          {
+            function: informNearbyPlayers,
+            parameters: [
+              target,
+              {
+                command: 'map_token_remove',
+                instance: target.instance,
+              },
+              Object.values(target.conditions)
+                .filter(condition => condition.status === 'invisible').length ?
+                1 : 0
+            ]
+          }
+        )
       }
       else if (target.type === 'portal') {
         update.push(portalDestroy(target, killer))

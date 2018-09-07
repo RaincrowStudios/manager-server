@@ -25,7 +25,7 @@ module.exports = (entity, killer) => {
 
       if (spirit.location) {
         const location = await getAllFromHash(spirit.location)
-        
+
         update.push(
           updateHashFieldObject(
             spirit.location,
@@ -52,19 +52,6 @@ module.exports = (entity, killer) => {
         )
 
         inform.push(
-          {
-            function: informNearbyPlayers,
-            parameters: [
-              spirit,
-              {
-                command: 'map_token_remove',
-                instance: spirit.instance,
-              },
-              Object.values(spirit.conditions)
-                .filter(condition => condition.status === 'invisible').length ?
-                1 : 0
-            ]
-          },
           {
             function: informPlayers,
             parameters: [
