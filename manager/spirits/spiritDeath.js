@@ -1,12 +1,12 @@
 const timers = require('../../database/timers')
-const getOneFromList = require('../../redis/getOneFromList')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const getAllFromHash = require('../../redis/getAllFromHash')
+const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
 const handleLocationLose = require('../../utils/handleLocationLose')
 const informPlayers = require('../../utils/informPlayers')
 const informLogger = require('../../utils/informLogger')
-const informNearbyPlayers = require('../../utils/informNearbyPlayers')
 const deleteAllConditions = require('../conditions/deleteAllConditions')
 const addSpiritBounty = require('./death/addSpiritBounty')
 const addSpiritDrop = require('./death/addSpiritDrop')
@@ -51,6 +51,10 @@ module.exports = (entity, killer) => {
           )
         )
 
+        const displayName = killer.owner ?
+          await getOneFromHash(killer.owner, 'displayName') :
+          await getOneFromHash(killer.caster, 'displayName')
+
         inform.push(
           {
             function: informPlayers,
@@ -60,71 +64,72 @@ module.exports = (entity, killer) => {
                 command: 'character_spirit_banished',
                 instance: spirit.instance,
                 spirit: spirit.id,
-                killer: killer.displayName || killer.id,
-                type: killer.type,
-                owner: killer.ownerDisplay || ''
+                killer: killer.type === 'spirit' ?
+                  killer.id : displayName || killer.displayName,
+                type: killer.type || '',
+                owner: displayName || ''
               }
             ]
           }
         )
-
-        if (!spirit.owner && killer.type !== 'spirit') {
-          const [bountyUpdate, bountyInform] = await addSpiritBounty(spirit, killer)
-          update.push(...bountyUpdate)
-          inform.push(...bountyInform)
-        }
-
-        if (!spirit.location) {
-          const [dropUpdate, dropInform] = await addSpiritDrop(spirit, killer)
-          update.push(...dropUpdate)
-          inform.push(...dropInform)
-        }
-
-        update.push(
-          deleteAllConditions(Object.values(spirit.conditions))
-        )
-
-        if (spirit.attributes && spirit.attributes.includes('dapper')) {
-          const [dapperUpdate, dapperInform] = await handleDapper(spirit, killer)
-          update.push(...dapperUpdate)
-          inform.push(...dapperInform)
-        }
-        else {
-          console.log('removing spirit')
-          update.push(removeFromAll('spirits', spirit.instance))
-
-          const spiritTimers = timers.by('instance', spirit.instance)
-          if (spiritTimers) {
-            console.log('killing timers')
-            clearTimeout(spiritTimers.expireTimer)
-            clearTimeout(spiritTimers.moveTimer)
-            clearTimeout(spiritTimers.actionTimer)
-            timers.remove(spiritTimers)
-          }
-        }
-
-        update.push(
-          informLogger({
-            route: 'spiritExit',
-            character_id: spirit.owner,
-            spirit_id: spirit.id,
-            latitude: spirit.latitude,
-            longitude: spirit.longitude,
-            killed_by: '',
-            attacker_id: killer.id,
-            spell_used: ''
-          })
-        )
-
-        await Promise.all(update)
-
-        for (const informObject of inform) {
-          const informFunction = informObject.function
-          await informFunction(...informObject.parameters)
-        }
-
-        resolve(true)
       }
+
+      if (!spirit.owner && killer.type !== 'spirit') {
+        const [bountyUpdate, bountyInform] = await addSpiritBounty(spirit, killer)
+        update.push(...bountyUpdate)
+        inform.push(...bountyInform)
+      }
+
+      if (!spirit.location) {
+        const [dropUpdate, dropInform] = await addSpiritDrop(spirit, killer)
+        update.push(...dropUpdate)
+        inform.push(...dropInform)
+      }
+
+      update.push(
+        deleteAllConditions(Object.values(spirit.conditions))
+      )
+
+      if (spirit.attributes && spirit.attributes.includes('dapper')) {
+        const [dapperUpdate, dapperInform] = await handleDapper(spirit, killer)
+        update.push(...dapperUpdate)
+        inform.push(...dapperInform)
+      }
+      else {
+        console.log('removing spirit')
+        update.push(removeFromAll('spirits', spirit.instance))
+
+        const spiritTimers = timers.by('instance', spirit.instance)
+        if (spiritTimers) {
+          console.log('killing timers')
+          clearTimeout(spiritTimers.expireTimer)
+          clearTimeout(spiritTimers.moveTimer)
+          clearTimeout(spiritTimers.actionTimer)
+          timers.remove(spiritTimers)
+        }
+      }
+
+      update.push(
+        informLogger({
+          route: 'spiritExit',
+          character_id: spirit.owner,
+          spirit_id: spirit.id,
+          latitude: spirit.latitude,
+          longitude: spirit.longitude,
+          killed_by: '',
+          attacker_id: killer.id,
+          spell_used: ''
+        })
+      )
+
+      await Promise.all(update)
+
+      for (const informObject of inform) {
+        const informFunction = informObject.function
+        await informFunction(...informObject.parameters)
+      }
+
+      resolve(true)
     }
     catch (err) {
       reject(err)
