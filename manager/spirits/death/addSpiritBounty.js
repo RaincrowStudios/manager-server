@@ -11,14 +11,17 @@ module.exports = (spirit, killer) => {
           incrementHashField(killer.instance, 'silver', rewards[spirit.tier - 1])
         ]
 
-        const inform =[
-          informPlayers(
-            [killer.player],
-            {
-              command: 'character_bounty_reward',
-              rewards: rewards
-            }
-          )
+        const inform = [
+          {
+            function: informPlayers,
+            parameters: [
+              [killer.player],
+              {
+                command: 'character_bounty_reward',
+                rewards: rewards
+              }
+            ]
+          }
         ]
 
       resolve([update, inform])
