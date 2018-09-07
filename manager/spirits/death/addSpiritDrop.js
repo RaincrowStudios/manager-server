@@ -7,11 +7,13 @@ const createMapToken = require('../../../utils/createMapToken')
 const generateNewCoordinates = require('../../../utils/generateNewCoordinates')
 const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
 
-module.exports = async (spirit) => {
+module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
       const update = []
       const inform = []
+
+      const chance = await getOneFromList('constants', 'spiritDropChanceByTier')
 
       const drops = spirit.drop ? spirit.drop : []
 
@@ -22,7 +24,7 @@ module.exports = async (spirit) => {
         for (const drop of drops) {
           const roll = Math.floor((Math.random() * 100) + 1)
 
-          if (!drop.chance || roll <= drop.chance) {
+          if (!drop.chance || roll <= chance) {
             ids.push(drop.id)
           }
         }
