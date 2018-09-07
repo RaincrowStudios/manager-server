@@ -1,5 +1,6 @@
 const ping = require('ping')
 const redis = require('redis')
+const production = require('../config/production')
 const ips = require('../config/region-ips')
 const manager = require('../manager/manager')
 
@@ -26,7 +27,7 @@ module.exports = () => {
       }
       else {
         Object.keys(ips).forEach(region => {
-          const host = '10.' + ips[region] + '.1.255'
+          const host = ips[region] + production.redisAddress
 
           ping.sys.probe(host, (isAlive) => {
             console.log(isAlive)
