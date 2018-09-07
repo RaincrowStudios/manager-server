@@ -54,15 +54,25 @@ module.exports = async (location) => {
           ]
         },
         {
-        function: informNearbyPlayers,
-        parameters: [
-          { location: location.instance },
-          {
-            command: 'map_location_lost',
-            location: location.instance
-          }
-        ]
-      }
+          function: informNearbyPlayers,
+          parameters: [
+            { location: location.instance },
+            {
+              command: 'map_location_lost',
+              location: location.instance
+            }
+          ]
+        },
+        {
+          function: informNearbyPlayers,
+          parameters: [
+            location,
+            {
+              command: 'map_location_lost',
+              location: location.instance
+            }
+          ]
+        }
       )
     }
     return([update, inform])
