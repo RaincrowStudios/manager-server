@@ -23,8 +23,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
           if (
             target.conditions &&
             Object.values(target.conditions)
-              .filter(condition => condition.id === targetingCondition)
-              .length
+              .filter(condition => condition.id === targetingCondition).length
           ) {
             return true
           }

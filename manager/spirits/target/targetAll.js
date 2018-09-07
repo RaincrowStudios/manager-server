@@ -10,15 +10,14 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
     validTargets = validTargets
       .filter(target => target.state === 'vulnerable')
   }
-
   if (targetingConditions && targetingConditions.length) {
     validTargets = validTargets
       .filter(target => {
         for (const targetingCondition of targetingConditions) {
           if (
-            Object.values(target.conditions) &&
+            target.conditions &&
             Object.values(target.conditions)
-              .filter(condition => condition.id === targetingCondition)[0]
+              .filter(condition => condition.id === targetingCondition).length
           ) {
             return true
           }

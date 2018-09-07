@@ -9,8 +9,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
           if (
             target.conditions &&
             Object.values(target.conditions)
-              .map(condition => condition.id)
-              .includes(targetingCondition)
+              .filter(condition => condition.id === targetingCondition).length
           ) {
             return true
           }

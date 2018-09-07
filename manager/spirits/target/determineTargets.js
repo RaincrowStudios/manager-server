@@ -116,7 +116,6 @@ module.exports = (spirit) => {
         const [targetCategory, type] = spirit.actionTree[i].target.split(':')
         const conditions = spirit.actionTree[i].conditions
         let target, summonerAttacker, summonerTarget
-
         switch (targetCategory) {
           case 'discover':
             if (
@@ -133,7 +132,7 @@ module.exports = (spirit) => {
             break
           case 'all':
           case 'vulnerableAll':
-            target = targetAll(spirit, nearTargets, conditions)
+            target = targetAll(spirit, nearTargets, targetCategory, conditions)
             break
           case 'attacker':
             if (spirit.lastAttackedBy) {
