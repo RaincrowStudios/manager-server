@@ -36,10 +36,12 @@ module.exports = () => {
               )
 
               subscriber.on('ready', () => {
+                console.log('Subscriber ready')
                 subscriber.subscribe('manager')
               })
 
               subscriber.on('message', (channel, message) => {
+                console.log('Message from subscriber')
                 manager(JSON.parse(message))
               })
 
