@@ -5,6 +5,7 @@ module.exports = (target) => {
     try {
       const total = 0
       const update = []
+      const inform = []
 
       const latitude = (Math.random() > 0.5 ? 1 : -1) *
         (Math.floor(Math.random() * 8505112878) / 100000000)
@@ -13,18 +14,34 @@ module.exports = (target) => {
         Math.floor(Math.random() * 180)  + Math.random()
 
 
-      const inform = [{
-        function: informPlayers,
-          parameters: [
-          [target.player],
+      if (target.location) {
+        inform.push(
           {
-            command: 'character_spell_move',
-            spell: 'spell_banish',
-            latitude: latitude,
-            longitude: longitude
+            function: informPlayers,
+            parameters: [
+              [target.player],
+              {
+                command: 'character_location_boot',
+              }
+            ]
           }
-        ]
-      }]
+        )
+      }
+
+      inform.push(
+        {
+          function: informPlayers,
+          parameters: [
+            [target.player],
+            {
+              command: 'character_spell_move',
+              spell: 'spell_banish',
+              latitude: latitude,
+              longitude: longitude
+            }
+          ]
+        }
+      )
 
       resolve([total, update, inform])
     }
