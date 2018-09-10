@@ -136,9 +136,11 @@ module.exports = (spirit, target, spell) => {
           target,
           {
             command: 'map_condition_remove',
-            instance: target.instance,
-            conditionInstance: oldestCondition.instance,
-            status: oldestCondition.status || '',
+            condition: {
+              bearer: target.instance,
+              instance: oldestCondition.instance,
+              status: oldestCondition.status || '',
+            }
           },
           spell.condition.hidden ? 1 : 0
         ]
