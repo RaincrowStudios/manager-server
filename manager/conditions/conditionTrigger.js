@@ -42,8 +42,10 @@ async function conditionTrigger (conditionInstance) {
             bearer,
             {
               command: 'map_condition_trigger',
-              instance: condition.bearer,
-              conditionInstance: conditionInstance
+              condition: {
+                instance: conditionInstance,
+                bearer: condition.bearer
+              },
             }
           ]
         }
