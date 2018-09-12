@@ -162,7 +162,7 @@ module.exports = (spirit) => {
             Math.sin(spirit.latitude) * Math.cos(destination.latitude) *
             Math.cos(destination.longitude - spirit.longitude)
 
-          direction = Math.atan2(y, x).toDegrees()
+          direction = Math.atan2(y, x) * (180/Math.PI)
         }
       }
       resolve(direction)
