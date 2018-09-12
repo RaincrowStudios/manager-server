@@ -15,7 +15,7 @@ const targetSpirits = require('./targetSpirits')
 module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let nearTargets
+      let nearTargets = []
 
       if (spirit.coven) {
         spirit.allies = await getOneFromHash(spirit.coven, 'allies')
@@ -23,16 +23,17 @@ module.exports = (spirit) => {
 
       if (spirit.location) {
         const location = await getAllFromHash(spirit.location)
-
         const nearInstances = [
           ...Object.keys(location.occupants),
           ...Object.keys(location.spirits)
             .filter(instance => instance !== spirit.instance)
         ]
 
-        nearTargets = await Promise.all(
-          nearInstances.map(instance => getAllFromHash(instance))
-        )
+        if (nearInstances.length) {
+          nearTargets = await Promise.all(
+            nearInstances.map(instance => getAllFromHash(instance))
+          )
+        }
       }
       else {
         const [nearCharacters, nearCollectibles, nearPortals, nearSpirits] =
