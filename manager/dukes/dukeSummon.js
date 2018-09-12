@@ -3,9 +3,9 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
-const resolveDukeAction = require('./action/resolveDukeAction')
+const handleDukeSummon = require('./summon/handleDukeSummon')
 
-async function dukeAction(instance) {
+async function dukeSummon(instance) {
   try {
     const instanceInfo = await getAllFromHash(instance)
 
@@ -16,19 +16,12 @@ async function dukeAction(instance) {
         {}, dukeInfo, instanceInfo,
       )
 
-      const [update, inform] = await resolveDukeAction(duke)
-
-      await Promise.all(update)
-
-      for (const informObject of inform) {
-        const informFunction = informObject.function
-        await informFunction(...informObject.parameters)
-      }
+      await handleDukeSummon(duke)
 
       const currentTime = Date.now()
 
-      let newActionOn, seconds
-      if (duke.phase[duke.currentPhase].actionFreq.includes('-')) {
+      let newSummonOn, seconds
+      if (duke.summonFreq.court.includes('-')) {
         const range = duke.actionFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
@@ -36,16 +29,16 @@ async function dukeAction(instance) {
         seconds = Math.floor(Math.random() * (max - min + 1)) + min
       }
       else {
-        seconds = parseInt(duke.phase[duke.currentPhase], 10)
+        seconds = parseInt(duke.court.summonFreq, 10)
       }
 
-      newActionOn = currentTime + (seconds * 1000)
+      newSummonOn = currentTime + (seconds * 1000)
 
-      await updateHashField(duke.instance, 'actionOn', newActionOn)
+      await updateHashField(duke.instance, 'actionOn', newSummonOn)
 
       const newTimer =
         setTimeout(() =>
-          dukeAction(duke.instance), newActionOn - currentTime
+          dukeSummon(duke.instance), newSummonOn - currentTime
         )
 
       let dukeTimers = timers.by('instance', duke.instance)
@@ -61,4 +54,4 @@ async function dukeAction(instance) {
   }
 }
 
-module.exports = dukeAction
+module.exports = dukeSummon

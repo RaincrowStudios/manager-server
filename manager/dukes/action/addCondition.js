@@ -1,18 +1,18 @@
-const addObjectToHash = require('../../../redis/addObjectToHash')
-const addToActiveSet = require('../../../redis/addToActiveSet')
-const updateHashFieldObject = require('../../../redis/updateHashFieldObject')
-const createInstanceId = require('../../../utils/createInstanceId')
-const informNearbyPlayers = require('../../../utils/informNearbyPlayers')
-const conditionAdd = require('../../conditions/conditionAdd')
-const deleteCondition = require('../../conditions/deleteCondition')
+const addObjectToHash = require('../../../../redis/addObjectToHash')
+const addToActiveSet = require('../../../../redis/addToActiveSet')
+const removeFromActiveSet = require('../../../../redis/removeFromActiveSet')
+const removeHash = require('../../../../redis/removeHash')
+const updateHashFieldObject = require('../../../../redis/updateHashFieldObject')
+const createInstanceId = require('../../../../utils/createInstanceId')
+const informManager = require('../../../../utils/informManager')
+const informNearbyPlayers = require('../../../../utils/informNearbyPlayers')
 
-module.exports = (spirit, target, spell) => {
+module.exports = (caster, target, spell, ingredients) => {
   const currentTime = Date.now()
   const update = []
   const inform = []
   let duration = 0
 
-  target.conditions = target.conditions || {}
   if (typeof spell.condition.duration === 'string') {
     if (spell.condition.duration.includes('-')) {
       const range = spell.condition.duration.split('-')
@@ -27,7 +27,7 @@ module.exports = (spirit, target, spell) => {
 
       let property
       if (subparts[0] === 'caster') {
-        property = spirit
+        property = caster
       }
       else if (subparts[0] === 'target') {
         property = target
@@ -41,14 +41,18 @@ module.exports = (spirit, target, spell) => {
     duration = spell.condition.duration
   }
 
+  for (const ingredient of ingredients) {
+    if (ingredient && ingredient.spell && ingredient.spell.duration) {
+      duration += (ingredient.spell.duration * ingredient.count)
+    }
+  }
+
   duration = parseInt(duration, 10)
 
   const condition = {
-    manager: process.env.INSTANCE_ID,
     instance: createInstanceId(),
     id: spell.id,
-    spirit: spirit.id,
-    owner: spirit.owner,
+    caster: caster.instance,
     bearer: target.instance,
     createdOn: currentTime,
     expiresOn: duration ? currentTime + (duration * 1000) : 0,
@@ -82,7 +86,7 @@ module.exports = (spirit, target, spell) => {
 
           let property
           if (subparts[0] === 'caster') {
-            property = spirit
+            property = caster
           }
           else if (subparts[0] === 'target') {
             property = target
@@ -119,7 +123,14 @@ module.exports = (spirit, target, spell) => {
     }
 
     update.push(
-      deleteCondition(oldestCondition.instance),
+      informManager(
+        {
+          command: 'remove',
+          instance: oldestCondition.instance,
+        }
+      ),
+      removeFromActiveSet('conditions', oldestCondition.instance),
+      removeHash(oldestCondition.instance),
       updateHashFieldObject(
         target.instance,
         'remove',
@@ -143,17 +154,23 @@ module.exports = (spirit, target, spell) => {
               status: oldestCondition.status || '',
             }
           },
-          spell.condition.hidden ? 1 : 0
+          oldestCondition.hidden ? 1 : 0
         ]
       }
     )
   }
 
-  conditionAdd(condition.instance, condition)
-
   update.push(
     addObjectToHash(condition.instance, condition),
     addToActiveSet('conditions', condition.instance),
+    informManager(
+      {
+        command: 'add',
+        type: 'condition',
+        instance: condition.instance,
+        condition: condition
+      }
+    ),
     updateHashFieldObject(
       target.instance,
       'add',
@@ -163,7 +180,6 @@ module.exports = (spirit, target, spell) => {
     )
   )
 
-
   inform.push(
     {
       function: informNearbyPlayers,
@@ -171,13 +187,11 @@ module.exports = (spirit, target, spell) => {
         target,
         {
           command: 'map_condition_add',
-          caster: spirit.id,
-          type: spirit.type,
-          instance: target.instance,
-          conditionInstance: condition.instance,
-          condition: condition.id,
+          bearer: target.instance,
+          instance: condition.instance,
+          id: condition.id,
           status: condition.status || '',
-          expiresOn: condition.expiresOn
+          baseSpell: spell.base || ''
         },
         spell.condition.hidden ? 1 : 0
       ]

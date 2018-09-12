@@ -5,6 +5,7 @@ const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
 const consumableAdd = require('./consumables/consumableAdd')
+const dukeAdd = require('./dukes/dukeAdd')
 const idleTimerAdd = require('./idleTimers/idleTimerAdd')
 const immunityAdd = require('./immunities/immunityAdd')
 const locationAdd = require('./locations/locationAdd')
@@ -18,6 +19,7 @@ const addTimers = {
   condition: conditionAdd,
   consumable: consumableAdd,
   cooldown: cooldownAdd,
+  duke: dukeAdd,
   idleTimer: idleTimerAdd,
   immunity: immunityAdd,
   location: locationAdd,

@@ -19,10 +19,10 @@ async function spiritAction(spiritInstance) {
       const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
 
       let spirit = Object.assign(
-        {}, spiritInfo, instanceInfo, {instance: spiritInstance}
+        {}, spiritInfo, instanceInfo
       )
 
-      if(!spirit.owner) {
+      if (!spirit.owner) {
         spirit = {...spirit, ...spirit.wild}
       }
 
