@@ -41,7 +41,7 @@ module.exports = (entity, killer) => {
         }
       }
 
-      if (spirit.owner) {
+      if (spirit.player) {
         update.push(
           updateHashFieldObject(
             spirit.owner,
