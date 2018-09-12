@@ -11,7 +11,7 @@ module.exports = (instance, field, value) => {
         throw new Error('Invalid field: ' + field)
       }
       else if (value === undefined) {
-        throw new Error('Invalid values: ' + value)
+        throw new Error('Invalid value: ' + value)
       }
 
       const client = selectRedisClient(instance)

@@ -6,6 +6,7 @@ module.exports = (spirit, nearTargets, targetCategory, targetingConditions) => {
       target.type === 'spirit'
     ))
     .filter(target => target.instance !== spirit.instance && target.instance !== spirit.owner)
+    .filter(target => target.owner ? target.owner !== spirit.owner : true)
     .filter(target => !spirit.coven ||
       (target.coven !== spirit.coven &&
         !spirit.allies.map(ally => ally.coven).includes(target.coven)
