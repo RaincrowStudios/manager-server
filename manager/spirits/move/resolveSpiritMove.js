@@ -9,12 +9,12 @@ module.exports = (spirit) => {
   return new Promise(async (resolve, reject) => {
     try {
       const direction = await determineDirection(spirit)
-      const newCoords = await determineSpiritMove(spirit, direction)
+      const [newLatitude, newLongitude] = await determineSpiritMove(spirit, direction)
 
       const update = [
-        updateHashField(spirit.instance, 'latitude', newCoords[0]),
-        updateHashField(spirit.instance, 'longitude', newCoords[1]),
-        moveInGeohash('spirits', spirit.instance, newCoords[0], newCoords[1])
+        updateHashField(spirit.instance, 'latitude', newLatitude),
+        updateHashField(spirit.instance, 'longitude', newLongitude),
+        moveInGeohash('spirits', spirit.instance, newLatitude, newLongitude)
       ]
 
       const inform = [
@@ -23,8 +23,8 @@ module.exports = (spirit) => {
           parameters: [
             spirit,
             {
-              latitude: newCoords[0],
-              longitude: newCoords[1]
+              latitude: newLatitude,
+              longitude: newLongitude
             },
             {
               command: 'map_token_move',

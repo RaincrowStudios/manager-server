@@ -156,6 +156,7 @@ module.exports = (spirit) => {
         if (destination) {
           const y = Math.sin(destination.longitude - spirit.longitude) *
             Math.cos(destination.latitude)
+
           const x =
             Math.cos(spirit.latitude) * Math.sin(destination.latitude) -
             Math.sin(spirit.latitude) * Math.cos(destination.latitude) *

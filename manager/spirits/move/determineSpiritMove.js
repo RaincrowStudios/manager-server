@@ -15,7 +15,7 @@ module.exports = (spirit, direction) => {
         direction
       )
 
-      resolve(newLatitude, newLongitude)
+      resolve([newLatitude, newLongitude])
     }
     catch (err) {
       reject(err)
