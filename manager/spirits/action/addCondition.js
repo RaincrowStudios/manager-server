@@ -171,13 +171,13 @@ module.exports = (spirit, target, spell) => {
         target,
         {
           command: 'map_condition_add',
-          caster: spirit.id,
-          type: spirit.type,
-          instance: target.instance,
-          conditionInstance: condition.instance,
-          condition: condition.id,
-          status: condition.status || '',
-          expiresOn: condition.expiresOn
+          condition: {
+            bearer: target.instance,
+            instance: condition.instance,
+            id: condition.id,
+            status: condition.status || '',
+            baseSpell: spell.base || spell.id
+          },
         },
         spell.condition.hidden ? 1 : 0
       ]
