@@ -131,7 +131,7 @@ module.exports = (spirit) => {
               destination = targetSpirits(spirit, nearTargets, directionCategory)
               break
             case 'summoner':
-              direction = await getAllFromHash(spirit.owner)
+              destination = await getAllFromHash(spirit.owner)
               break
             case 'summonerPortals':
             case 'portals':
