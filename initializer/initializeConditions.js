@@ -1,7 +1,8 @@
 const timers = require('../database/timers')
-const getActiveSet = require('../redis/getActiveSet')
 const addFieldToHash = require('../redis/addFieldToHash')
-const getAllFromHash = require('../redis/getAllFromHash')
+const checkKeyExistance = require('../redis/checkKeyExistance')
+const getActiveSet = require('../redis/getActiveSet')
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const removeFromAll = require('../redis/removeFromAll')
 const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
@@ -13,54 +14,57 @@ function initializeConditions(id, managers) {
 
       if (conditions.length) {
         for (let i = 0; i < conditions.length; i++) {
-          const currentTime = Date.now()
-          const condition = await getAllFromHash(conditions[i])
-
-          if (!condition) {
+          if (!conditions[i] || !await checkKeyExistance(conditions[i])) {
             removeFromAll('conditions', conditions[i])
             continue
           }
 
-          if (condition && !managers.includes(condition.manager)) {
+          const [manager, triggerOn, expiresOn] =await getFieldsFromHash(
+            conditions[i],
+            ['manager', 'triggerOn', 'expiresOn']
+          )
+
+          if (!managers.includes(manager)) {
             await addFieldToHash(conditions[i], 'manager', id)
 
-            if (condition.expiresOn === 0 || condition.expiresOn > currentTime) {
-              let expireTimer
-              if (condition.expiresOn) {
-                expireTimer =
-                  setTimeout(() =>
-                    conditionExpire(conditions[i]),
-                    condition.expiresOn - currentTime
-                  )
-                }
+            const currentTime = Date.now()
 
-              let triggerTimer
-              if (condition.triggerOn) {
-                triggerTimer =
-                  setTimeout(() =>
-                    conditionTrigger(conditions[i]),
-                    condition.triggerOn > currentTime ?
-                      condition.triggerOn - currentTime : 0
-                  )
-              }
-
-              const previousTimers = timers.by('instance', conditions[i])
-              if (previousTimers) {
-                previousTimers.expireTimer
-                previousTimers.triggerTimer
-                timers.update(previousTimers)
-              }
-              else {
-                timers.insert({
-                  instance: conditions[i],
-                  expireTimer,
-                  triggerTimer,
-                })
-              }
-            }
-            else {
+            if (expiresOn !== 0 && expiresOn < currentTime) {
               conditionExpire(conditions[i])
               continue
+            }
+
+            let triggerTimer
+            if (triggerOn) {
+              triggerTimer =
+                setTimeout(() =>
+                  conditionTrigger(conditions[i]),
+                  triggerOn > currentTime ?
+                    triggerOn - currentTime : 0
+                )
+            }
+
+            let expireTimer
+            if (expiresOn) {
+              expireTimer =
+                setTimeout(() =>
+                  conditionExpire(conditions[i]),
+                  expiresOn - currentTime
+                )
+              }
+
+            const previousTimers = timers.by('instance', conditions[i])
+            if (previousTimers) {
+              previousTimers.triggerTimer = triggerTimer
+              previousTimers.expireTimer = expireTimer
+              timers.update(previousTimers)
+            }
+            else {
+              timers.insert({
+                instance: conditions[i],
+                triggerTimer,
+                expireTimer
+              })
             }
           }
         }

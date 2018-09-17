@@ -1,9 +1,10 @@
 const timers = require('../database/timers')
 const addFieldToHash = require('../redis/addFieldToHash')
+const checkKeyExistance = require('../redis/checkKeyExistance')
 const getActiveSet = require('../redis/getActiveSet')
-const getAllFromHash = require('../redis/getAllFromHash')
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const removeFromAll = require('../redis/removeFromAll')
 const portalSummon = require('../manager/portals/portalSummon')
-const portalDelete = require('../manager/portals/portalDelete')
 
 async function initializePortals(id, managers) {
   return new Promise(async (resolve, reject) => {
@@ -12,30 +13,38 @@ async function initializePortals(id, managers) {
 
       if (portals.length) {
         for (let i = 0; i < portals.length; i++) {
-          const currentTime = Date.now()
-          const portal = await getAllFromHash(portals[i])
-
-          if (portal) {
-            if (!managers.includes(portal.manager)) {
-              await addFieldToHash(portals[i], 'manager', id)
-
-              if (portal.energy > 0) {
-                const summonTimer =
-                  setTimeout(() =>
-                    portalSummon(portals[i]),
-                    portal.summonOn > currentTime ?
-                      portal.summonOn - currentTime : 0
-                  )
-
-                timers.insert({instance: portals[i], summonTimer})
-              }
-              else {
-                portalDelete(portals[i])
-              }
-            }
+          if (!portals[i] || !await checkKeyExistance(portals[i])) {
+            removeFromAll('portals', portals[i])
+            continue
           }
-          else {
-            portalDelete(portals[i])
+
+          const [manager, energy, summonOn] =
+            await getFieldsFromHash(portals[i], ['manager', 'energy', 'summonOn'])
+
+          if (!managers.includes(manager)) {
+            await addFieldToHash(portals[i], 'manager', id)
+
+            if (energy > 0) {
+              removeFromAll('portals', portals[i])
+            }
+
+            const currentTime = Date.now()
+
+            const summonTimer =
+              setTimeout(() =>
+                portalSummon(portals[i]),
+                summonOn > currentTime ?
+                  summonOn - currentTime : 0
+              )
+
+            const previousTimers = timers.by('instance', portals[i])
+            if (previousTimers) {
+              previousTimers.summonTimer = summonTimer
+              timers.update(previousTimers)
+            }
+            else {
+              timers.insert({instance: portals[i], summonTimer})
+            }
           }
         }
       }

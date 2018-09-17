@@ -33,7 +33,6 @@ module.exports = async (spiritInstance) => {
       timer.moveTimer = moveTimer
     }
 
-    console.log('adding action timer')
     const actionTimer =
       setTimeout(() =>
         spiritAction(spiritInstance),

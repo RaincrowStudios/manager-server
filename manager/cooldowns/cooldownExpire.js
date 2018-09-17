@@ -3,6 +3,7 @@ const getOneFromHash = require('../../redis/getOneFromHash')
 const removeFromActiveSet = require('../../redis/removeFromActiveSet')
 const removeHash = require('../../redis/removeHash')
 const updateHashFieldObject = require('../../redis/updateHashFieldObject')
+const handleError = require('../../utils/handleError')
 const informPlayers = require('../../utils/informPlayers')
 
 module.exports = async (cooldownInstance) => {
@@ -32,6 +33,6 @@ module.exports = async (cooldownInstance) => {
     }
   }
   catch (err) {
-    console.error(err)
+    handleError(err)
   }
 }

@@ -1,10 +1,11 @@
 const timers = require('../database/timers')
 const addFieldToHash = require('../redis/addFieldToHash')
+const checkKeyExistance = require('../redis/checkKeyExistance')
 const getActiveSet = require('../redis/getActiveSet')
-const getAllFromHash = require('../redis/getAllFromHash')
-const getOneFromList = require('../redis/getOneFromList')
-const spiritDeath = require('../manager/spirits/spiritDeath')
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const removeFromAll = require('../redis/removeFromAll')
 const spiritExpire = require('../manager/spirits/spiritExpire')
+const spiritKill = require('../manager/spirits/spiritKill')
 const spiritMove = require('../manager/spirits/spiritMove')
 const spiritAction = require('../manager/spirits/spiritAction')
 
@@ -15,84 +16,77 @@ async function initializeSpirits(id, managers) {
 
       if (spirits.length) {
         for (let i = 0; i < spirits.length; i++) {
-          if (spirits[i]) {
+          if (!spirits[i] || !await checkKeyExistance(spirits[i])) {
+            removeFromAll('spirits', spirits[i])
+            continue
+          }
+
+          const [manager, state, lastAttackedBy, actionOn, moveOn, expiresOn] =
+            await getFieldsFromHash(
+              spirits[i],
+              ['manager', 'state', 'lastAttackedBy', 'actionOn', 'moveOn', 'expiresOn']
+            )
+
+          if (!managers.includes(manager)) {
+            await addFieldToHash(spirits[i], 'manager', id)
+
             const currentTime = Date.now()
-            const spirit = await getAllFromHash(spirits[i])
-
-            if (!spirit) {
+            if (expiresOn !== 0 && expiresOn < currentTime) {
               spiritExpire(spirits[i])
+              continue
             }
-            else if (!managers.includes(spirit.manager)) {
-              await addFieldToHash(spirits[i], 'manager', id)
 
-              if (spirit.expiresOn !== 0 && spirit.expiresOn < currentTime) {
-                spiritExpire(spirits[i])
-              }
-              else if (spirit.energy <= 0) {
-                if (spirits[i].lastAttackedBy) {
-                  let killer
-                  const killerInfo =
-                    await getAllFromHash(spirits[i].lastAttackedBy.instance)
-
-                  if (killerInfo.type === 'spirit') {
-                    const spiritInfo =
-                      await getOneFromList('spirits', killerInfo.id)
-
-                    killer = Object.assign(
-                      {},
-                      spiritInfo,
-                      killerInfo,
-                      {instance: spirits[i].lastAttackedBy.instance}
-                    )
-                  }
-                  else {
-                    killer = Object.assign(
-                      {},
-                      killerInfo,
-                      {instance: spirits[i].lastAttackedBy.instance}
-                    )
-                  }
-
-                  await spiritDeath(spirit, killer)
-                }
-                else {
-                  await spiritExpire(spirits[i])
-                }
+            if (state === 'dead') {
+              if (lastAttackedBy.instance) {
+                spiritKill(spirits[i])
+                continue
               }
               else {
-                let expireTimer
-                if (spirit.expiresOn) {
-                  expireTimer =
-                    setTimeout(() =>
-                      spiritExpire(spirits[i]),
-                      spirit.expiresOn - currentTime
-                    )
-                }
-
-                let moveTimer
-                if (spirit.moveOn) {
-                  moveTimer =
-                    setTimeout(() =>
-                      spiritMove(spirits[i]),
-                      spirit.moveOn > currentTime ?
-                        spirit.moveOn - currentTime : 0
-                    )
-                }
-
-                const actionTimer =
-                  setTimeout(() =>
-                    spiritAction(spirits[i]),
-                    spirit.actionOn > currentTime ?
-                      spirit.actionOn - currentTime : 0
-                  )
-
-                timers.insert({
-                  instance: spirits[i],
-                  expireTimer,
-                  moveTimer,
-                  actionTimer
-                })
+                spiritExpire(spirits[i])
+                continue
               }
+            }
+
+            const actionTimer =
+              setTimeout(() =>
+                spiritAction(spirits[i]),
+                actionOn > currentTime ?
+                  actionOn - currentTime : 0
+              )
+
+            let moveTimer
+            if (moveOn) {
+              moveTimer =
+                setTimeout(() =>
+                  spiritMove(spirits[i]),
+                  moveOn > currentTime ?
+                    moveOn - currentTime : 0
+                )
+            }
+
+            let expireTimer
+            if (expiresOn) {
+              expireTimer =
+                setTimeout(() =>
+                  spiritExpire(spirits[i]),
+                  expiresOn - currentTime
+                )
+            }
+
+            const previousTimers = timers.by('instance', spirits[i])
+            if (previousTimers) {
+              previousTimers.actionTimer = actionTimer
+              previousTimers.moveTimer = moveTimer
+              previousTimers.expireTimer = expireTimer
+              timers.update(previousTimers)
+            }
+            else {
+              timers.insert({
+                instance: spirits[i],
+                actionTimer,
+                moveTimer,
+                expireTimer
+              })
             }
           }
         }

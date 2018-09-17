@@ -3,27 +3,18 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
-const resolveDukeAction = require('./action/resolveDukeAction')
+const informGame = require('../../utils/informGame')
 
-async function dukeAction(instance) {
+async function dukeAction(dukeInstanace) {
   try {
-    const instanceInfo = await getAllFromHash(instance)
+    const instanceInfo = await getAllFromHash(dukeInstanace)
 
     if (instanceInfo) {
-      const dukeInfo = await getOneFromList('dukes', instanceInfo.id)
+      const dukeInfo = await getOneFromList('spirits', instanceInfo.id)
 
       const duke = Object.assign(
         {}, dukeInfo, instanceInfo,
       )
-
-      const [update, inform] = await resolveDukeAction(duke)
-
-      await Promise.all(update)
-
-      for (const informObject of inform) {
-        const informFunction = informObject.function
-        await informFunction(...informObject.parameters)
-      }
 
       const currentTime = Date.now()
 
@@ -41,14 +32,17 @@ async function dukeAction(instance) {
 
       newActionOn = currentTime + (seconds * 1000)
 
-      await updateHashField(duke.instance, 'actionOn', newActionOn)
+      await Promise.all([
+        informGame(dukeInstanace, 'covens', 'head', 'covens/npe/action'),
+        updateHashField(dukeInstanace, 'actionOn', newActionOn)
+      ])
 
       const newTimer =
         setTimeout(() =>
-          dukeAction(duke.instance), newActionOn - currentTime
+          dukeAction(dukeInstanace), newActionOn - currentTime
         )
 
-      let dukeTimers = timers.by('instance', duke.instance)
+      let dukeTimers = timers.by('instance', dukeInstanace)
       if (dukeTimers) {
         dukeTimers.actionTimer = newTimer
         timers.update(dukeTimers)

@@ -3,7 +3,6 @@ const getAllFromHash = require('../../redis/getAllFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
-const handleDukeSummon = require('./summon/handleDukeSummon')
 
 async function dukeSummon(instance) {
   try {
@@ -16,7 +15,7 @@ async function dukeSummon(instance) {
         {}, dukeInfo, instanceInfo,
       )
 
-      await handleDukeSummon(duke)
+      //await handleDukeSummon(duke)
 
       const currentTime = Date.now()
 

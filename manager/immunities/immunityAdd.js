@@ -1,4 +1,5 @@
 const timers = require('../../database/timers')
+const handleError = require('../../utils/handleError')
 const immunityExpire = require('./immunityExpire')
 
 module.exports = (immunityInstance, immunity) => {
@@ -18,6 +19,6 @@ module.exports = (immunityInstance, immunity) => {
     return true
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }

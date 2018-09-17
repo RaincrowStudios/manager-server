@@ -1,37 +1,24 @@
-const getAllFromHash = require('../../redis/getAllFromHash')
-const removeFromActiveSet = require('../../redis/removeFromActiveSet')
-const removeHash = require('../../redis/removeHash')
-const updateHashFieldObject = require('../../redis/updateHashFieldObject')
-const informNearbyPlayers = require('../../utils/informNearbyPlayers')
+const timers = require('../../database/timers')
+const handleError = require('../../utils/handleError')
+const informGame = require('../../utils/informGame')
 
-module.exports = async (immunityInstance) => {
+module.exports = (immunityInstance) => {
   try {
-    const immunity = await getAllFromHash(immunityInstance)
-
-    if (immunity) {
-      const bearer = await getAllFromHash(immunity.bearer)
-
-      await Promise.all([
-        informNearbyPlayers(
-          bearer,
-          {
-            command: 'map_immunity_remove',
-            instance: bearer.instance,
-            immunity: immunity.caster
-          }
-        ),
-        removeFromActiveSet('immunities', immunityInstance),
-        removeHash(immunityInstance),
-        updateHashFieldObject(
-          immunity.bearer,
-          'remove',
-          'immunities',
-          immunityInstance
-        )
-      ])
+    const immunityTimers = timers.by('instance', immunityInstance)
+    if (immunityTimers) {
+      for (const timer of Object.values(immunityTimers))
+      clearTimeout(timer)
+      timers.remove(immunityTimers)
     }
+
+    return informGame(
+      immunityInstance,
+      'covens',
+      'head',
+      'covens/immunity/expire'
+    )
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }

@@ -1,7 +1,9 @@
 const timers = require('../database/timers')
 const addFieldToHash = require('../redis/addFieldToHash')
+const checkKeyExistance = require('../redis/checkKeyExistance')
 const getActiveSet = require('../redis/getActiveSet')
-const getOneFromList = require('../redis/getOneFromList')
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const removeFromAll = require('../redis/removeFromAll')
 const immunityExpire = require('../manager/immunities/immunityExpire')
 
 async function initializeImmunities(id, managers) {
@@ -11,33 +13,37 @@ async function initializeImmunities(id, managers) {
 
       if (immunities.length) {
         for (let i = 0; i < immunities.length; i++) {
-          if (immunities[i]) {
+          if (!immunities[i] || !await checkKeyExistance(immunities[i])) {
+            removeFromAll('immunities', immunities[i])
+            continue
+          }
+
+          const [manager, expiresOn] =
+            await getFieldsFromHash(immunities[i], ['manager', 'expiresOn'])
+
+          if (!managers.includes(manager)) {
+            await addFieldToHash(immunities[i], 'manager', id)
+
             const currentTime = Date.now()
-            const immunity = await getOneFromList('immunities', immunities[i])
 
-            if (immunity && !managers.includes(immunity.manager)) {
-              await addFieldToHash(immunities[i], 'manager', id)
+            if (expiresOn < currentTime) {
+              immunityExpire(immunities[i])
+              continue
+            }
 
-              if (immunity.expiresOn > currentTime) {
-                const expireTimer =
-                  setTimeout(() =>
-                    immunityExpire(immunities[i]),
-                    immunity.expiresOn - currentTime
-                  )
+            const expireTimer =
+              setTimeout(() =>
+                immunityExpire(immunities[i]),
+                expiresOn - currentTime
+              )
 
-                const previousTimers = timers.by('instance', immunities[i])
-                if (previousTimers) {
-                  previousTimers.expireTimer
-
-                  timers.update(previousTimers)
-                }
-                else {
-                  timers.insert({instance: immunities[i], expireTimer})
-                }
-              }
-              else {
-                immunityExpire(immunities[i])
-              }
+            const previousTimers = timers.by('instance', immunities[i])
+            if (previousTimers) {
+              previousTimers.expireTimer = expireTimer
+              timers.update(previousTimers)
+            }
+            else {
+              timers.insert({instance: immunities[i], expireTimer})
             }
           }
         }

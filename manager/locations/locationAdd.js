@@ -1,13 +1,17 @@
 const timers = require('../../database/timers')
+const getOneFromHash = require('../../redis/getOneFromHash')
+const handleError = require('../../utils/handleError')
 const locationReward = require('./locationReward')
 
-module.exports = (locationInstance, location) => {
+module.exports = async (locationInstance) => {
   try {
+    const rewardOn = await getOneFromHash(locationInstance, 'rewardOn')
+
     const currentTime = Date.now()
 
     const rewardTimer =
       setTimeout(() =>
-        locationReward(locationInstance), location.rewardOn - currentTime
+        locationReward(locationInstance), rewardOn - currentTime
       )
 
     timers.insert({locationInstance, rewardTimer})
@@ -15,6 +19,6 @@ module.exports = (locationInstance, location) => {
     return true
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }

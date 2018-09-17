@@ -11,7 +11,7 @@ module.exports = (spiritInstance) => {
       timers.remove(spiritTimers)
     }
 
-    return informGame(spiritInstance, 'covens', 'head', 'covens/spirit/expire')
+    return informGame(spiritInstance, 'covens', 'head', 'covens/spirit/kill')
   }
   catch (err) {
     return handleError(err)

@@ -1,8 +1,8 @@
 const getManagedInstancesList = require('../utils/getManagedInstancesList')
 const handleError = require('../utils/handleError')
+const initializeBots = require('./initializeBots')
 const initializeConditions = require('./initializeConditions')
 const initializeCooldowns = require('./initializeCooldowns')
-const initializeDukes = require('./initializeDukes')
 const initializeImmunities = require('./initializeImmunities')
 const initializeLocations = require('./initializeLocations')
 const initializePortals = require('./initializePortals')
@@ -19,9 +19,11 @@ async function initializer() {
     }
 
     await Promise.all([
+      initializeBots(id, managers),
       initializeConditions(id, managers),
       initializeCooldowns(id, managers),
       initializeImmunities(id, managers),
+      initializeLocations(id, managers),
       initializePortals(id, managers),
       initializeSpirits(id, managers)
     ])

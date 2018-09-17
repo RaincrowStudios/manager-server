@@ -7,7 +7,7 @@ module.exports = (instance, game, method, route) => {
       playerId: '',
       game: game,
       instance: instance,
-      npe: true
+      fromManager: true
     },
     '1m'
   )
