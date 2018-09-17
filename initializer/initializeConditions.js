@@ -2,9 +2,9 @@ const timers = require('../database/timers')
 const getActiveSet = require('../redis/getActiveSet')
 const addFieldToHash = require('../redis/addFieldToHash')
 const getAllFromHash = require('../redis/getAllFromHash')
+const removeFromAll = require('../redis/removeFromAll')
 const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
-const conditionDelete = require('../manager/conditions/conditionDelete')
 
 function initializeConditions(id, managers) {
   return new Promise(async (resolve, reject) => {
@@ -17,7 +17,7 @@ function initializeConditions(id, managers) {
           const condition = await getAllFromHash(conditions[i])
 
           if (!condition) {
-            conditionDelete(conditions[i])
+            removeFromAll('conditions', conditions[i])
             continue
           }
 
