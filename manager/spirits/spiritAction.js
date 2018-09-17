@@ -1,71 +1,57 @@
 const timers = require('../../database/timers')
-const getAllFromHash = require('../../redis/getAllFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
-const resolveSpiritAction = require('./action/resolveSpiritAction')
+const informGame = require('../../utils/informGame')
 
 async function spiritAction(spiritInstance) {
   try {
-    const instanceInfo = await getAllFromHash(spiritInstance)
+    const [state, id] = await getFieldsFromHash(spiritInstance, ['state', 'id'])
 
-    if (instanceInfo) {
-      if (!instanceInfo.id) {
-        await removeFromAll('spirits', spiritInstance)
-        return true
-      }
+    if (state === 'dead' || !id) {
+      await removeFromAll('spirits', spiritInstance)
+      return true
+    }
 
-      const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
+    const spirit = await getOneFromList('spirits', id)
 
-      let spirit = Object.assign(
-        {}, spiritInfo, instanceInfo
+    const currentTime = Date.now()
+
+    let newActionOn, seconds
+    if (spirit.actionFreq.includes('-')) {
+      const range = spirit.actionFreq.split('-')
+      const min = parseInt(range[0], 10)
+      const max = parseInt(range[1], 10)
+
+      seconds = Math.floor(Math.random() * (max - min + 1)) + min
+    }
+    else {
+      seconds = parseInt(spirit.actionFreq, 10)
+    }
+
+    if (spirit.bloodlustCount) {
+      seconds = seconds - spirit.bloodlustCount > 1 ?
+        seconds - spirit.bloodlustCount : 1
+    }
+
+    newActionOn = currentTime + (seconds * 1000)
+
+    await Promise.all([
+      informGame(spiritInstance, 'covens', 'head', 'covens/npe/action'),
+      updateHashField(spiritInstance, 'actionOn', newActionOn)
+    ])
+
+    const newTimer =
+      setTimeout(() =>
+        spiritAction(spiritInstance), newActionOn - currentTime
       )
 
-      if (!spirit.owner) {
-        spirit = {...spirit, ...spirit.wild}
-      }
-
-      if (
-        !Object.values(spirit.conditions)
-          .filter(condition => condition.status === 'silenced').length
-      ) {
-        await resolveSpiritAction(spirit)
-      }
-
-      const currentTime = Date.now()
-
-      let newActionOn, seconds
-      if (spirit.actionFreq.includes('-')) {
-        const range = spirit.actionFreq.split('-')
-        const min = parseInt(range[0], 10)
-        const max = parseInt(range[1], 10)
-
-        seconds = Math.floor(Math.random() * (max - min + 1)) + min
-      }
-      else {
-        seconds = parseInt(spirit.actionFreq, 10)
-      }
-
-      if (spirit.bloodlustCount) {
-        seconds = seconds - spirit.bloodlustCount > 1 ?
-          seconds - spirit.bloodlustCount : 1
-      }
-
-      newActionOn = currentTime + (seconds * 1000)
-
-      await updateHashField(spirit.instance, 'actionOn', newActionOn)
-
-      const newTimer =
-        setTimeout(() =>
-          spiritAction(spirit.instance), newActionOn - currentTime
-        )
-
-      let spiritTimers = timers.by('instance', spirit.instance)
-      if (spiritTimers) {
-        spiritTimers.actionTimer = newTimer
-        timers.update(spiritTimers)
-      }
+    const spiritTimers = timers.by('instance', spiritInstance)
+    if (spiritTimers) {
+      spiritTimers.actionTimer = newTimer
+      timers.update(spiritTimers)
     }
     return true
   }

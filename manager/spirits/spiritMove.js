@@ -1,80 +1,56 @@
 const timers = require('../../database/timers')
-const getAllFromHash = require('../../redis/getAllFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const removeFromAll = require('../../redis/removeFromAll')
-const resolveSpiritMove = require('./move/resolveSpiritMove')
+const handleError = require('../../utils/handleError')
+const informGame = require('../../utils/informGame')
 
 async function spiritMove(spiritInstance) {
   try {
-    const instanceInfo = await getAllFromHash(spiritInstance)
+    const [state, id] = await getFieldsFromHash(spiritInstance, ['state', 'id'])
 
-    if (instanceInfo) {
-      if (!instanceInfo.id) {
-        await removeFromAll('spirits', spiritInstance)
-        return true
-      }
-      const update = []
-      const inform = []
+    if (state === 'dead' || !id) {
+      await removeFromAll('spirits', spiritInstance)
+      return true
+    }
 
-      const spiritInfo = await getOneFromList('spirits', instanceInfo.id)
+    const spirit = await getOneFromList('spirits', id)
 
-      let spirit = Object.assign({}, spiritInfo, instanceInfo)
+    const currentTime = Date.now()
 
-      if(!spirit.owner) {
-        spirit = {...spirit, ...spirit.wild}
-      }
+    let newMoveOn
+    if (spirit.moveFreq.includes('-')) {
+      const range = spirit.moveFreq.split('-')
+      const min = parseInt(range[0], 10)
+      const max = parseInt(range[1], 10)
 
-      if (
-        !Object.values(spirit.conditions)
-          .filter(condition => condition.status === 'bound').length
-      ) {
+      newMoveOn = currentTime +
+        ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
+    }
+    else {
+      newMoveOn = parseInt(spirit.moveFreq, 10)
+    }
 
-        const [interimUpdate, interimInform] = await resolveSpiritMove(spirit)
+    await Promise.all([
+      informGame(spiritInstance, 'covens', 'head', 'covens/npe/move'),
+      updateHashField(spiritInstance, 'moveOn', newMoveOn)
+    ])
 
-        update.push(...interimUpdate)
-        inform.push(...interimInform)
-      }
+    const newTimer =
+      setTimeout(() =>
+        spiritMove(spiritInstance), newMoveOn - currentTime
+      )
 
-      const currentTime = Date.now()
-
-      let newMoveOn
-      if (spirit.moveFreq.includes('-')) {
-        const range = spirit.moveFreq.split('-')
-        const min = parseInt(range[0], 10)
-        const max = parseInt(range[1], 10)
-
-        newMoveOn = currentTime +
-          ((Math.floor(Math.random() * (max - min + 1)) + min) * 1000)
-      }
-      else {
-        newMoveOn = parseInt(spirit.moveFreq, 10)
-      }
-
-      update.push(updateHashField(spirit.instance, 'moveOn', newMoveOn))
-
-      await Promise.all(update)
-
-      for (const informObject of inform) {
-        const informFunction = informObject.function
-        await informFunction(...informObject.parameters)
-      }
-
-      const newTimer =
-        setTimeout(() =>
-          spiritMove(spirit.instance), newMoveOn - currentTime
-        )
-
-      const spiritTimers = timers.by('instance', spirit.instance)
-      if (spiritTimers) {
-        spiritTimers.moveTimer = newTimer
-        timers.update(spiritTimers)
-      }
+    const spiritTimers = timers.by('instance', spiritInstance)
+    if (spiritTimers) {
+      spiritTimers.moveTimer = newTimer
+      timers.update(spiritTimers)
     }
     return true
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }
 

@@ -4,7 +4,7 @@ const addFieldToHash = require('../redis/addFieldToHash')
 const getAllFromHash = require('../redis/getAllFromHash')
 const conditionExpire = require('../manager/conditions/conditionExpire')
 const conditionTrigger = require('../manager/conditions/conditionTrigger')
-const deleteCondition = require('../manager/conditions/deleteCondition')
+const conditionDelete = require('../manager/conditions/conditionDelete')
 
 function initializeConditions(id, managers) {
   return new Promise(async (resolve, reject) => {
@@ -17,7 +17,7 @@ function initializeConditions(id, managers) {
           const condition = await getAllFromHash(conditions[i])
 
           if (!condition) {
-            deleteCondition(conditions[i])
+            conditionDelete(conditions[i])
             continue
           }
 

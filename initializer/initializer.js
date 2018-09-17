@@ -1,8 +1,12 @@
 const getManagedInstancesList = require('../utils/getManagedInstancesList')
+const handleError = require('../utils/handleError')
 const initializeConditions = require('./initializeConditions')
 const initializeCooldowns = require('./initializeCooldowns')
+const initializeDukes = require('./initializeDukes')
 const initializeImmunities = require('./initializeImmunities')
+const initializeLocations = require('./initializeLocations')
 const initializePortals = require('./initializePortals')
+const initializeQuests = require('./initializeQuests')
 const initializeSpirits = require('./initializeSpirits')
 
 async function initializer() {
@@ -23,7 +27,7 @@ async function initializer() {
     ])
   }
   catch (err) {
-    console.error(err)
+    handleError(err)
   }
 }
 

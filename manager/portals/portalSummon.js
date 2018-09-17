@@ -182,6 +182,20 @@ module.exports = async (portalInstance) => {
 
       update.push(spiritAdd(spirit.instance, spirit))
 
+      update.push(
+        informLogger({
+          route: 'spiritSummon',
+          character_id: spirit.owner,
+          spirit_id: spirit.instance,
+          latitude: spirit.summonLat,
+          longitude: spirit.summonLong,
+          ingredient_1: '',
+          ingredient_2: '',
+          ingredient_3: '',
+          pop_id: ''
+        })
+      )
+
       await Promise.all(update)
 
       for (const informObject of inform) {
@@ -193,6 +207,6 @@ module.exports = async (portalInstance) => {
     return true
   }
   catch (err) {
-    console.error(err)
+    handleError(err)
   }
 }

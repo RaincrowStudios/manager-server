@@ -5,7 +5,6 @@ const spiritDeath = require('../manager/spirits/spiritDeath')
 const getOneFromHash = require('../redis/getOneFromHash')
 const getOneFromList = require('../redis/getOneFromList')
 const updateHashFieldObject = require('../redis/updateHashFieldObject')
-const generateNewCoordinates = require('./generateNewCoordinates')
 const informNearbyPlayers = require('./informNearbyPlayers')
 const informPlayers = require('./informPlayers')
 
@@ -48,22 +47,13 @@ module.exports = (target, killer, action = '') => {
             )
           )
 
-          const [newLatitude, newLongitude] = generateNewCoordinates(
-            target.fuzzyLatitude || target.latitude,
-            target.fuzzyLongitude || target.longitude,
-            100,
-            500
-          )
-
           inform.push(
             {
               function: informPlayers,
               parameters: [
                 [target.player],
                 {
-                  command: 'character_location_boot',
-                  latitude: newLatitude,
-                  longitude: newLongitude
+                  command: 'character_location_boot'
                 }
               ]
             },

@@ -1,18 +1,23 @@
 const timers = require('../../database/timers')
+const getOneFromHash = require('../../redis/getOneFromHash')
+const handleError = require('../../utils/handleError')
 const idleTimerBoot = require('./idleTimerBoot')
 
-module.exports = (idleTimerInstance, idleTimer) => {
+module.exports = async (idleTimerInstance) => {
   try {
+    const bootOn = await getOneFromHash(idleTimerInstance, 'bootOn')
+
     const currentTime = Date.now()
 
     const bootTimer =
       setTimeout(() =>
-        idleTimerBoot(idleTimerInstance), idleTimer.bootOn - currentTime
+        idleTimerBoot(idleTimerInstance), bootOn - currentTime
       )
 
     timers.insert({idleTimerInstance, bootTimer})
+    return true
   }
   catch (err) {
-    console.error(err)
+    return handleError(err)
   }
 }

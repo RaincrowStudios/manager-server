@@ -1,28 +1,33 @@
 const timers = require('../../database/timers')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
+const handleError = require('../../utils/handleError')
 const conditionExpire = require('./conditionExpire')
 const conditionTrigger = require('./conditionTrigger')
-const informLogger = require('../../utils/informLogger')
 
-module.exports = (conditionInstance, condition) => {
+module.exports = async (conditionInstance) => {
   try {
-    const currentTime = Date.now()
     const timer = {instance: conditionInstance}
 
-    if (condition.expiresOn) {
+    const [expiresOn, triggerOn] =
+      await getFieldsFromHash(conditionInstance, ['expiresOn', 'triggerOn'])
+
+    const currentTime = Date.now()
+
+    if (expiresOn) {
       const expireTimer =
         setTimeout(() =>
           conditionExpire(conditionInstance),
-          condition.expiresOn - currentTime
+          expiresOn - currentTime
         )
 
       timer.expireTimer = expireTimer
     }
 
-    if (condition.triggerOn) {
+    if (triggerOn) {
       const triggerTimer =
         setTimeout(() =>
           conditionTrigger(conditionInstance),
-          condition.triggerOn - currentTime
+          triggerOn - currentTime
         )
 
       timer.triggerTimer = triggerTimer
@@ -32,12 +37,6 @@ module.exports = (conditionInstance, condition) => {
     return true
   }
   catch (err) {
-    console.error(err)
-    informLogger({
-      route: 'error',
-      error_code: err.message,
-      source: 'manager-server',
-      content: err.stack
-    })
+    return handleError(err)
   }
 }

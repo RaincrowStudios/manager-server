@@ -1,114 +1,34 @@
 const timers = require('../../database/timers')
-const adjustEnergy = require('../../redis/adjustEnergy')
-const getAllFromHash = require('../../redis/getAllFromHash')
-const getOneFromList = require('../../redis/getOneFromList')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const updateHashField = require('../../redis/updateHashField')
-const generateNewCoordinates = require('../../utils/generateNewCoordinates')
 const handleError = require('../../utils/handleError')
-const informNearbyPlayers = require('../../utils/informNearbyPlayers')
-const informPlayers = require('../../utils/informPlayers')
-const resolveCondition = require('./components/resolveCondition')
-const deleteCondition = require('./deleteCondition')
+const informGame = require('../../utils/informGame')
 
 async function conditionTrigger (conditionInstance) {
   try {
-    const currentTime = Date.now()
-    const conditionInfo = await getAllFromHash(conditionInstance)
+    const [triggerOn, tick] =
+      await getFieldsFromHash(conditionInstance, ['triggerOn', 'tick'])
 
-    if (!conditionInfo || !conditionInfo.bearer) {
-      deleteCondition(conditionInstance)
-      return true
+    if (triggerOn) {
+      informGame(conditionInstance, 'covens', 'head', 'covens/condition/trigger')
     }
-    else {
-      const update = []
-      const inform = []
-      const bearer = await getAllFromHash(conditionInfo.bearer)
 
-      if (!bearer) {
-        deleteCondition(conditionInstance)
-        return true
-      }
+    const currentTime = Date.now()
 
-      const spell = await getOneFromList('spells', conditionInfo.id)
+    const newTriggerOn = currentTime + (tick * 1000)
 
-      const condition = Object.assign(
-        {}, spell.condition, conditionInfo
+    await updateHashField(conditionInstance, 'triggerOn', newTriggerOn)
+
+    const newTimer =
+      setTimeout(() =>
+        conditionTrigger(conditionInstance),
+        tick * 1000
       )
 
-      inform.unshift(
-        {
-          function: informNearbyPlayers,
-          parameters: [
-            bearer,
-            {
-              command: 'map_condition_trigger',
-              condition: {
-                instance: conditionInstance,
-                bearer: condition.bearer
-              },
-            }
-          ]
-        }
-      )
-
-      if (condition.overTime) {
-        const total = resolveCondition(condition.overTime)
-
-        const [energyUpdate, energyInform] =
-          await adjustEnergy(bearer, total, condition, condition.id)
-
-        update.push(...energyUpdate)
-        inform.push(...energyInform)
-      }
-      else if (condition.status === 'magicDance') {
-        const [newLatitude, newLongitude] = generateNewCoordinates(
-          bearer.latitude,
-          bearer.longitude,
-          50,
-          100
-        )
-
-        inform.push(
-          {
-            function: informPlayers,
-              parameters: [
-              [bearer.player],
-              {
-                command: 'character_spell_move',
-                spell: condition.id,
-                latitude: newLatitude,
-                longitude: newLongitude
-              }
-            ]
-          }
-        )
-      }
-
-      condition.triggerOn =
-        currentTime + (condition.tick * 1000)
-
-      update.push(
-        updateHashField(conditionInstance, 'triggerOn', condition.triggerOn)
-      )
-
-      await Promise.all(update)
-
-      for (const informObject of inform) {
-        const informFunction = informObject.function
-        await informFunction(...informObject.parameters)
-      }
-
-      const newTimer =
-        setTimeout(() =>
-          conditionTrigger(conditionInstance),
-          condition.tick * 1000
-        )
-
-      let conditionTimer = timers.by('instance', conditionInstance)
-      if (conditionTimer) {
-        conditionTimer.triggerTimer = newTimer
-        timers.update(conditionTimer)
-      }
+    const conditionTimer = timers.by('instance', conditionInstance)
+    if (conditionTimer) {
+      conditionTimer.triggerTimer = newTimer
+      timers.update(conditionTimer)
     }
 
     return true

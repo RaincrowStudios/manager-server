@@ -1,17 +1,20 @@
 const timers = require('../../database/timers')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const collectibleExpire = require('./collectibleExpire')
 
-module.exports = (instance, collectible) => {
+module.exports = async (collectibleInstance) => {
+  const expiresOn = await getOneFromHash(collectibleInstance, 'expiresOn')
+
   const currentTime = Date.now()
 
-  if (collectible.expiresOn) {
+  if (expiresOn) {
     const expireTimer =
       setTimeout(() =>
-        collectibleExpire(instance),
-        collectible.expiresOn - currentTime
+        collectibleExpire(collectibleInstance),
+        expiresOn - currentTime
       )
 
-    timers.insert({instance, expireTimer})
+    timers.insert({collectibleInstance, expireTimer})
   }
 
   return true

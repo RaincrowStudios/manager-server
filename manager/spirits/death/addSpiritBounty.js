@@ -17,8 +17,8 @@ module.exports = (spirit, killer) => {
             parameters: [
               [killer.player],
               {
-                command: 'character_bounty_reward',
-                rewards: rewards
+                command: 'character_silver_add',
+                count: rewards[spirit.tier - 1]
               }
             ]
           }
