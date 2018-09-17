@@ -1,16 +1,20 @@
 const timers = require('../../database/timers')
+const getOneFromHash = require('../../redis/getOneFromHash')
 const handleError = require('../../utils/handleError')
 const immunityExpire = require('./immunityExpire')
 
-module.exports = (immunityInstance, immunity) => {
+module.exports = async (immunityInstance) => {
   try {
-    const currentTime = Date.now()
     const timer = {instance: immunityInstance}
+
+    const expiresOn = await getOneFromHash(immunityInstance, 'expiresOn')
+
+    const currentTime = Date.now()
 
     const expireTimer =
       setTimeout(() =>
         immunityExpire(immunityInstance),
-        immunity.expiresOn - currentTime
+        expiresOn - currentTime
       )
 
     timer.expireTimer = expireTimer

@@ -8,7 +8,6 @@ const dukeSummon = require('./dukeSummon')
 
 module.exports = async (dukeInstanace) => {
   try {
-    const currentTime = Date.now()
     const timer = {instance: dukeInstanace}
 
     const [actionOn, moveOn, summonOn, expiresOn] =
@@ -16,6 +15,8 @@ module.exports = async (dukeInstanace) => {
         dukeInstanace,
         ['actionOn', 'moveOn', 'summonOn', 'expiresOn']
       )
+
+    const currentTime = Date.now()
 
     const actionTimer =
       setTimeout(() =>
@@ -56,7 +57,7 @@ module.exports = async (dukeInstanace) => {
     }
 
     timers.insert(timer)
-    
+
     return true
   }
   catch (err) {

@@ -6,11 +6,12 @@ const botMove = require('./botMove')
 
 module.exports = async (botInstance) => {
   try {
-    const currentTime = Date.now()
     const timer = {instance: botInstance}
 
     const [actionOn, moveOn] =
       await getFieldsFromHash(botInstance, ['actionOn', 'moveOn'])
+
+    const currentTime = Date.now()
 
     const actionTimer =
       setTimeout(() =>
@@ -27,7 +28,6 @@ module.exports = async (botInstance) => {
       )
 
     timer.moveTimer = moveTimer
-
 
     timers.insert(timer)
 

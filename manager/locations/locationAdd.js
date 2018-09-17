@@ -5,6 +5,8 @@ const locationReward = require('./locationReward')
 
 module.exports = async (locationInstance) => {
   try {
+    const timer = {instance: locationInstance}
+
     const rewardOn = await getOneFromHash(locationInstance, 'rewardOn')
 
     const currentTime = Date.now()
@@ -14,7 +16,9 @@ module.exports = async (locationInstance) => {
         locationReward(locationInstance), rewardOn - currentTime
       )
 
-    timers.insert({locationInstance, rewardTimer})
+    timer.rewardTimer = rewardTimer
+
+    timers.insert(timer)
 
     return true
   }

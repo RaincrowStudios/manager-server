@@ -1,5 +1,5 @@
 const timers = require('../../database/timers')
-const getEntriesFromHash = require('../../redis/getEntriesFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const handleError = require('../../utils/handleError')
 const loreExpire = require('./loreExpire')
 const loreReveal = require('./loreReveal')
@@ -8,7 +8,8 @@ module.exports = async (loreInstance) => {
   try {
     const timer = {instance: loreInstance}
 
-    const [revealOn, expiresOn] = await getEntriesFromHash(loreInstance, ['revealOn', 'expiresOn'])
+    const [revealOn, expiresOn] =
+      await getFieldsFromHash(loreInstance, ['revealOn', 'expiresOn'])
 
     const currentTime = Date.now()
 

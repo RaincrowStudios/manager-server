@@ -1,15 +1,10 @@
-const timers = require('../../database/timers')
+const clearTimers = require('../../utils/clearTimers')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
 
 module.exports = (spiritInstance) => {
   try {
-    const spiritTimers = timers.by('instance', spiritInstance)
-    if (spiritTimers) {
-      for (const timer of Object.values(spiritTimers))
-      clearTimeout(timer)
-      timers.remove(spiritTimers)
-    }
+    clearTimers(spiritInstance)
 
     return informGame(spiritInstance, 'covens', 'head', 'covens/spirit/expire')
   }

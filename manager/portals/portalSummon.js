@@ -1,15 +1,10 @@
-const timers = require('../../database/timers')
+const clearTimers = require('../../utils/clearTimers')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
 
-module.exports = async (portalInstance) => {
+module.exports = (portalInstance) => {
   try {
-    const portalTimers = timers.by('instance', portalInstance)
-    if (portalTimers) {
-      for (const timer of Object.values(portalTimers))
-      clearTimeout(timer)
-      timers.remove(portalTimers)
-    }
+    clearTimers(portalInstance)
 
     return informGame(
       portalInstance,

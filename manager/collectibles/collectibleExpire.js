@@ -1,15 +1,10 @@
-const timers = require('../../database/timers')
+const clearTimers = require('../../utils/clearTimers')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
 
 module.exports = (collectibleInstance) => {
   try {
-    const collectibleTimers = timers.by('instance', collectibleInstance)
-    if (collectibleTimers) {
-      for (const timer of Object.values(collectibleTimers))
-      clearTimeout(timer)
-      timers.remove(collectibleTimers)
-    }
+    clearTimers(collectibleInstance)
 
     return informGame(
       collectibleInstance,

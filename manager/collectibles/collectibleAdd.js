@@ -5,6 +5,8 @@ const collectibleExpire = require('./collectibleExpire')
 
 module.exports = async (collectibleInstance) => {
   try {
+    const timer = {instance: collectibleInstance}
+
     const expiresOn = await getOneFromHash(collectibleInstance, 'expiresOn')
 
     const currentTime = Date.now()
@@ -16,7 +18,9 @@ module.exports = async (collectibleInstance) => {
           expiresOn - currentTime
         )
 
-      timers.insert({collectibleInstance, expireTimer})
+      timer.expireTimer = expireTimer
+
+      timers.insert(timer)
     }
 
     return true

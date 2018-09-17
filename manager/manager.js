@@ -1,4 +1,3 @@
-const timers = require('../database/timers')
 const addFieldToHash = require('../redis/addFieldToHash')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
@@ -9,6 +8,7 @@ const immunityAdd = require('./immunities/immunityAdd')
 const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
 const spiritAdd = require('./spirits/spiritAdd')
+const clearTimers = require('../utils/clearTimers')
 const handleError = require('../utils/handleError')
 
 const addTimers = {
@@ -25,17 +25,9 @@ const addTimers = {
 
 async function manager(message) {
   try {
-    let timersToClear
     switch (message.command) {
       case 'remove':
-        timersToClear = timers.by('instance', message.instance)
-        if (timersToClear) {
-          for (const key of Object.keys(timersToClear)) {
-            if (key !== 'meta' && typeof timersToClear[key] === 'object') {
-              clearTimeout(timersToClear[key])
-            }
-          }
-        }
+        clearTimers(message.instance)
         break
       case 'add':
         await addFieldToHash(message.instance, 'manager', process.env.INSTANCE_ID)

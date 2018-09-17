@@ -1,15 +1,10 @@
-const timers = require('../../database/timers')
+const clearTimers = require('../../utils/clearTimers')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
 
 module.exports = (idleTimerInstance) => {
   try {
-    const idleTimers = timers.by('instance', idleTimerInstance)
-    if (idleTimers) {
-      for (const timer of Object.values(idleTimers))
-      clearTimeout(timer)
-      timers.remove(idleTimers)
-    }
+    clearTimers(idleTimerInstance)
 
     return informGame(
       idleTimerInstance,
