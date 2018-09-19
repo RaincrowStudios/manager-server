@@ -1,16 +1,12 @@
 const timers = require('../../database/timers')
 const handleError = require('../../utils/handleError')
-const questCreate = require('./questCreate')
+const informGame = require('../../utils/informGame')
 
 async function questReset() {
   try {
-    const currentTime = Date.now()
-
-    const newQuests = await questCreate()
-
     const newTimer =
       setTimeout(() =>
-        questReset(), newQuests.expiresOn - currentTime
+        questReset(), 86400000
       )
 
     let questTimers = timers.by('instance', 'quests')
@@ -19,10 +15,15 @@ async function questReset() {
       timers.update(questTimers)
     }
 
-    return true
+    return informGame(
+      'quest',
+      'covens',
+      'head',
+      'covens/quest/reset'
+    )
   }
   catch (err) {
-    handleError(err)
+    return handleError(err)
   }
 }
 

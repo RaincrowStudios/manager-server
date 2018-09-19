@@ -4,10 +4,11 @@ const checkKeyExistance = require('../redis/checkKeyExistance')
 const getActiveSet = require('../redis/getActiveSet')
 const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const removeFromAll = require('../redis/removeFromAll')
+const spiritAction = require('../manager/spirits/spiritAction')
 const spiritExpire = require('../manager/spirits/spiritExpire')
 const spiritKill = require('../manager/spirits/spiritKill')
 const spiritMove = require('../manager/spirits/spiritMove')
-const spiritAction = require('../manager/spirits/spiritAction')
+const spiritSummon = require('../manager/spirits/spiritSummon')
 
 async function initializeSpirits(id, managers) {
   return new Promise(async (resolve, reject) => {
@@ -21,16 +22,25 @@ async function initializeSpirits(id, managers) {
             continue
           }
 
-          const [manager, state, lastAttackedBy, actionOn, moveOn, expiresOn] =
+          const [manager, state, lastAttackedBy, actionOn, moveOn, summonOn, expiresOn] =
             await getFieldsFromHash(
               spirits[i],
-              ['manager', 'state', 'lastAttackedBy', 'actionOn', 'moveOn', 'expiresOn']
+              [
+                'manager',
+                'state',
+                'lastAttackedBy',
+                'actionOn',
+                'moveOn',
+                'summonOn',
+                'expiresOn'
+              ]
             )
 
           if (!managers.includes(manager)) {
             await addFieldToHash(spirits[i], 'manager', id)
 
             const currentTime = Date.now()
+
             if (expiresOn !== 0 && expiresOn < currentTime) {
               spiritExpire(spirits[i])
               continue
@@ -49,10 +59,10 @@ async function initializeSpirits(id, managers) {
 
             const actionTimer =
               setTimeout(() =>
-                spiritAction(spirits[i]),
-                actionOn > currentTime ?
-                  actionOn - currentTime : 0
-              )
+                 spiritAction(spirits[i]),
+                 actionOn > currentTime ?
+                   actionOn - currentTime : 0
+               )
 
             let moveTimer
             if (moveOn) {
@@ -61,6 +71,16 @@ async function initializeSpirits(id, managers) {
                   spiritMove(spirits[i]),
                   moveOn > currentTime ?
                     moveOn - currentTime : 0
+                )
+            }
+
+            let summonTimer
+            if (summonOn) {
+              summonTimer =
+                setTimeout(() =>
+                  spiritSummon(spirits[i]),
+                  summonOn > currentTime ?
+                    summonOn - currentTime : 0
                 )
             }
 
@@ -77,6 +97,7 @@ async function initializeSpirits(id, managers) {
             if (previousTimers) {
               previousTimers.actionTimer = actionTimer
               previousTimers.moveTimer = moveTimer
+              previousTimers.summonTimer = summonTimer
               previousTimers.expireTimer = expireTimer
               timers.update(previousTimers)
             }
@@ -85,6 +106,7 @@ async function initializeSpirits(id, managers) {
                 instance: spirits[i],
                 actionTimer,
                 moveTimer,
+                summonTimer,
                 expireTimer
               })
             }
