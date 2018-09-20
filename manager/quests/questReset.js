@@ -4,9 +4,17 @@ const informGame = require('../../utils/informGame')
 
 async function questReset() {
   try {
+    const currenTime = Date.now()
+    const dayLater = currenTime + 86400000
+    const dayLaterUTC = new Date(dayLater)
+    dayLaterUTC.setUTCHours(4)
+    dayLaterUTC.setUTCMinutes(0)
+    dayLaterUTC.setUTCSeconds(0)
+    dayLaterUTC.setUTCMilliseconds(0)
+
     const newTimer =
       setTimeout(() =>
-        questReset(), 86400000
+        questReset(), dayLaterUTC.getTime() - currenTime
       )
 
     let questTimers = timers.by('instance', 'quests')
