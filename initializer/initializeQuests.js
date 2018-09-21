@@ -1,6 +1,6 @@
 const timers = require('../database/timers')
 const addEntriesToList = require('../redis/addEntriesToList')
-const getEntriesFromList = require('../redis/getOneFromList')
+const getEntriesFromList = require('../redis/getEntriesFromList')
 const questReset = require('../manager/quests/questReset')
 
 async function initializeQuests(id, managers) {

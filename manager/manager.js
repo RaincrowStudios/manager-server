@@ -1,4 +1,5 @@
 const addFieldToHash = require('../redis/addFieldToHash')
+const botAdd = require('./bots/botAdd')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
@@ -12,6 +13,7 @@ const clearTimers = require('../utils/clearTimers')
 const handleError = require('../utils/handleError')
 
 const addTimers = {
+  bot: botAdd,
   collectible: collectibleAdd,
   condition: conditionAdd,
   cooldown: cooldownAdd,
