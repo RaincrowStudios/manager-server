@@ -1,9 +1,9 @@
 const axios = require('axios')
-const createToken = require('./createToken')
+const createAuthToken = require('./createAuthToken')
 
 module.exports = async (instance, game, method, route) => {
   try {
-    const authToken = createToken(
+    const authToken = createAuthToken(
       {
         playerId: '',
         game: game,
@@ -16,6 +16,9 @@ module.exports = async (instance, game, method, route) => {
     let url
     if (process.env.NODE_ENV === 'development') {
       url = 'http://localhost:8080/api/' + route
+    }
+    else if (process.env.NODE_ENV === 'staging') {
+      url = 'https://staging.raincrowstudios.xyz/api/' + route
     }
     else {
       url = 'https://raincrowstudios.xyz/api/' + route

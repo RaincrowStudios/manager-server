@@ -1,15 +1,21 @@
 const informLogger = require('./informLogger')
 
-module.exports = (err) => {
+module.exports = (err, res) => {
   if (process.env.NODE_ENV === 'development') {
     console.error(err)
   }
+
   informLogger({
     route: 'error',
     error_code: err.message,
-    source: 'game-server',
+    source: 'manager-server',
     content: err.stack
   })
 
-  return true
+  if (res) {
+    const status = err.message[0] === '5' ? 500 : 400
+    res.writeHead(status)
+    res.write(err.message)
+    res.end()
+  }
 }

@@ -10,7 +10,6 @@ const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
 const spiritAdd = require('./spirits/spiritAdd')
 const clearTimers = require('../utils/clearTimers')
-const handleError = require('../utils/handleError')
 
 const addTimers = {
   bot: botAdd,
@@ -26,23 +25,18 @@ const addTimers = {
 }
 
 async function manager(message) {
-  try {
-    switch (message.command) {
-      case 'remove':
-        clearTimers(message.instance)
-        break
-      case 'add':
-        await addFieldToHash(message.instance, 'manager', process.env.INSTANCE_ID)
-        addTimers[message.type](message.instance)
-        break
-      default:
-        break
-    }
-    return true
+  switch (message.command) {
+    case 'remove':
+      clearTimers(message.instance)
+      break
+    case 'add':
+      await addFieldToHash(message.instance, 'manager', process.env.INSTANCE_ID)
+      await addTimers[message.type](message.instance)
+      break
+    default:
+      break
   }
-  catch (err) {
-    return handleError(err)
-  }
+  return true
 }
 
 module.exports = manager
