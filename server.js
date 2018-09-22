@@ -2,7 +2,6 @@
 
 const http = require('http')
 const jwt = require('jsonwebtoken')
-const net = require('net')
 const production = require('./config/production')
 const initializer = require('./initializer/initializer')
 const keys = require('./keys/keys')
@@ -24,29 +23,6 @@ async function startup() {
 }
 
 startup()
-
-/*
-const server = net.createServer(socket => {
-  socket.on('data', data => {
-    const messages = data.toString().split('$%$%').filter(message => message)
-
-    for (const message of messages) {
-      manager(JSON.parse(message))
-    }
-  })
-
-  socket.on('error', err => {
-    if (err.code !== 'ECONNRESET') {
-      handleError(err)
-    }
-  })
-})
-
-server.listen(port, () => {
-  console.log('Manager server started')
-})
-*/
-
 
 const server = http.createServer().listen(port, () => {
   console.log('Manager server started')
