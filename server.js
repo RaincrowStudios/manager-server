@@ -6,6 +6,8 @@ const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
 const createRedisSubscribers = require('./redis/createRedisSubscribers')
+const handleError = require('./utils/handleError')
+
 const port = process.env.NODE_ENV === 'development' ? 8082 : production.port
 
 async function startup() {
@@ -30,7 +32,7 @@ const server = net.createServer(socket => {
 
   socket.on('error', err => {
     if (err.code !== 'ECONNRESET') {
-      console.error(err)
+      handleError(err)
     }
   })
 })

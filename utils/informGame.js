@@ -1,7 +1,7 @@
 const axios = require('axios')
 const createToken = require('./createToken')
 
-module.exports = (instance, game, method, route) => {
+module.exports = async (instance, game, method, route) => {
   try {
     const authToken = createToken(
       {
@@ -21,7 +21,7 @@ module.exports = (instance, game, method, route) => {
       url = 'https://raincrowstudios.xyz/api/' + route
     }
 
-    axios(
+    await axios(
       {
         method: method,
         url: url,
