@@ -1,7 +1,7 @@
 const selectRedisClient = require('./selectRedisClient')
 
-module.exports = (instance, fields) => {
-  return new Promise((resolve, reject) => {
+module.exports = async(instance, fields) => {
+  return new Promise( async (resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
@@ -16,10 +16,16 @@ module.exports = (instance, fields) => {
         if (err) {
           throw new Error('5300')
         }
-        resolve(results.map(result => JSON.parse(result)))
+        const object = {}
+        for (let i = 0; i < fields.length; i++) {
+          const result = JSON.parse(results[i])
+          if (result !== null || result !== undefined) {
+            object[fields[i]] = result
+          }
+        }
+        resolve(object)
       })
-    }
-    catch (err) {
+    } catch (err) {
       reject(err)
     }
   })

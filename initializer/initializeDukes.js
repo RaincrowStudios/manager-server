@@ -4,60 +4,46 @@ const checkKeyExistance = require('../redis/checkKeyExistance')
 const getActiveSet = require('../redis/getActiveSet')
 const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const removeFromAll = require('../redis/removeFromAll')
-const spiritAction = require('../manager/spirits/spiritAction')
-const spiritExpire = require('../manager/spirits/spiritExpire')
-const spiritKill = require('../manager/spirits/spiritKill')
-const spiritMove = require('../manager/spirits/spiritMove')
+const dukeAction = require('../manager/dukes/dukeAction')
+const dukeExpire = require('../manager/dukes/dukeExpire')
+const dukeMove = require('../manager/dukes/dukeMove')
+const dukeSummon = require('../manager/dukes/dukeSummon')
 
 module.exports = async (id, managers) => {
-  const spirits = await getActiveSet('spirits')
+  const dukes = await getActiveSet('dukes')
 
-  if (spirits.length) {
-    for (let i = 0; i < spirits.length; i++) {
-      if (!spirits[i] || !await checkKeyExistance(spirits[i])) {
-        removeFromAll('spirits', spirits[i])
+  if (dukes.length) {
+    for (let i = 0; i < dukes.length; i++) {
+      if (!dukes[i] || !await checkKeyExistance(dukes[i])) {
+        removeFromAll('dukes', dukes[i])
         continue
       }
 
-      const {
-        manager, state, lastAttackedBy, actionOn, moveOn, expiresOn
-      } =
+      const {manager, actionOn, moveOn, summonOn, expiresOn} =
         await getFieldsFromHash(
-          spirits[i],
+          dukes[i],
           [
             'manager',
-            'state',
-            'lastAttackedBy',
             'actionOn',
             'moveOn',
+            'summonOn',
             'expiresOn'
           ]
         )
 
       if (!managers.includes(manager)) {
-        await addFieldToHash(spirits[i], 'manager', id)
+        await addFieldToHash(dukes[i], 'manager', id)
 
         const currentTime = Date.now()
 
         if (expiresOn !== 0 && expiresOn < currentTime) {
-          spiritExpire(spirits[i])
+          dukeExpire(dukes[i])
           continue
-        }
-
-        if (state === 'dead') {
-          if (lastAttackedBy.instance) {
-            spiritKill(spirits[i])
-            continue
-          }
-          else {
-            spiritExpire(spirits[i])
-            continue
-          }
         }
 
         const actionTimer =
           setTimeout(() =>
-             spiritAction(spirits[i]),
+             dukeAction(dukes[i]),
              actionOn > currentTime ?
                actionOn - currentTime : 0
            )
@@ -66,9 +52,19 @@ module.exports = async (id, managers) => {
         if (moveOn) {
           moveTimer =
             setTimeout(() =>
-              spiritMove(spirits[i]),
+              dukeMove(dukes[i]),
               moveOn > currentTime ?
                 moveOn - currentTime : 0
+            )
+        }
+
+        let summonTimer
+        if (summonOn) {
+          summonTimer =
+            setTimeout(() =>
+              dukeSummon(dukes[i]),
+              summonOn > currentTime ?
+                summonOn - currentTime : 0
             )
         }
 
@@ -76,23 +72,25 @@ module.exports = async (id, managers) => {
         if (expiresOn) {
           expireTimer =
             setTimeout(() =>
-              spiritExpire(spirits[i]),
+              dukeExpire(dukes[i]),
               expiresOn - currentTime
             )
         }
 
-        const previousTimers = timers.by('instance', spirits[i])
+        const previousTimers = timers.by('instance', dukes[i])
         if (previousTimers) {
           previousTimers.actionTimer = actionTimer
           previousTimers.moveTimer = moveTimer
+          previousTimers.summonTimer = summonTimer
           previousTimers.expireTimer = expireTimer
           timers.update(previousTimers)
         }
         else {
           timers.insert({
-            instance: spirits[i],
+            instance: dukes[i],
             actionTimer,
             moveTimer,
+            summonTimer,
             expireTimer
           })
         }

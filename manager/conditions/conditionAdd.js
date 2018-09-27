@@ -8,8 +8,10 @@ module.exports = async (conditionInstance) => {
   try {
     const timer = {instance: conditionInstance}
 
-    const [expiresOn, triggerOn] =
-      await getFieldsFromHash(conditionInstance, ['expiresOn', 'triggerOn'])
+    const {expiresOn, triggerOn} = await getFieldsFromHash(
+      conditionInstance,
+      ['expiresOn', 'triggerOn']
+    )
 
     const currentTime = Date.now()
 

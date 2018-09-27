@@ -1,51 +1,54 @@
 const timers = require('../database/timers')
 const addFieldToHash = require('../redis/addFieldToHash')
+const checkKeyExistance = require('../redis/checkKeyExistance')
 const getActiveSet = require('../redis/getActiveSet')
-const getAllFromHash = require('../redis/getAllFromHash')
+const getFieldsFromHash = require('../redis/getFieldsFromHash')
+const removeFromAll = require('../redis/removeFromAll')
 const cooldownExpire = require('../manager/cooldowns/cooldownExpire')
 
-async function initializeCooldowns(id, managers) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const cooldowns = await getActiveSet('cooldowns')
+module.exports = async (id, managers) => {
+  const cooldowns = await getActiveSet('cooldowns')
 
-      if (cooldowns.length) {
-        for (let i = 0; i < cooldowns.length; i++) {
-          const currentTime = Date.now()
-          const cooldown = await getAllFromHash(cooldowns[i])
+  if (cooldowns.length) {
+    for (let i = 0; i < cooldowns.length; i++) {
+      if (!cooldowns[i] || !await checkKeyExistance(cooldowns[i])) {
+        removeFromAll('cooldowns', cooldowns[i])
+        continue
+      }
 
-          if (cooldown && !managers.includes(cooldown.manager)) {
-            await addFieldToHash(cooldowns[i], 'manager', id)
+      const {manager, expiresOn} = await getFieldsFromHash(
+        cooldowns[i],
+        ['manager', 'expiresOn']
+      )
 
-            if (cooldown.expiresOn > currentTime) {
-              const expireTimer =
-                setTimeout(() =>
-                  cooldownExpire(cooldowns[i]),
-                  cooldown.expiresOn - currentTime
-                )
+      if (!managers.includes(manager)) {
+        await addFieldToHash(cooldowns[i], 'manager', id)
 
-              const previousTimers = timers.by('instance', cooldowns[i])
-              if (previousTimers) {
-                previousTimers.expireTimer
+        const currentTime = Date.now()
 
-                timers.update(previousTimers)
-              }
-              else {
-                timers.insert({instance: cooldowns[i], expireTimer})
-              }
-            }
-            else {
-              cooldownExpire(cooldowns[i])
-            }
-          }
+        if (expiresOn < currentTime) {
+          cooldownExpire(cooldowns[i])
+          continue
+        }
+
+        const expireTimer =
+          setTimeout(() =>
+            cooldownExpire(cooldowns[i]),
+            expiresOn - currentTime
+          )
+
+        const previousTimers = timers.by('instance', cooldowns[i])
+        if (previousTimers) {
+          previousTimers.expireTimer
+
+          timers.update(previousTimers)
+        }
+        else {
+          timers.insert({instance: cooldowns[i], expireTimer})
         }
       }
-      resolve(true)
     }
-    catch (err) {
-      reject(err)
-    }
-  })
-}
+  }
 
-module.exports = initializeCooldowns
+  return true
+}

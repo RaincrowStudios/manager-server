@@ -1,48 +1,48 @@
 const timers = require('../../database/timers')
-const getAllFromHash = require('../../redis/getAllFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
+const informGame = require('../../utils/informGame')
 
-async function dukeSummon(instance) {
+async function dukeSummon(dukeInstanace) {
   try {
-    const instanceInfo = await getAllFromHash(instance)
+    const {id} = await getFieldsFromHash(dukeInstanace, ['id'])
 
-    if (instanceInfo) {
-      const dukeInfo = await getOneFromList('dukes', instanceInfo.id)
+    if (id) {
+      const template = await getOneFromList('dukes', id)
 
-      const duke = Object.assign(
-        {}, dukeInfo, instanceInfo,
-      )
-
-      //await handleDukeSummon(duke)
+      const summonFreq = template.court.summonFreq
 
       const currentTime = Date.now()
 
-      let newSummonOn, seconds
-      if (duke.summonFreq.court.includes('-')) {
-        const range = duke.actionFreq.split('-')
+      let minutes
+      if (summonFreq.includes('-')) {
+        const range = summonFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
 
-        seconds = Math.floor(Math.random() * (max - min + 1)) + min
+        minutes = Math.floor(Math.random() * (max - min + 1)) + min
       }
       else {
-        seconds = parseInt(duke.court.summonFreq, 10)
+        minutes = parseInt(summonFreq, 10)
       }
 
-      newSummonOn = currentTime + (seconds * 1000)
+      const newSummonOn = currentTime + (minutes * 60000)
 
-      await updateHashField(duke.instance, 'actionOn', newSummonOn)
+      await Promise.all([
+        informGame(dukeInstanace, 'covens', 'head', 'covens/npe/summon'),
+        updateHashField(dukeInstanace, 'summonOn', newSummonOn)
+      ])
 
       const newTimer =
         setTimeout(() =>
-          dukeSummon(duke.instance), newSummonOn - currentTime
+          dukeSummon(dukeInstanace), newSummonOn - currentTime
         )
 
-      let dukeTimers = timers.by('instance', duke.instance)
+      let dukeTimers = timers.by('instance', dukeInstanace)
       if (dukeTimers) {
-        dukeTimers.actionTimer = newTimer
+        dukeTimers.summonTimer = newTimer
         timers.update(dukeTimers)
       }
     }

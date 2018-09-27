@@ -9,8 +9,10 @@ module.exports = async (spiritInstance) => {
   try {
     const timer = {instance: spiritInstance}
 
-    const [actionOn, moveOn, expiresOn] =
-      await getFieldsFromHash(spiritInstance, ['actionOn', 'moveOn', 'expiresOn'])
+    const {actionOn, moveOn, expiresOn} = await getFieldsFromHash(
+      spiritInstance,
+      ['actionOn', 'moveOn', 'expiresOn']
+    )
 
     const currentTime = Date.now()
 

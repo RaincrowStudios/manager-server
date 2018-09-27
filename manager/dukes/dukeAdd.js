@@ -10,8 +10,7 @@ module.exports = async (dukeInstanace) => {
   try {
     const timer = {instance: dukeInstanace}
 
-    const [actionOn, moveOn, summonOn, expiresOn] =
-      await getFieldsFromHash(
+    const {actionOn, moveOn, summonOn, expiresOn} = await getFieldsFromHash(
         dukeInstanace,
         ['actionOn', 'moveOn', 'summonOn', 'expiresOn']
       )

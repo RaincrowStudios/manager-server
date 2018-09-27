@@ -8,8 +8,10 @@ module.exports = async (botInstance) => {
   try {
     const timer = {instance: botInstance}
 
-    const [actionOn, moveOn] =
-      await getFieldsFromHash(botInstance, ['actionOn', 'moveOn'])
+    const {actionOn, moveOn} = await getFieldsFromHash(
+      botInstance,
+      ['actionOn', 'moveOn']
+    )
 
     const currentTime = Date.now()
 

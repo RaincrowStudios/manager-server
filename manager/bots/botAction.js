@@ -6,8 +6,10 @@ const informGame = require('../../utils/informGame')
 
 async function botAction(botInstance) {
   try {
-    const [state, actionFreq] =
-      await getFieldsFromHash(botInstance, ['state', 'actionFreq'])
+    const {state, actionFreq} = await getFieldsFromHash(
+      botInstance,
+      ['state', 'actionFreq']
+    )
 
     if (state !== 'dead') {
       informGame(botInstance, 'covens', 'head', 'covens/npe/action')

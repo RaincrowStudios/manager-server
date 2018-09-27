@@ -6,54 +6,48 @@ const getFieldsFromHash = require('../redis/getFieldsFromHash')
 const removeFromAll = require('../redis/removeFromAll')
 const locationReward = require('../manager/locations/locationReward')
 
-async function initializeLocations(id, managers) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const locations = await getActiveSet('locations')
+module.exports = async (id, managers) => {
+  const locations = await getActiveSet('locations')
 
-      if (locations.length) {
-        for (let i = 0; i < locations.length; i++) {
-          if (!locations[i] || !await checkKeyExistance(locations[i])) {
-            removeFromAll('locations', locations[i])
-            continue
-          }
+  if (locations.length) {
+    for (let i = 0; i < locations.length; i++) {
+      if (!locations[i] || !await checkKeyExistance(locations[i])) {
+        removeFromAll('locations', locations[i])
+        continue
+      }
 
-          const [manager, rewardOn] =
-            await getFieldsFromHash(locations[i], ['manager', 'rewardOn'])
+      const {manager, rewardOn} = await getFieldsFromHash(
+        locations[i],
+        ['manager', 'rewardOn']
+      )
 
-          if (!managers.includes(manager)) {
-            await addFieldToHash(locations[i], 'manager', id)
+      if (!managers.includes(manager)) {
+        await addFieldToHash(locations[i], 'manager', id)
 
-            const currentTime = Date.now()
+        const currentTime = Date.now()
 
-            if (rewardOn < currentTime) {
-              locationReward(locations[i])
-              continue
-            }
+        if (rewardOn < currentTime) {
+          locationReward(locations[i])
+          continue
+        }
 
-            const rewardTimer =
-              setTimeout(() =>
-                locationReward(locations[i]),
-                rewardOn - currentTime
-              )
+        const rewardTimer =
+          setTimeout(() =>
+            locationReward(locations[i]),
+            rewardOn - currentTime
+          )
 
-            const previousTimers = timers.by('instance', locations[i])
-            if (previousTimers) {
-              previousTimers.rewardTimer = rewardTimer
-              timers.update(previousTimers)
-            }
-            else {
-              timers.insert({instance: locations[i], rewardTimer})
-            }
-          }
+        const previousTimers = timers.by('instance', locations[i])
+        if (previousTimers) {
+          previousTimers.rewardTimer = rewardTimer
+          timers.update(previousTimers)
+        }
+        else {
+          timers.insert({instance: locations[i], rewardTimer})
         }
       }
-      resolve(true)
     }
-    catch (err) {
-      reject(err)
-    }
-  })
+  }
+  
+  return true
 }
-
-module.exports = initializeLocations

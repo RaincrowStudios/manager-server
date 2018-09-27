@@ -25,6 +25,7 @@ async function initializer() {
       initializeImmunities(id, managers),
       initializeLocations(id, managers),
       initializePortals(id, managers),
+      initializeQuests(id, managers),
       initializeSpirits(id, managers)
     ])
   }

@@ -1,5 +1,5 @@
 const timers = require('../../database/timers')
-const getAllFromHash = require('../../redis/getAllFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
@@ -7,30 +7,31 @@ const informGame = require('../../utils/informGame')
 
 async function dukeAction(dukeInstanace) {
   try {
-    const instanceInfo = await getAllFromHash(dukeInstanace)
+        const {id, currentPhase} = await getFieldsFromHash(
+          dukeInstanace,
+          ['id', 'currentPhase']
+        )
 
-    if (instanceInfo) {
-      const dukeInfo = await getOneFromList('spirits', instanceInfo.id)
+    if (id) {
+        const template = await getOneFromList('dukes', id)
 
-      const duke = Object.assign(
-        {}, dukeInfo, instanceInfo,
-      )
+      const actionFreq = template.phase[currentPhase].actionFreq
 
       const currentTime = Date.now()
 
-      let newActionOn, seconds
-      if (duke.phase[duke.currentPhase].actionFreq.includes('-')) {
-        const range = duke.actionFreq.split('-')
+      let seconds
+      if (actionFreq.includes('-')) {
+        const range = actionFreq.split('-')
         const min = parseInt(range[0], 10)
         const max = parseInt(range[1], 10)
 
         seconds = Math.floor(Math.random() * (max - min + 1)) + min
       }
       else {
-        seconds = parseInt(duke.phase[duke.currentPhase], 10)
+        seconds = parseInt(actionFreq, 10)
       }
 
-      newActionOn = currentTime + (seconds * 1000)
+      const newActionOn = currentTime + (seconds * 1000)
 
       await Promise.all([
         informGame(dukeInstanace, 'covens', 'head', 'covens/npe/action'),

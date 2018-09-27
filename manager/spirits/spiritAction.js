@@ -8,7 +8,10 @@ const informGame = require('../../utils/informGame')
 
 async function spiritAction(spiritInstance) {
   try {
-    const [state, id] = await getFieldsFromHash(spiritInstance, ['state', 'id'])
+    const {state, id} = await getFieldsFromHash(
+      spiritInstance,
+      ['state', 'id']
+    )
 
     if (state === 'dead' || !id) {
       await removeFromAll('spirits', spiritInstance)

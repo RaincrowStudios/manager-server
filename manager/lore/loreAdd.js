@@ -8,8 +8,10 @@ module.exports = async (loreInstance) => {
   try {
     const timer = {instance: loreInstance}
 
-    const [revealOn, expiresOn] =
-      await getFieldsFromHash(loreInstance, ['revealOn', 'expiresOn'])
+    const {revealOn, expiresOn} = await getFieldsFromHash(
+      loreInstance,
+      ['revealOn', 'expiresOn']
+    )
 
     const currentTime = Date.now()
 

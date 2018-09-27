@@ -6,8 +6,10 @@ const informGame = require('../../utils/informGame')
 
 async function conditionTrigger (conditionInstance) {
   try {
-    const [triggerOn, tick] =
-      await getFieldsFromHash(conditionInstance, ['triggerOn', 'tick'])
+    const {triggerOn, tick} = await getFieldsFromHash(
+      conditionInstance,
+      ['triggerOn', 'tick']
+    )
 
     if (triggerOn) {
       informGame(conditionInstance, 'covens', 'head', 'covens/condition/trigger')
