@@ -10,7 +10,7 @@ module.exports = async (instance, game, method, route) => {
         instance: instance,
         fromManager: true
       },
-      '1m'
+      '5m'
     )
 
     let url

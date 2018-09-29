@@ -7,6 +7,7 @@ const initializeImmunities = require('./initializeImmunities')
 const initializeLocations = require('./initializeLocations')
 const initializePortals = require('./initializePortals')
 const initializeQuests = require('./initializeQuests')
+const initializeSpawnPoints = require('./initializeSpawnPoints')
 const initializeSpirits = require('./initializeSpirits')
 
 async function initializer() {
@@ -26,6 +27,7 @@ async function initializer() {
       initializeLocations(id, managers),
       initializePortals(id, managers),
       initializeQuests(id, managers),
+      initializeSpawnPoints(id, managers),
       initializeSpirits(id, managers)
     ])
   }

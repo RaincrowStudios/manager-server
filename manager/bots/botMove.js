@@ -11,37 +11,39 @@ async function botMove(botInstance) {
       ['state', 'moveFreq']
     )
 
-    if (state !== 'dead') {
-      informGame(botInstance, 'covens', 'head', 'covens/npe/move')
-    }
+    if (moveFreq) {
+      if (state !== 'dead') {
+        informGame(botInstance, 'covens', 'head', 'covens/npe/move')
+      }
 
-    const currentTime = Date.now()
+      const currentTime = Date.now()
 
-    let newMoveOn, seconds
-    if (moveFreq.includes('-')) {
-      const [min, max] = moveFreq.split('-')
+      let newMoveOn, seconds
+      if (moveFreq.includes('-')) {
+        const [min, max] = moveFreq.split('-')
 
-      seconds = Math.floor(
-        Math.random() * (parseInt(max, 10) - parseInt(min, 10) + 1)
-      ) + parseInt(min, 10)
-    }
-    else {
-      seconds = parseInt(moveFreq, 10)
-    }
+        seconds = Math.floor(
+          Math.random() * (parseInt(max, 10) - parseInt(min, 10) + 1)
+        ) + parseInt(min, 10)
+      }
+      else {
+        seconds = parseInt(moveFreq, 10)
+      }
 
-    newMoveOn = currentTime + (seconds * 1000)
+      newMoveOn = currentTime + (seconds * 1000)
 
-    await updateHashField(botInstance, 'moveOn', newMoveOn)
+      await updateHashField(botInstance, 'moveOn', newMoveOn)
 
-    const newTimer =
-      setTimeout(() =>
-        botMove(botInstance), newMoveOn - currentTime
-      )
+      const newTimer =
+        setTimeout(() =>
+          botMove(botInstance), newMoveOn - currentTime
+        )
 
-    const botTimers = timers.by('instance', botInstance)
-    if (botTimers) {
-      botTimers.moveTimer = newTimer
-      timers.update(botTimers)
+      const botTimers = timers.by('instance', botInstance)
+      if (botTimers) {
+        botTimers.moveTimer = newTimer
+        timers.update(botTimers)
+      }
     }
 
     return true
