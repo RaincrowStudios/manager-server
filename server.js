@@ -19,41 +19,43 @@ async function startup() {
     createRedisClients(),
     createRedisSubscribers()
   ])
+
   initializer()
-}
 
-startup()
+  const server = http.createServer().listen(port, () => {
+    console.log('Manager server started')
+  })
 
-const server = http.createServer().listen(port, () => {
-  console.log('Manager server started')
-})
-
-server.on('request', async (req, res) => {
-  try {
-    if (req.headers.connection === 'Keep-alive') {
-      res.writeHead(200)
-      res.end()
-    }
-    else {
-      const token = req.headers.authorization.split(' ')[1]
-      const decoded = jwt.verify(token, Buffer.from(keys.jwt, 'base64'))
-
-      if (decoded.fromGame) {
-        await manager(decoded.message)
-
+  server.on('request', async (req, res) => {
+    try {
+      if (req.headers.connection === 'Keep-alive') {
         res.writeHead(200)
         res.end()
       }
       else {
-        res.writeHead(401)
-        res.end()
+        const token = req.headers.authorization.split(' ')[1]
+        const decoded = jwt.verify(token, Buffer.from(keys.jwt, 'base64'))
+
+        if (decoded.fromGame) {
+          await manager(decoded.message)
+
+          res.writeHead(200)
+          res.end()
+        }
+        else {
+          res.writeHead(401)
+          res.end()
+        }
       }
     }
-  }
-  catch (err) {
-    handleError(err, res)
-  }
-})
+    catch (err) {
+      handleError(err, res)
+    }
+  })
+}
+
+
+startup()
 
 process.on('unhandledRejection', async (reason, location) => {
   await informLogger({
