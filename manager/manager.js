@@ -8,6 +8,7 @@ const idleTimerAdd = require('./idleTimers/idleTimerAdd')
 const immunityAdd = require('./immunities/immunityAdd')
 const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
+const spawnPointAdd = require('./spawnPoints/spawnPointAdd')
 const spiritAdd = require('./spirits/spiritAdd')
 const clearTimers = require('../utils/clearTimers')
 
@@ -21,7 +22,8 @@ const addTimers = {
   immunity: immunityAdd,
   location: locationAdd,
   portal: portalAdd,
-  spirit: spiritAdd
+  spirit: spiritAdd,
+  spawnPoint: spawnPointAdd
 }
 
 async function manager(message) {
