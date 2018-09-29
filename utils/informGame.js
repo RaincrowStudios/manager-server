@@ -29,13 +29,18 @@ module.exports = async (instance, game, method, route) => {
         method: method,
         url: url,
         headers: {'Authorization': 'bearer ' + authToken},
+        timeout: 20000
       }
     )
 
     return true
   }
   catch (err) {
-    if (err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET') {
+    if (
+      err.code === 'ECONNREFUSED' ||
+      err.code === 'ECONNRESET' ||
+      err.code === 'EBUSY'
+    ) {
       return true
     }
     return err
