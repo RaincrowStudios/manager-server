@@ -1,7 +1,7 @@
 const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (category, cursor = 0) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
         throw new Error('Invalid category: ' + category)
@@ -10,7 +10,7 @@ module.exports = (category, cursor = 0) => {
         throw new Error('Invalid cursor: ' + cursor)
       }
 
-      const client = selectRedisClient()
+      const client = await selectRedisClient()
 
       client.zscan(['set:active:' + category, cursor], (err, results) => {
         if (err) {

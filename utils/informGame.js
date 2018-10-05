@@ -1,7 +1,7 @@
 const axios = require('axios')
 const createAuthToken = require('./createAuthToken')
 
-module.exports = async (instance, game, method, route) => {
+async function informGame (instance, game, method, route, priority = 0) {
   try {
     const authToken = createAuthToken(
       {
@@ -36,7 +36,10 @@ module.exports = async (instance, game, method, route) => {
     return true
   }
   catch (err) {
-    if (
+    if (priority) {
+      await informGame(instance, game, method, route, priority)
+    }
+    else if (
       err.code === 'ECONNREFUSED' ||
       err.code === 'ECONNRESET' ||
       err.code === 'EBUSY'
@@ -46,3 +49,5 @@ module.exports = async (instance, game, method, route) => {
     return err
   }
 }
+
+module.exports = informGame

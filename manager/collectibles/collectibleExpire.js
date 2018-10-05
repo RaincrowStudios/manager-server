@@ -10,7 +10,8 @@ module.exports = (collectibleInstance) => {
       collectibleInstance,
       'covens',
       'head',
-      'covens/collectible/expire'
+      'covens/collectible/expire',
+      1
     )
   }
   catch (err) {

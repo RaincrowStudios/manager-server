@@ -1,7 +1,7 @@
 const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (category, instance) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
         throw new Error('Invalid category: ' + category)
@@ -10,7 +10,7 @@ module.exports = (category, instance) => {
         throw new Error('Invalid instance: ' + instance)
       }
 
-      const client = selectRedisClient(instance)
+      const client = await selectRedisClient(instance)
 
       client.zadd(['set:active:' + category, Date.now(), instance], (err) => {
         if (err) {

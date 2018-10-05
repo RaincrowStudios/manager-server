@@ -6,7 +6,7 @@ module.exports = (spiritInstance) => {
   try {
     clearTimers(spiritInstance)
 
-    return informGame(spiritInstance, 'covens', 'head', 'covens/spirit/kill')
+    return informGame(spiritInstance, 'covens', 'head', 'covens/spirit/kill', 1)
   }
   catch (err) {
     return handleError(err)

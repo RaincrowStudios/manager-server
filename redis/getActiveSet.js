@@ -1,13 +1,13 @@
 const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (category) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!category || typeof category !== 'string') {
         throw new Error('Invalid categroy: ' + category)
       }
 
-      const client = selectRedisClient()
+      const client = await selectRedisClient()
 
       client.zrange(['set:active:' + category, 0, -1], (err, results) => {
         if (err) {

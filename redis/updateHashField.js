@@ -2,7 +2,7 @@ const selectRedisClient = require('./selectRedisClient')
 const scripts = require('../lua/scripts')
 
 module.exports = (instance, field, value) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (!instance || typeof instance !== 'string') {
         throw new Error('Invalid instance: ' + instance)
@@ -14,7 +14,7 @@ module.exports = (instance, field, value) => {
         throw new Error('Invalid value: ' + value)
       }
 
-      const client = selectRedisClient(instance)
+      const client = await selectRedisClient(instance)
 
       client.evalsha(
         [scripts.updateHashField.sha, 1, instance, field, JSON.stringify(value)],

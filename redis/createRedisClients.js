@@ -16,6 +16,11 @@ module.exports = () => {
         )
 
         client.on('ready', () => {
+          const clientToRemove = clients.by('client', client)
+          if (typeof clientToRemove === 'object') {
+            clients.remove(clientToRemove)
+          }
+
           clients.insert({region: 'local', client: client})
           const luredClient = lured.create(client, scripts)
           luredClient.load(err => {
@@ -51,6 +56,10 @@ module.exports = () => {
                   )
 
                   client.on('ready', () => {
+                    const clientToRemove = clients.by('client', client)
+                    if (typeof clientToRemove === 'object') {
+                      clients.remove(clientToRemove)
+                    }
                     clients.insert({region: region, client: client})
                     const luredClient = lured.create(client, scripts)
                     luredClient.load(err => {

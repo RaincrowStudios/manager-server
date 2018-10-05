@@ -10,7 +10,8 @@ module.exports = (immunityInstance) => {
       immunityInstance,
       'covens',
       'head',
-      'covens/immunity/expire'
+      'covens/immunity/expire',
+      1
     )
   }
   catch (err) {

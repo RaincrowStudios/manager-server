@@ -10,7 +10,8 @@ module.exports = (conditionInstance) => {
       conditionInstance,
       'covens',
       'head',
-      'covens/condition/expire'
+      'covens/condition/expire',
+      1
     )
   }
   catch (err) {
