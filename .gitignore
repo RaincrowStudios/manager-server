@@ -58,14 +58,7 @@ typings/
 .env
 
 # Keys and Certificates
-keys/
-redis-key/
-jwt-secret/
-email-credentials/
+keys.js
 
-# Datastore Emulator Variables
-set_vars.cmd
-remove_vars.cmd
-
-# vim
+# Exclude vim
 *.swp
