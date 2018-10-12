@@ -4,6 +4,7 @@ const initializeBots = require('./initializeBots')
 const initializeConditions = require('./initializeConditions')
 const initializeCooldowns = require('./initializeCooldowns')
 const initializeImmunities = require('./initializeImmunities')
+const initializeIdleTimers = require('./initializeIdleTimers')
 const initializeLocations = require('./initializeLocations')
 const initializePortals = require('./initializePortals')
 const initializeQuests = require('./initializeQuests')
@@ -23,6 +24,7 @@ async function initializer() {
       initializeBots(id, managers),
       initializeConditions(id, managers),
       initializeCooldowns(id, managers),
+      initializeIdleTimers(id, managers),
       initializeImmunities(id, managers),
       initializeLocations(id, managers),
       initializePortals(id, managers),
