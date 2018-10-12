@@ -1,20 +1,39 @@
 const timers = require('../../database/timers')
-const getOneFromHash = require('../../redis/getOneFromHash')
+const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const handleError = require('../../utils/handleError')
 const idleTimerBoot = require('./idleTimerBoot')
+const idleTimerDisengage = require('./idleTimerDisengage')
 
 module.exports = async (idleTimerInstance) => {
   try {
-    const bootOn = await getOneFromHash(idleTimerInstance, 'bootOn')
+    const timer = {instance: idleTimerInstance}
+
+    const {bootOn, disengageOn} =
+      await getFieldsFromHash(idleTimerInstance, ['bootOn', 'disengageOn'])
 
     const currentTime = Date.now()
 
-    const bootTimer =
-      setTimeout(() =>
-        idleTimerBoot(idleTimerInstance), bootOn - currentTime
-      )
+    if (bootOn) {
+      const bootTimer =
+        setTimeout(() =>
+          idleTimerBoot(idleTimerInstance),
+          bootOn - currentTime
+        )
 
-    timers.insert({idleTimerInstance, bootTimer})
+      timer.bootTimer = bootTimer
+    }
+
+    if (disengageOn) {
+      const disengageTimer =
+        setTimeout(() =>
+          idleTimerDisengage(idleTimerInstance),
+          disengageOn - currentTime
+        )
+
+      timer.disengageTimer = disengageTimer
+    }
+
+    timers.insert(timer)
     return true
   }
   catch (err) {

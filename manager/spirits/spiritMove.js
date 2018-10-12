@@ -8,9 +8,11 @@ const informGame = require('../../utils/informGame')
 
 async function spiritMove(spiritInstance) {
   try {
-    const {state, id} = await getFieldsFromHash(
+    const update = []
+
+    const {state, id, engagement, attributes} = await getFieldsFromHash(
       spiritInstance,
-      ['state', 'id']
+      ['state', 'id', 'engagement', 'attributes']
     )
 
     if (state === 'dead' || !id) {
@@ -35,10 +37,25 @@ async function spiritMove(spiritInstance) {
       newMoveOn = parseInt(spirit.moveFreq, 10)
     }
 
-    await Promise.all([
-      informGame(spiritInstance, 'covens', 'head', 'covens/npe/move'),
-      updateHashField(spiritInstance, 'moveOn', newMoveOn)
-    ])
+    update.push(updateHashField(spiritInstance, 'moveOn', newMoveOn))
+
+    if (engagement && Object.keys(engagement).length) {
+      const chance = attributes.includes('fleet') ? 0.5 : 0.1
+      const roll = Math.random()
+      
+      if (roll <= chance) {
+        update.push(
+          informGame(spiritInstance, 'covens', 'head', 'covens/npe/move')
+        )
+      }
+    }
+    else {
+      update.push(
+        informGame(spiritInstance, 'covens', 'head', 'covens/npe/move')
+      )
+    }
+
+    await Promise.all(update)
 
     const newTimer =
       setTimeout(() =>
