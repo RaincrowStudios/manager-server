@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const keys = require('../keys/keys')
+const keys = require('../../keys/keys')
 
 module.exports = (object, expiration = '') => {
   if (expiration) {

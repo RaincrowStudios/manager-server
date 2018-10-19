@@ -2,9 +2,9 @@
 
 const http = require('http')
 const jwt = require('jsonwebtoken')
+const keys = require('../keys/keys')
 const production = require('./config/production')
 const initializer = require('./initializer/initializer')
-const keys = require('./keys/keys')
 const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
 const createRedisSubscribers = require('./redis/createRedisSubscribers')
