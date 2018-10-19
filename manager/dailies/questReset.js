@@ -2,7 +2,7 @@ const timers = require('../../database/timers')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
 
-async function questReset() {
+async function dailyReset() {
   try {
     const currenTime = Date.now()
     const dayLater = currenTime + 86400000
@@ -14,20 +14,20 @@ async function questReset() {
 
     const newTimer =
       setTimeout(() =>
-        questReset(), dayLaterUTC.getTime() - currenTime
+        dailyReset(), dayLaterUTC.getTime() - currenTime
       )
 
-    let questTimers = timers.by('instance', 'quests')
-    if (questTimers) {
-      questTimers.resetTimer = newTimer
-      timers.update(questTimers)
+    let dailyTimers = timers.by('instance', 'dailies')
+    if (dailyTimers) {
+      dailyTimers.resetTimer = newTimer
+      timers.update(dailyTimers)
     }
 
     return informGame(
-      'quest',
+      'daily',
       'covens',
       'head',
-      'covens/quest/reset'
+      'covens/daily/reset'
     )
   }
   catch (err) {
@@ -35,4 +35,4 @@ async function questReset() {
   }
 }
 
-module.exports = questReset
+module.exports = dailyReset

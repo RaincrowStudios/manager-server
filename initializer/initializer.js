@@ -3,11 +3,11 @@ const handleError = require('../utils/handleError')
 const initializeBots = require('./initializeBots')
 const initializeConditions = require('./initializeConditions')
 const initializeCooldowns = require('./initializeCooldowns')
+const initializeDailies = require('./initializeDailies')
 const initializeImmunities = require('./initializeImmunities')
 const initializeIdleTimers = require('./initializeIdleTimers')
 const initializeLocations = require('./initializeLocations')
 const initializePortals = require('./initializePortals')
-const initializeQuests = require('./initializeQuests')
 const initializeSpawnPoints = require('./initializeSpawnPoints')
 const initializeSpirits = require('./initializeSpirits')
 
@@ -24,11 +24,11 @@ async function initializer() {
       initializeBots(id, managers),
       initializeConditions(id, managers),
       initializeCooldowns(id, managers),
+      initializeDailies(id, managers),
       initializeIdleTimers(id, managers),
       initializeImmunities(id, managers),
       initializeLocations(id, managers),
       initializePortals(id, managers),
-      initializeQuests(id, managers),
       initializeSpawnPoints(id, managers),
       initializeSpirits(id, managers)
     ])
