@@ -3,6 +3,7 @@ const botAdd = require('./bots/botAdd')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
+const dailiesAdd = require('./dailies/dailiesAdd')
 const dukeAdd = require('./dukes/dukeAdd')
 const idleTimerAdd = require('./idleTimers/idleTimerAdd')
 const immunityAdd = require('./immunities/immunityAdd')
@@ -17,6 +18,7 @@ const addTimers = {
   collectible: collectibleAdd,
   condition: conditionAdd,
   cooldown: cooldownAdd,
+  dailies: dailiesAdd,
   duke: dukeAdd,
   idleTimer: idleTimerAdd,
   immunity: immunityAdd,

@@ -1,7 +1,7 @@
 const timers = require('../database/timers')
 const addEntriesToList = require('../redis/addEntriesToList')
 const getEntriesFromList = require('../redis/getEntriesFromList')
-const dailyReset = require('../manager/dailies/dailyReset')
+const dailiesReset = require('../manager/dailies/dailiesReset')
 
 module.exports = async (id, managers) => {
   const [manager, expiresOn] = await getEntriesFromList(
@@ -16,7 +16,7 @@ module.exports = async (id, managers) => {
 
     const resetTimer =
       setTimeout(() =>
-        dailyReset(),
+        dailiesReset(),
         expiresOn > currentTime ?
           expiresOn - currentTime : 0
       )

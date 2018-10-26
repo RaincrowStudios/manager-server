@@ -2,7 +2,7 @@ const timers = require('../../database/timers')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
 
-async function dailyReset() {
+async function dailiesReset() {
   try {
     const currenTime = Date.now()
     const dayLater = currenTime + 86400000
@@ -14,7 +14,7 @@ async function dailyReset() {
 
     const newTimer =
       setTimeout(() =>
-        dailyReset(), dayLaterUTC.getTime() - currenTime
+        dailiesReset(), dayLaterUTC.getTime() - currenTime
       )
 
     let dailyTimers = timers.by('instance', 'dailies')
@@ -35,4 +35,4 @@ async function dailyReset() {
   }
 }
 
-module.exports = dailyReset
+module.exports = dailiesReset
