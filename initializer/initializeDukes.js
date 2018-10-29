@@ -31,7 +31,7 @@ module.exports = async (id, managers) => {
           ]
         )
 
-      if (!managers.includes(manager)) {
+      if (manager === id || !managers.includes(manager)) {
         await addFieldToHash(dukes[i], 'manager', id)
 
         const currentTime = Date.now()

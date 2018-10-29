@@ -22,7 +22,7 @@ module.exports = async (id, managers) => {
         ['manager', 'triggerOn', 'expiresOn']
       )
 
-      if (!managers.includes(manager)) {
+      if (manager === id || !managers.includes(manager)) {
         await addFieldToHash(conditions[i], 'manager', id)
 
         const currentTime = Date.now()

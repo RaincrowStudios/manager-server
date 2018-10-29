@@ -21,7 +21,7 @@ module.exports = async (id, managers) => {
         ['manager', 'expiresOn']
       )
 
-      if (!managers.includes(manager)) {
+      if (manager === id || !managers.includes(manager)) {
         await addFieldToHash(immunities[i], 'manager', id)
 
         const currentTime = Date.now()
@@ -48,6 +48,6 @@ module.exports = async (id, managers) => {
       }
     }
   }
-  
+
   return true
 }

@@ -22,7 +22,7 @@ module.exports = async (id, managers) => {
         ['manager', 'bootOn', 'disengageOn']
       )
 
-      if (!managers.includes(manager)) {
+      if (manager === id || !managers.includes(manager)) {
         await addFieldToHash(idleTimers[i], 'manager', id)
 
         const currentTime = Date.now()

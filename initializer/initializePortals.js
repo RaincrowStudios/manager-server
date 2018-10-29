@@ -21,7 +21,7 @@ module.exports = async (id, managers) => {
         ['manager', 'energy', 'summonOn']
       )
 
-      if (!managers.includes(manager)) {
+      if (manager === id || !managers.includes(manager)) {
         await addFieldToHash(portals[i], 'manager', id)
 
         if (energy > 0) {

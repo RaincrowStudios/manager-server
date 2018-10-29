@@ -23,7 +23,7 @@ module.exports = async (id, managers) => {
         ['manager', 'state', 'actionOn', 'moveOn']
       )
 
-      if (!managers.includes(manager)) {
+      if (manager === id || !managers.includes(manager)) {
         await addFieldToHash(bots[i], 'manager', id)
 
         if (state === 'dead') {
