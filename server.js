@@ -9,12 +9,14 @@ const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
 const createRedisSubscribers = require('./redis/createRedisSubscribers')
 const handleError = require('./utils/handleError')
-const informLogger = require('./utils/informLogger')
 
 const port = process.env.NODE_ENV === 'development' ? 8082 : production.port
 
 async function startup() {
-  console.log('Starting manager server...')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Starting manager server...')
+  }
+  
   await Promise.all([
     createRedisClients(),
     createRedisSubscribers()
@@ -23,7 +25,9 @@ async function startup() {
   initializer()
 
   const server = http.createServer().listen(port, () => {
-    console.log('Manager server started')
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Manager server started')
+    }
   })
 
   server.on('request', async (req, res) => {
@@ -58,7 +62,6 @@ async function startup() {
     }
   })
 }
-
 
 startup()
 
