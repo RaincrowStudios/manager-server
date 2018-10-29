@@ -37,7 +37,12 @@ async function startup() {
         const decoded = jwt.verify(token, Buffer.from(keys.jwt, 'base64'))
 
         if (decoded.fromGame) {
-          await manager(decoded.message)
+          if (decoded.initialize) {
+            await initializer()
+          }
+          else {
+            await manager(decoded.message)
+          }
 
           res.writeHead(200)
           res.end()
@@ -58,10 +63,5 @@ async function startup() {
 startup()
 
 process.on('unhandledRejection', async (reason, location) => {
-  await informLogger({
-    route: 'error',
-    error_code: location,
-    source: 'manager-server',
-    content: `Unhandled Rejection at: ${location} reason: ${reason}`
-  })
+  handleError({reason, location})
 })
