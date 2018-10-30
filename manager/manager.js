@@ -1,6 +1,8 @@
 const addFieldToHash = require('../redis/addFieldToHash')
+const getOneFromHash = require('../redis/getOneFromHash')
 const initializer = require('../initializer/initializer')
 const botAdd = require('./bots/botAdd')
+const botStart = require('./bots/botStart')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
@@ -12,8 +14,9 @@ const locationAdd = require('./locations/locationAdd')
 const portalAdd = require('./portals/portalAdd')
 const spawnPointAdd = require('./spawnPoints/spawnPointAdd')
 const spiritAdd = require('./spirits/spiritAdd')
+const spiritStart = require('./spirits/spiritStart')
 const clearTimers = require('../utils/clearTimers')
-const pauseTimers = require('../utils/pauseTimers')
+const stopTimers = require('../utils/stopTimers')
 
 const addTimers = {
   bot: botAdd,
@@ -30,7 +33,13 @@ const addTimers = {
   spawnPoint: spawnPointAdd
 }
 
+const startTimers = {
+  bot: botStart,
+  spirit: spiritStart
+}
+
 async function manager(message) {
+  let manager
   switch (message.command) {
     case 'initialize':
       initializer(message.instance)
@@ -38,8 +47,15 @@ async function manager(message) {
     case 'remove':
       clearTimers(message.instance)
       break
-    case 'pause':
-      pauseTimers(message.instance)
+    case 'start':
+      manager = await getOneFromHash(message.instance, 'manager')
+      if (manager === process.env.INSTANCE_ID) {
+        await startTimers[message.type](message.instance)
+      }
+      await addTimers[message.type](message.instance)
+      break
+    case 'stop':
+      stopTimers(message.instance)
       break
     case 'add':
       await addFieldToHash(message.instance, 'manager', process.env.INSTANCE_ID)
