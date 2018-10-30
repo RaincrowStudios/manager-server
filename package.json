@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "INSTANCE_ID=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/id' -H 'Metadata-Flavor: Google') INSTANCE_REGION=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/zone' -H 'Metadata-Flavor: Google') NODE_ENV=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/attributes/env' -H 'Metadata-Flavor: Google') node server.js",
-    "local": "cross-env INSTANCE_ID=local INSTANCE_REGION=local NODE_ENV=development nodemon --trace-warnings server.js"
+    "local": "cross-env INSTANCE_ID=local INSTANCE_REGION=local NODE_ENV=development nodemon --trace-warnings server.js",
+    "shutdown": "curl -d '{\"initialize\":true}' -H \"Content-Type: application/json\" -X POST https://raincrowstudios.xyz/api/covens/init"
   },
   "author": "Sean Landis",
   "license": "SEE LICENSE IN LICENSE",

@@ -4,6 +4,8 @@ const http = require('http')
 const jwt = require('jsonwebtoken')
 const keys = require('../keys/keys')
 const production = require('./config/production')
+const clients = require('./database/clients')
+const subscribers = require('./database/subscribers')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
@@ -12,11 +14,12 @@ const handleError = require('./utils/handleError')
 
 const port = process.env.NODE_ENV === 'development' ? 8082 : production.port
 
+let server
 async function startup() {
   if (process.env.NODE_ENV !== 'production') {
     console.log('Starting manager server...')
   }
-  
+
   await Promise.all([
     createRedisClients(),
     createRedisSubscribers()
@@ -24,7 +27,7 @@ async function startup() {
 
   initializer()
 
-  const server = http.createServer().listen(port, () => {
+  server = http.createServer().listen(port, () => {
     if (process.env.NODE_ENV !== 'production') {
       console.log('Manager server started')
     }
@@ -67,4 +70,18 @@ startup()
 
 process.on('unhandledRejection', async (reason, location) => {
   handleError({reason, location})
+})
+
+process.on('SIGTERM', () => {
+  server.close(() => {
+    for (const client of clients.where(() => true).map(entry => entry.client)) {
+      client.quit()
+    }
+
+    for (const subscriber of subscribers.where(() => true).map(entry => entry.subscriber)) {
+      subscriber.quit()
+    }
+
+    process.exit(0)
+  })
 })

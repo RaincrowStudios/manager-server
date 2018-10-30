@@ -2,6 +2,7 @@ const ping = require('ping')
 const redis = require('redis')
 const production = require('../config/production')
 const ips = require('../config/region-ips')
+const subscribers = require('../database/subscribers')
 const manager = require('../manager/manager')
 
 module.exports = () => {
@@ -14,10 +15,28 @@ module.exports = () => {
         )
 
         subscriber.on('ready', () => {
+          const subscriberToRemove =
+            subscribers.by('subscriber', subscriber)
+
+          if (typeof subscriberToRemove === 'object') {
+            subscribers.remove(subscriberToRemove)
+          }
+
+          subscribers.insert({subscriber: subscriber})
+
           subscriber.subscribe('manager')
         })
 
         subscriber.on('message', (channel, message) => {
+          const subscriberToRemove =
+            subscribers.by('subscriber', subscriber)
+
+          if (typeof subscriberToRemove === 'object') {
+            subscribers.remove(subscriberToRemove)
+          }
+
+          subscribers.insert({subscriber: subscriber})
+
           manager(JSON.parse(message))
         })
 
@@ -37,6 +56,15 @@ module.exports = () => {
               )
 
               subscriber.on('ready', () => {
+                const subscriberToRemove =
+                  subscribers.by('subscriber', subscriber)
+
+                if (typeof subscriberToRemove === 'object') {
+                  subscribers.remove(subscriberToRemove)
+                }
+
+                subscribers.insert({subscriber: subscriber})
+
                 subscriber.subscribe('manager')
               })
 
