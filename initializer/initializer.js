@@ -11,13 +11,16 @@ const initializePortals = require('./initializePortals')
 const initializeSpawnPoints = require('./initializeSpawnPoints')
 const initializeSpirits = require('./initializeSpirits')
 
-async function initializer() {
+async function initializer(exclude) {
   try {
     const id = process.env.INSTANCE_ID
 
     let managers = []
     if (process.env.NODE_ENV !== 'development') {
       managers = await getManagedInstancesList()
+      if (exclude) {
+        managers = managers.filter(manager => manager !== exclude)
+      }
     }
 
     await Promise.all([

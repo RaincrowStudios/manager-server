@@ -6,11 +6,13 @@ const keys = require('../keys/keys')
 const production = require('./config/production')
 const clients = require('./database/clients')
 const subscribers = require('./database/subscribers')
+const timers = require('./database/timers')
 const initializer = require('./initializer/initializer')
 const manager = require('./manager/manager')
 const createRedisClients = require('./redis/createRedisClients')
 const createRedisSubscribers = require('./redis/createRedisSubscribers')
 const handleError = require('./utils/handleError')
+const informManager = require('./utils/informManager')
 
 const port = process.env.NODE_ENV === 'development' ? 8082 : production.port
 
@@ -73,7 +75,7 @@ process.on('unhandledRejection', async (reason, location) => {
 })
 
 process.on('SIGTERM', () => {
-  server.close(() => {
+  server.close(async () => {
     for (const client of clients.where(() => true).map(entry => entry.client)) {
       client.quit()
     }
@@ -81,6 +83,17 @@ process.on('SIGTERM', () => {
     for (const subscriber of subscribers.where(() => true).map(entry => entry.subscriber)) {
       subscriber.quit()
     }
+
+    for (const timer of timers.where(() => true).map(entry => entry.timer)) {
+      clearTimeout(timer)
+    }
+
+    await informManager(
+      {
+        command: 'initialize',
+        instance: process.env.INSTANCE_ID
+      }
+    )
 
     process.exit(0)
   })

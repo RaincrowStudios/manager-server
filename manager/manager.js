@@ -1,4 +1,5 @@
 const addFieldToHash = require('../redis/addFieldToHash')
+const initializer = require('../initializer/initializer')
 const botAdd = require('./bots/botAdd')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
@@ -12,6 +13,7 @@ const portalAdd = require('./portals/portalAdd')
 const spawnPointAdd = require('./spawnPoints/spawnPointAdd')
 const spiritAdd = require('./spirits/spiritAdd')
 const clearTimers = require('../utils/clearTimers')
+const pauseTimers = require('../utils/pauseTimers')
 
 const addTimers = {
   bot: botAdd,
@@ -30,8 +32,14 @@ const addTimers = {
 
 async function manager(message) {
   switch (message.command) {
+    case 'initialize':
+      initializer(message.instance)
+      break
     case 'remove':
       clearTimers(message.instance)
+      break
+    case 'pause':
+      pauseTimers(message.instance)
       break
     case 'add':
       await addFieldToHash(message.instance, 'manager', process.env.INSTANCE_ID)
