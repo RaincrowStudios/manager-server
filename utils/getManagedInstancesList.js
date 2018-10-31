@@ -19,8 +19,10 @@ module.exports = () => {
         const request = {
           project: 'raincrow-pantheon',
           region: process.env.INSTANCE_REGION.split('/').pop().slice(0, -2),
-          instanceGroupManager: process.env.NODE_ENV + '-manager-group-' +
-            process.env.INSTANCE_REGION.split('/').pop().slice(0, -2),
+          instanceGroupManager: process.env.NODE_ENV === 'production' ?
+            process.env.NODE_ENV  + '-manager-group-' +
+            process.env.INSTANCE_REGION.split('/').pop().slice(0, -2) :
+            process.env.NODE_ENV  + '-manager-group',
           auth: authClient,
         }
 
