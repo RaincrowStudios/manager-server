@@ -16,7 +16,7 @@ async function initializer(exclude) {
     const id = process.env.INSTANCE_ID
 
     let managers = []
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV === 'production') {
       managers = await getManagedInstancesList()
       if (exclude) {
         managers = managers.filter(manager => manager !== exclude)
