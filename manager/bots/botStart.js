@@ -31,7 +31,7 @@ module.exports = async (botInstance) => {
 
     botTimers.moveTimer = moveTimer
 
-    timers.insert(botTimers)
+    timers.update(botTimers)
 
     return true
   }

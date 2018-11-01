@@ -52,7 +52,6 @@ async function manager(message) {
       if (manager === process.env.INSTANCE_ID) {
         await startTimers[message.type](message.instance)
       }
-      await addTimers[message.type](message.instance)
       break
     case 'stop':
       stopTimers(message.instance)

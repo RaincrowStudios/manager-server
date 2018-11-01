@@ -33,7 +33,7 @@ module.exports = async (spiritInstance) => {
       spiritTimers.moveTimer = moveTimer
     }
 
-    timers.insert(spiritTimers)
+    timers.update(spiritTimers)
 
     return true
   }
