@@ -1,65 +1,60 @@
-const timers = require('../../database/timers')
-const getFieldsFromHash = require('../../redis/getFieldsFromHash')
-const handleError = require('../../utils/handleError')
-const dukeAction = require('./dukeAction')
-const dukeExpire = require('./dukeExpire')
-const dukeMove = require('./dukeMove')
-const dukeSummon = require('./dukeSummon')
+const timers = require("../../database/timers");
+const getFieldsFromHash = require("../../redis/getFieldsFromHash");
+const handleError = require("../../utils/handleError");
+const dukeAction = require("./dukeAction");
+const dukeExpire = require("./dukeExpire");
+const dukeMove = require("./dukeMove");
+const dukeSummon = require("./dukeSummon");
 
-module.exports = async (dukeInstanace) => {
+module.exports = async dukeInstanace => {
   try {
-    const timer = {instance: dukeInstanace}
+    const timer = { instance: dukeInstanace };
 
-    const {actionOn, moveOn, summonOn, expiresOn} = await getFieldsFromHash(
-        dukeInstanace,
-        ['actionOn', 'moveOn', 'summonOn', 'expiresOn']
-      )
+    const { actionOn, moveOn, summonOn, expiresOn } = await getFieldsFromHash(
+      dukeInstanace,
+      ["actionOn", "moveOn", "summonOn", "expiresOn"]
+    );
 
-    const currentTime = Date.now()
+    const currentTime = Date.now();
 
-    const actionTimer =
-      setTimeout(() =>
-        dukeAction(dukeInstanace),
-        actionOn - currentTime
-      )
+    const actionTimer = setTimeout(
+      () => () => dukeAction(dukeInstanace),
+      actionOn - currentTime
+    );
 
-    timer.actionTimer = actionTimer
+    timer.actionTimer = actionTimer;
 
     if (moveOn) {
-      const moveTimer =
-        setTimeout(() =>
-          dukeMove(dukeInstanace),
-          moveOn - currentTime
-        )
+      const moveTimer = setTimeout(
+        () => () => dukeMove(dukeInstanace),
+        moveOn - currentTime
+      );
 
-      timer.moveTimer = moveTimer
+      timer.moveTimer = moveTimer;
     }
 
     if (summonOn) {
-      const summonTimer =
-        setTimeout(() =>
-          dukeSummon(dukeInstanace),
-          summonOn - currentTime
-        )
+      const summonTimer = setTimeout(
+        () => () => dukeSummon(dukeInstanace),
+        summonOn - currentTime
+      );
 
-      timer.summonTimer = summonTimer
+      timer.summonTimer = summonTimer;
     }
 
     if (expiresOn) {
-      const expireTimer =
-        setTimeout(() =>
-          dukeExpire(dukeInstanace),
-          expiresOn - currentTime
-        )
+      const expireTimer = setTimeout(
+        () => () => dukeExpire(dukeInstanace),
+        expiresOn - currentTime
+      );
 
-      timer.expireTimer = expireTimer
+      timer.expireTimer = expireTimer;
     }
 
-    timers.insert(timer)
+    timers.insert(timer);
 
-    return true
+    return true;
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};

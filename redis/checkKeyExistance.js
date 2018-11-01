@@ -1,25 +1,23 @@
-const selectRedisClient = require('./selectRedisClient')
+const selectRedisClient = require("./selectRedisClient");
 
-module.exports = (instance) => {
+module.exports = instance => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!instance || typeof instance !== 'string') {
-        throw new Error('Invalid instance: ' + instance)
+      if (!instance || typeof instance !== "string") {
+        throw new Error("Invalid instance: " + instance);
       }
 
-      const client = await selectRedisClient(instance)
+      const client = await selectRedisClient(instance);
 
       client.exists([instance], (err, result) => {
         if (err) {
-          throw new Error(err)
+          throw new Error(err);
+        } else {
+          resolve(result);
         }
-        else {
-          resolve(result)
-        }
-      })
+      });
+    } catch (err) {
+      reject(err);
     }
-    catch (err) {
-      reject(err)
-    }
-  })
-}
+  });
+};

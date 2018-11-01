@@ -1,28 +1,26 @@
-const timers = require('../../database/timers')
-const getOneFromHash = require('../../redis/getOneFromHash')
-const handleError = require('../../utils/handleError')
-const cooldownExpire = require('./cooldownExpire')
+const timers = require("../../database/timers");
+const getOneFromHash = require("../../redis/getOneFromHash");
+const handleError = require("../../utils/handleError");
+const cooldownExpire = require("./cooldownExpire");
 
-module.exports = async (cooldownInstance) => {
+module.exports = async cooldownInstance => {
   try {
-    const timer = {instance: cooldownInstance}
+    const timer = { instance: cooldownInstance };
 
-    const [expiresOn] = await getOneFromHash(cooldownInstance, 'expiresOn')
+    const [expiresOn] = await getOneFromHash(cooldownInstance, "expiresOn");
 
-    const currentTime = Date.now()
+    const currentTime = Date.now();
 
-    const expireTimer =
-      setTimeout(() =>
-        cooldownExpire(cooldownInstance),
-        expiresOn - currentTime
-      )
+    const expireTimer = setTimeout(
+      () => () => cooldownExpire(cooldownInstance),
+      expiresOn - currentTime
+    );
 
-    timer.expireTimer = expireTimer
+    timer.expireTimer = expireTimer;
 
-    timers.insert(timer)
-    return true
+    timers.insert(timer);
+    return true;
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};

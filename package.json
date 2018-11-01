@@ -4,7 +4,7 @@
   "description": "Manager Server for the Raincrow Pantheon",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "start": "INSTANCE_ID=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/id' -H 'Metadata-Flavor: Google') INSTANCE_REGION=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/zone' -H 'Metadata-Flavor: Google') NODE_ENV=$(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/attributes/env' -H 'Metadata-Flavor: Google') node server.js",
     "local": "cross-env INSTANCE_ID=local INSTANCE_REGION=local NODE_ENV=development nodemon --trace-warnings server.js"
   },
@@ -24,7 +24,24 @@
   "devDependencies": {
     "cross-env": "^5.2.0",
     "eslint": "^4.19.1",
+    "eslint-config-prettier": "^3.1.0",
     "eslint-plugin-node": "^6.0.1",
-    "nodemon": "^1.18.3"
+    "eslint-plugin-prettier": "^3.0.0",
+    "husky": "^1.1.2",
+    "lint-staged": "^8.0.4",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.3",
+    "prettier": "^1.14.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npm test"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }
