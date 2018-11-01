@@ -1,19 +1,18 @@
-const clearTimers = require('../../utils/clearTimers')
-const handleError = require('../../utils/handleError')
-const informGame = require('../../utils/informGame')
+const clearTimers = require("../../utils/clearTimers");
+const handleError = require("../../utils/handleError");
+const informGame = require("../../utils/informGame");
 
-module.exports = (idleTimerInstance) => {
+module.exports = idleTimerInstance => {
   try {
-    clearTimers(idleTimerInstance)
+    clearTimers(idleTimerInstance);
 
     return informGame(
       idleTimerInstance,
-      'covens',
-      'head',
-      'covens/spirit/disengage'
-    )
+      "covens",
+      "head",
+      "covens/spirit/disengage"
+    );
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};

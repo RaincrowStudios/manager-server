@@ -1,19 +1,13 @@
-const clearTimers = require('../../utils/clearTimers')
-const handleError = require('../../utils/handleError')
-const informGame = require('../../utils/informGame')
+const clearTimers = require("../../utils/clearTimers");
+const handleError = require("../../utils/handleError");
+const informGame = require("../../utils/informGame");
 
-module.exports = (loreInstance) => {
+module.exports = loreInstance => {
   try {
-    clearTimers(loreInstance)
+    clearTimers(loreInstance);
 
-    return informGame(
-      loreInstance,
-      'covens',
-      'head',
-      'covens/lore/expire'
-    )
+    return informGame(loreInstance, "covens", "head", "covens/lore/expire");
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};

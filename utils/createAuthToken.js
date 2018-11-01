@@ -1,11 +1,12 @@
-const jwt = require('jsonwebtoken')
-const keys = require('../../keys/keys')
+const jwt = require("jsonwebtoken");
+const keys = require("../../keys/keys");
 
-module.exports = (object, expiration = '') => {
+module.exports = (object, expiration = "") => {
   if (expiration) {
-    return jwt.sign(object, Buffer.from(keys.jwt, 'base64'), { expiresIn: expiration })
+    return jwt.sign(object, Buffer.from(keys.jwt, "base64"), {
+      expiresIn: expiration
+    });
+  } else {
+    return jwt.sign(object, Buffer.from(keys.jwt, "base64"));
   }
-  else {
-    return jwt.sign(object, Buffer.from(keys.jwt, 'base64'))
-  }
-}
+};

@@ -1,41 +1,38 @@
-const timers = require('../../database/timers')
-const getFieldsFromHash = require('../../redis/getFieldsFromHash')
-const handleError = require('../../utils/handleError')
-const botAction = require('./botAction')
-const botMove = require('./botMove')
+const timers = require("../../database/timers");
+const getFieldsFromHash = require("../../redis/getFieldsFromHash");
+const handleError = require("../../utils/handleError");
+const botAction = require("./botAction");
+const botMove = require("./botMove");
 
-module.exports = async (botInstance) => {
+module.exports = async botInstance => {
   try {
-    const botTimers = timers.by('instance', botInstance)
+    const botTimers = timers.by("instance", botInstance);
 
-    const {actionOn, moveOn} = await getFieldsFromHash(
-      botInstance,
-      ['actionOn', 'moveOn']
-    )
+    const { actionOn, moveOn } = await getFieldsFromHash(botInstance, [
+      "actionOn",
+      "moveOn"
+    ]);
 
-    const currentTime = Date.now()
+    const currentTime = Date.now();
 
-    const actionTimer =
-      setTimeout(() =>
-        botAction(botInstance),
-        actionOn - currentTime
-      )
+    const actionTimer = setTimeout(
+      () => () => botAction(botInstance),
+      actionOn - currentTime
+    );
 
-    botTimers.actionTimer = actionTimer
+    botTimers.actionTimer = actionTimer;
 
-    const moveTimer =
-      setTimeout(() =>
-        botMove(botInstance),
-        moveOn - currentTime
-      )
+    const moveTimer = setTimeout(
+      () => () => botMove(botInstance),
+      moveOn - currentTime
+    );
 
-    botTimers.moveTimer = moveTimer
+    botTimers.moveTimer = moveTimer;
 
-    timers.insert(botTimers)
+    timers.insert(botTimers);
 
-    return true
+    return true;
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};

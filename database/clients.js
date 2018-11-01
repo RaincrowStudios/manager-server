@@ -1,6 +1,6 @@
-const loki = require('lokijs')
-const db = new loki()
+const loki = require("lokijs");
+const db = new loki();
 
-const clients = db.addCollection('clients', { unique: ['region', 'client'] })
+const clients = db.addCollection("clients", { unique: ["region", "client"] });
 
-module.exports = clients
+module.exports = clients;

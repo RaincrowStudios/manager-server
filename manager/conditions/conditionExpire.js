@@ -1,20 +1,19 @@
-const clearTimers = require('../../utils/clearTimers')
-const handleError = require('../../utils/handleError')
-const informGame = require('../../utils/informGame')
+const clearTimers = require("../../utils/clearTimers");
+const handleError = require("../../utils/handleError");
+const informGame = require("../../utils/informGame");
 
-module.exports = (conditionInstance) => {
+module.exports = conditionInstance => {
   try {
-    clearTimers(conditionInstance)
+    clearTimers(conditionInstance);
 
     return informGame(
       conditionInstance,
-      'covens',
-      'head',
-      'covens/condition/expire',
+      "covens",
+      "head",
+      "covens/condition/expire",
       1
-    )
+    );
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};

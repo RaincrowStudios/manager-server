@@ -1,19 +1,18 @@
-const clearTimers = require('../../utils/clearTimers')
-const handleError = require('../../utils/handleError')
-const informGame = require('../../utils/informGame')
+const clearTimers = require("../../utils/clearTimers");
+const handleError = require("../../utils/handleError");
+const informGame = require("../../utils/informGame");
 
-module.exports = (cooldownInstance) => {
+module.exports = cooldownInstance => {
   try {
-    clearTimers(cooldownInstance)
+    clearTimers(cooldownInstance);
 
     return informGame(
       cooldownInstance,
-      'covens',
-      'head',
-      'covens/cooldown/expire'
-    )
+      "covens",
+      "head",
+      "covens/cooldown/expire"
+    );
+  } catch (err) {
+    return handleError(err);
   }
-  catch (err) {
-    return handleError(err)
-  }
-}
+};
