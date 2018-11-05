@@ -27,7 +27,7 @@ async function conditionTrigger(conditionInstance) {
     await updateHashField(conditionInstance, "triggerOn", newTriggerOn);
 
     const newTimer = setTimeout(
-      () => () => conditionTrigger(conditionInstance),
+      () => conditionTrigger(conditionInstance),
       tick * 1000
     );
 

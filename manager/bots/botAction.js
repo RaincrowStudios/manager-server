@@ -35,7 +35,7 @@ async function botAction(botInstance) {
       await updateHashField(botInstance, "actionOn", newActionOn);
 
       const newTimer = setTimeout(
-        () => () => botAction(botInstance),
+        () => botAction(botInstance),
         newActionOn - currentTime
       );
 

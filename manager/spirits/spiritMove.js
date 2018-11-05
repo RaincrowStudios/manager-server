@@ -57,7 +57,7 @@ async function spiritMove(spiritInstance) {
     await Promise.all(update);
 
     const newTimer = setTimeout(
-      () => () => spiritMove(spiritInstance),
+      () => spiritMove(spiritInstance),
       newMoveOn - currentTime
     );
 

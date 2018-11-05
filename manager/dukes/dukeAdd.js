@@ -18,7 +18,7 @@ module.exports = async dukeInstanace => {
     const currentTime = Date.now();
 
     const actionTimer = setTimeout(
-      () => () => dukeAction(dukeInstanace),
+      () => dukeAction(dukeInstanace),
       actionOn - currentTime
     );
 
@@ -26,7 +26,7 @@ module.exports = async dukeInstanace => {
 
     if (moveOn) {
       const moveTimer = setTimeout(
-        () => () => dukeMove(dukeInstanace),
+        () => dukeMove(dukeInstanace),
         moveOn - currentTime
       );
 
@@ -35,7 +35,7 @@ module.exports = async dukeInstanace => {
 
     if (summonOn) {
       const summonTimer = setTimeout(
-        () => () => dukeSummon(dukeInstanace),
+        () => dukeSummon(dukeInstanace),
         summonOn - currentTime
       );
 
@@ -44,7 +44,7 @@ module.exports = async dukeInstanace => {
 
     if (expiresOn) {
       const expireTimer = setTimeout(
-        () => () => dukeExpire(dukeInstanace),
+        () => dukeExpire(dukeInstanace),
         expiresOn - currentTime
       );
 

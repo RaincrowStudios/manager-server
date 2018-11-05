@@ -15,7 +15,7 @@ module.exports = async (id, managers) => {
     const currentTime = Date.now();
 
     const resetTimer = setTimeout(
-      () => () => dailiesReset(),
+      () => dailiesReset(),
       expiresOn > currentTime ? expiresOn - currentTime : 0
     );
 

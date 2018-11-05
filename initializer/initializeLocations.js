@@ -32,7 +32,7 @@ module.exports = async (id, managers) => {
         }
 
         const rewardTimer = setTimeout(
-          () => () => locationReward(locations[i]),
+          () => locationReward(locations[i]),
           rewardOn - currentTime
         );
 

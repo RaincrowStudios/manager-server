@@ -13,7 +13,7 @@ async function dailiesReset() {
     dayLaterUTC.setUTCMilliseconds(0);
 
     const newTimer = setTimeout(
-      () => () => dailiesReset(),
+      () => dailiesReset(),
       dayLaterUTC.getTime() - currenTime
     );
 
@@ -23,7 +23,13 @@ async function dailiesReset() {
       timers.update(dailyTimers);
     }
 
-    return informGame("daily", "covens", "head", "covens/daily/reset", 1);
+    return informGame(
+      "list:dailies",
+      "covens",
+      "head",
+      "covens/daily/reset",
+      1
+    );
   } catch (err) {
     return handleError(err);
   }

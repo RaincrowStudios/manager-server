@@ -56,14 +56,14 @@ module.exports = async (id, managers) => {
         }
 
         const actionTimer = setTimeout(
-          () => () => spiritAction(spirits[i]),
+          () => spiritAction(spirits[i]),
           actionOn > currentTime ? actionOn - currentTime : 0
         );
 
         let moveTimer;
         if (moveOn) {
           moveTimer = setTimeout(
-            () => () => spiritMove(spirits[i]),
+            () => spiritMove(spirits[i]),
             moveOn > currentTime ? moveOn - currentTime : 0
           );
         }
@@ -71,7 +71,7 @@ module.exports = async (id, managers) => {
         let expireTimer;
         if (expiresOn) {
           expireTimer = setTimeout(
-            () => () => spiritExpire(spirits[i]),
+            () => spiritExpire(spirits[i]),
             expiresOn - currentTime
           );
         }

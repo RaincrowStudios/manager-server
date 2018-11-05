@@ -17,7 +17,7 @@ module.exports = async spiritInstance => {
     const currentTime = Date.now();
 
     const actionTimer = setTimeout(
-      () => () => spiritAction(spiritInstance),
+      () => spiritAction(spiritInstance),
       actionOn - currentTime
     );
 
@@ -25,7 +25,7 @@ module.exports = async spiritInstance => {
 
     if (moveOn) {
       const moveTimer = setTimeout(
-        () => () => spiritMove(spiritInstance),
+        () => spiritMove(spiritInstance),
         moveOn - currentTime
       );
 
@@ -34,7 +34,7 @@ module.exports = async spiritInstance => {
 
     if (expiresOn) {
       const expireTimer = setTimeout(
-        () => () => spiritExpire(spiritInstance),
+        () => spiritExpire(spiritInstance),
         expiresOn - currentTime
       );
 

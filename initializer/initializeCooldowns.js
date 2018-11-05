@@ -32,7 +32,7 @@ module.exports = async (id, managers) => {
         }
 
         const expireTimer = setTimeout(
-          () => () => cooldownExpire(cooldowns[i]),
+          () => cooldownExpire(cooldowns[i]),
           expiresOn - currentTime
         );
 

@@ -32,7 +32,7 @@ module.exports = async (id, managers) => {
         }
 
         const expireTimer = setTimeout(
-          () => () => immunityExpire(immunities[i]),
+          () => immunityExpire(immunities[i]),
           expiresOn - currentTime
         );
 

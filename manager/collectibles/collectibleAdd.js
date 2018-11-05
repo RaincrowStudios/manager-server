@@ -13,7 +13,7 @@ module.exports = async collectibleInstance => {
 
     if (expiresOn) {
       const expireTimer = setTimeout(
-        () => () => collectibleExpire(collectibleInstance),
+        () => collectibleExpire(collectibleInstance),
         expiresOn - currentTime
       );
 

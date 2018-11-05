@@ -38,7 +38,7 @@ async function dukeAction(dukeInstanace) {
       ]);
 
       const newTimer = setTimeout(
-        () => () => dukeAction(dukeInstanace),
+        () => dukeAction(dukeInstanace),
         newActionOn - currentTime
       );
 

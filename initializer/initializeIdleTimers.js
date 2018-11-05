@@ -31,7 +31,7 @@ module.exports = async (id, managers) => {
 
         if (bootOn) {
           const bootTimer = setTimeout(
-            () => () => idleTimerBoot(idleTimers[i]),
+            () => idleTimerBoot(idleTimers[i]),
             bootOn - currentTime
           );
 
@@ -40,7 +40,7 @@ module.exports = async (id, managers) => {
 
         if (disengageOn) {
           const disengageTimer = setTimeout(
-            () => () => idleTimerDisengage(idleTimers[i]),
+            () => idleTimerDisengage(idleTimers[i]),
             disengageOn - currentTime
           );
 

@@ -35,7 +35,7 @@ async function dukeSummon(dukeInstanace) {
       ]);
 
       const newTimer = setTimeout(
-        () => () => dukeSummon(dukeInstanace),
+        () => dukeSummon(dukeInstanace),
         newSummonOn - currentTime
       );
 

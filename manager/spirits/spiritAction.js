@@ -48,7 +48,7 @@ async function spiritAction(spiritInstance) {
     ]);
 
     const newTimer = setTimeout(
-      () => () => spiritAction(spiritInstance),
+      () => spiritAction(spiritInstance),
       newActionOn - currentTime
     );
 

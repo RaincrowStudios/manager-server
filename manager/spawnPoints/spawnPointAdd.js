@@ -12,7 +12,7 @@ module.exports = async spawnPointInstance => {
     const currentTime = Date.now();
 
     const expireTimer = setTimeout(
-      () => () => spawnPointExpire(spawnPointInstance),
+      () => spawnPointExpire(spawnPointInstance),
       expiresOn - currentTime
     );
 

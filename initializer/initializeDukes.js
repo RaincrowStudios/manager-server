@@ -44,14 +44,14 @@ module.exports = async (id, managers) => {
         }
 
         const actionTimer = setTimeout(
-          () => () => dukeAction(dukes[i]),
+          () => dukeAction(dukes[i]),
           actionOn > currentTime ? actionOn - currentTime : 0
         );
 
         let moveTimer;
         if (moveOn) {
           moveTimer = setTimeout(
-            () => () => dukeMove(dukes[i]),
+            () => dukeMove(dukes[i]),
             moveOn > currentTime ? moveOn - currentTime : 0
           );
         }
@@ -59,7 +59,7 @@ module.exports = async (id, managers) => {
         let summonTimer;
         if (summonOn) {
           summonTimer = setTimeout(
-            () => () => dukeSummon(dukes[i]),
+            () => dukeSummon(dukes[i]),
             summonOn > currentTime ? summonOn - currentTime : 0
           );
         }
@@ -67,7 +67,7 @@ module.exports = async (id, managers) => {
         let expireTimer;
         if (expiresOn) {
           expireTimer = setTimeout(
-            () => () => dukeExpire(dukes[i]),
+            () => dukeExpire(dukes[i]),
             expiresOn - currentTime
           );
         }

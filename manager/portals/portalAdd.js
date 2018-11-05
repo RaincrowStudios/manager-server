@@ -10,7 +10,7 @@ module.exports = async portalInstance => {
     const currentTime = Date.now();
 
     const summonTimer = setTimeout(
-      () => () => portalSummon(portalInstance),
+      () => portalSummon(portalInstance),
       summonOn - currentTime
     );
 

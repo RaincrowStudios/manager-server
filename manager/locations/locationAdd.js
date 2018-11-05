@@ -12,7 +12,7 @@ module.exports = async locationInstance => {
     const currentTime = Date.now();
 
     const rewardTimer = setTimeout(
-      () => () => locationReward(locationInstance),
+      () => locationReward(locationInstance),
       rewardOn - currentTime
     );
 

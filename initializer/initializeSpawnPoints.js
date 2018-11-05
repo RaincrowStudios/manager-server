@@ -32,7 +32,7 @@ module.exports = async (id, managers) => {
         }
 
         const expireTimer = setTimeout(
-          () => () => spawnPointExpire(spawnPoints[i]),
+          () => spawnPointExpire(spawnPoints[i]),
           expiresOn - currentTime
         );
 

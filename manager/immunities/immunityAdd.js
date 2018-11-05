@@ -12,7 +12,7 @@ module.exports = async immunityInstance => {
     const currentTime = Date.now();
 
     const expireTimer = setTimeout(
-      () => () => immunityExpire(immunityInstance),
+      () => immunityExpire(immunityInstance),
       expiresOn - currentTime
     );
 

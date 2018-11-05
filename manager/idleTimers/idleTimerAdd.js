@@ -17,7 +17,7 @@ module.exports = async idleTimerInstance => {
 
     if (bootOn) {
       const bootTimer = setTimeout(
-        () => () => idleTimerBoot(idleTimerInstance),
+        () => idleTimerBoot(idleTimerInstance),
         bootOn - currentTime
       );
 
@@ -26,7 +26,7 @@ module.exports = async idleTimerInstance => {
 
     if (disengageOn) {
       const disengageTimer = setTimeout(
-        () => () => idleTimerDisengage(idleTimerInstance),
+        () => idleTimerDisengage(idleTimerInstance),
         disengageOn - currentTime
       );
 

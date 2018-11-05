@@ -12,7 +12,7 @@ module.exports = async cooldownInstance => {
     const currentTime = Date.now();
 
     const expireTimer = setTimeout(
-      () => () => cooldownExpire(cooldownInstance),
+      () => cooldownExpire(cooldownInstance),
       expiresOn - currentTime
     );
 

@@ -31,7 +31,7 @@ module.exports = async (id, managers) => {
         const currentTime = Date.now();
 
         const summonTimer = setTimeout(
-          () => () => portalSummon(portals[i]),
+          () => portalSummon(portals[i]),
           summonOn > currentTime ? summonOn - currentTime : 0
         );
 

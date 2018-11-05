@@ -17,7 +17,7 @@ module.exports = async conditionInstance => {
 
     if (expiresOn) {
       const expireTimer = setTimeout(
-        () => () => conditionExpire(conditionInstance),
+        () => conditionExpire(conditionInstance),
         expiresOn - currentTime
       );
 
@@ -26,7 +26,7 @@ module.exports = async conditionInstance => {
 
     if (triggerOn) {
       const triggerTimer = setTimeout(
-        () => () => conditionTrigger(conditionInstance),
+        () => conditionTrigger(conditionInstance),
         triggerOn - currentTime
       );
 

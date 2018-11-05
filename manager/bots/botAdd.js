@@ -16,14 +16,14 @@ module.exports = async botInstance => {
     const currentTime = Date.now();
 
     const actionTimer = setTimeout(
-      () => () => botAction(botInstance),
+      () => botAction(botInstance),
       actionOn - currentTime
     );
 
     timer.actionTimer = actionTimer;
 
     const moveTimer = setTimeout(
-      () => () => botMove(botInstance),
+      () => botMove(botInstance),
       moveOn - currentTime
     );
 

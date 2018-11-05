@@ -35,7 +35,7 @@ module.exports = async (id, managers) => {
         let triggerTimer;
         if (triggerOn) {
           triggerTimer = setTimeout(
-            () => () => conditionTrigger(conditions[i]),
+            () => conditionTrigger(conditions[i]),
             triggerOn > currentTime ? triggerOn - currentTime : 0
           );
         }
@@ -43,7 +43,7 @@ module.exports = async (id, managers) => {
         let expireTimer;
         if (expiresOn) {
           expireTimer = setTimeout(
-            () => () => conditionExpire(conditions[i]),
+            () => conditionExpire(conditions[i]),
             expiresOn - currentTime
           );
         }

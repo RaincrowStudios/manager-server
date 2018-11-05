@@ -32,14 +32,14 @@ module.exports = async (id, managers) => {
           const currentTime = Date.now();
 
           const actionTimer = setTimeout(
-            () => () => botAction(bots[i]),
+            () => botAction(bots[i]),
             actionOn > currentTime ? actionOn - currentTime : 0
           );
 
           let moveTimer;
           if (moveOn) {
             moveTimer = setTimeout(
-              () => () => botMove(bots[i]),
+              () => botMove(bots[i]),
               moveOn > currentTime ? moveOn - currentTime : 0
             );
           }

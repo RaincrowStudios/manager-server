@@ -10,7 +10,7 @@ module.exports = async () => {
     const currentTime = Date.now();
 
     const resetTimer = setTimeout(
-      () => () => dailiesReset(),
+      () => dailiesReset(),
       expiresOn > currentTime ? expiresOn - currentTime : 0
     );
 
