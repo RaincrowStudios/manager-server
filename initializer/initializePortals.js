@@ -10,7 +10,7 @@ module.exports = async (id, managers) => {
   const portals = await getActiveSet("portals");
 
   if (portals.length) {
-    for (let i = 0; i < portals.length; i++) {
+    for (let i = 0, length = portals.length; i < length; i++) {
       if (!portals[i] || !(await checkKeyExistance(portals[i]))) {
         removeFromAll("portals", portals[i]);
         continue;

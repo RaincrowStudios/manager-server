@@ -13,7 +13,7 @@ module.exports = async (id, managers) => {
   const spirits = await getActiveSet("spirits");
 
   if (spirits.length) {
-    for (let i = 0; i < spirits.length; i++) {
+    for (let i = 0, length = spirits.length; i < length; i++) {
       if (!spirits[i] || !(await checkKeyExistance(spirits[i]))) {
         removeFromAll("spirits", spirits[i]);
         continue;

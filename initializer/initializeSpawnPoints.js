@@ -10,7 +10,7 @@ module.exports = async (id, managers) => {
   const spawnPoints = await getActiveSet("spawnPoints");
 
   if (spawnPoints.length) {
-    for (let i = 0; i < spawnPoints.length; i++) {
+    for (let i = 0, length = spawnPoints.length; i < length; i++) {
       if (!spawnPoints[i] || !(await checkKeyExistance(spawnPoints[i]))) {
         removeFromAll("spawnPoints", spawnPoints[i]);
         continue;

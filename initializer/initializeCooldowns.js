@@ -10,7 +10,7 @@ module.exports = async (id, managers) => {
   const cooldowns = await getActiveSet("cooldowns");
 
   if (cooldowns.length) {
-    for (let i = 0; i < cooldowns.length; i++) {
+    for (let i = 0, length = cooldowns.length; i < length; i++) {
       if (!cooldowns[i] || !(await checkKeyExistance(cooldowns[i]))) {
         removeFromAll("cooldowns", cooldowns[i]);
         continue;

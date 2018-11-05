@@ -14,7 +14,7 @@ module.exports = (listName, entries, values) => {
       }
 
       const entriesValues = [];
-      for (let i = 0; i < entries.length; i++) {
+      for (let i = 0, length = entries.length; i < length; i++) {
         entriesValues.push(entries[i], JSON.stringify(values[i]));
       }
 

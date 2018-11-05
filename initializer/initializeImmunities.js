@@ -10,7 +10,7 @@ module.exports = async (id, managers) => {
   const immunities = await getActiveSet("immunities");
 
   if (immunities.length) {
-    for (let i = 0; i < immunities.length; i++) {
+    for (let i = 0, length = immunities.length; i < length; i++) {
       if (!immunities[i] || !(await checkKeyExistance(immunities[i]))) {
         removeFromAll("immunities", immunities[i]);
         continue;

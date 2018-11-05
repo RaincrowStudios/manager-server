@@ -11,7 +11,7 @@ module.exports = async (id, managers) => {
   const bots = await getActiveSet("bots");
 
   if (bots.length) {
-    for (let i = 0; i < bots.length; i++) {
+    for (let i = 0, length = bots.length; i < length; i++) {
       if (!bots[i] || !(await checkKeyExistance(bots[i]))) {
         removeFromAll("bots", bots[i]);
         removeFromAll("characters", bots[i]);

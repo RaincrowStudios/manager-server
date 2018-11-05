@@ -11,7 +11,7 @@ module.exports = async (id, managers) => {
   const idleTimers = await getActiveSet("idleTimers");
 
   if (idleTimers.length) {
-    for (let i = 0; i < idleTimers.length; i++) {
+    for (let i = 0, length = idleTimers.length; i < length; i++) {
       if (!idleTimers[i] || !(await checkKeyExistance(idleTimers[i]))) {
         removeFromAll("idleTimers", idleTimers[i]);
         continue;

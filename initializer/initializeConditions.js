@@ -11,7 +11,7 @@ module.exports = async (id, managers) => {
   const conditions = await getActiveSet("conditions");
 
   if (conditions.length) {
-    for (let i = 0; i < conditions.length; i++) {
+    for (let i = 0, length = conditions.length; i < length; i++) {
       if (!conditions[i] || !(await checkKeyExistance(conditions[i]))) {
         removeFromAll("conditions", conditions[i]);
         continue;

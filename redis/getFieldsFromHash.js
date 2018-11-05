@@ -16,7 +16,7 @@ module.exports = (instance, fields) => {
           throw new Error("5300");
         }
         const object = {};
-        for (let i = 0; i < fields.length; i++) {
+        for (let i = 0, length = fields.length; i < length; i++) {
           const result = JSON.parse(results[i]);
           if (result !== null || result !== undefined) {
             object[fields[i]] = result;

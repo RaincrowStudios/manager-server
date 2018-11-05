@@ -13,7 +13,7 @@ module.exports = async (id, managers) => {
   const dukes = await getActiveSet("dukes");
 
   if (dukes.length) {
-    for (let i = 0; i < dukes.length; i++) {
+    for (let i = 0, length = dukes.length; i < length; i++) {
       if (!dukes[i] || !(await checkKeyExistance(dukes[i]))) {
         removeFromAll("dukes", dukes[i]);
         continue;
