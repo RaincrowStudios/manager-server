@@ -23,7 +23,7 @@ async function dailiesReset() {
       timers.update(dailyTimers);
     }
 
-    return informGame("daily", "covens", "head", "covens/daily/reset");
+    return informGame("daily", "covens", "head", "covens/daily/reset", 1);
   } catch (err) {
     return handleError(err);
   }

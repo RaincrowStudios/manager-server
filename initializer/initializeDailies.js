@@ -9,14 +9,10 @@ module.exports = async (id, managers) => {
     "expiresOn"
   ]);
 
-  console.log("here");
-
   if (manager === id || !managers.includes(manager)) {
     await addEntriesToList("dailies", ["manager"], [id]);
 
     const currentTime = Date.now();
-
-    console.log(expiresOn);
 
     const resetTimer = setTimeout(
       () => () => dailiesReset(),
