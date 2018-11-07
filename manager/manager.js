@@ -17,6 +17,7 @@ const spiritAdd = require('./spirits/spiritAdd')
 const spiritStart = require('./spirits/spiritStart')
 const clearTimers = require('../utils/clearTimers')
 const stopTimers = require('../utils/stopTimers')
+const getManagedInstancesList = require('../utils/getManagedInstancesList')
 
 const addTimers = {
   bot: botAdd,
@@ -39,7 +40,9 @@ const startTimers = {
 }
 
 async function manager(message) {
+  let managers = []
   let manager
+
   switch (message.command) {
     case 'initialize':
       initializer(message.instance)
@@ -48,8 +51,12 @@ async function manager(message) {
       clearTimers(message.instance)
       break
     case 'start':
+      if (process.env.NODE_ENV === 'production') {
+        managers = await getManagedInstancesList()
+      }
+
       manager = await getOneFromHash(message.instance, 'manager')
-      if (manager === process.env.INSTANCE_ID) {
+      if (manager === process.env.INSTANCE_ID || !managers.includes(manager)) {
         await startTimers[message.type](message.instance)
       }
       break
