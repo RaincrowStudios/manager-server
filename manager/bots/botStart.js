@@ -4,38 +4,42 @@ const handleError = require('../../utils/handleError')
 const botAction = require('./botAction')
 const botMove = require('./botMove')
 
-module.exports = async (botInstance) => {
+module.exports = async botInstance => {
   try {
-    const botTimers = timers.by('instance', botInstance)
-
-    const {actionOn, moveOn} = await getFieldsFromHash(
-      botInstance,
-      ['actionOn', 'moveOn']
-    )
+    const { actionOn, moveOn } = await getFieldsFromHash(botInstance, [
+      'actionOn',
+      'moveOn'
+    ])
 
     const currentTime = Date.now()
 
-    const actionTimer =
-      setTimeout(() =>
-        botAction(botInstance),
-        actionOn - currentTime
-      )
+    const actionTimer = setTimeout(
+      () => botAction(botInstance),
+      actionOn - currentTime
+    )
 
     botTimers.actionTimer = actionTimer
 
-    const moveTimer =
-      setTimeout(() =>
-        botMove(botInstance),
-        moveOn - currentTime
-      )
+    const moveTimer = setTimeout(
+      () => botMove(botInstance),
+      moveOn - currentTime
+    )
 
-    botTimers.moveTimer = moveTimer
+    let botTimers = timers.by('instance', botInstance)
 
-    timers.update(botTimers)
+    if (botTimers) {
+      botTimers.actionTimer = actionTimer
+      botTimers.moveTimer = moveTimer
+      timers.update(botTimers)
+    } else {
+      botTimers = { instance: botInstance }
+      botTimers.actionTimer = actionTimer
+      botTimers.moveTimer = moveTimer
+      timers.insert(botTimers)
+    }
 
     return true
-  }
-  catch (err) {
+  } catch (err) {
     return handleError(err)
   }
 }
