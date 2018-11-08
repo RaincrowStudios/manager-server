@@ -18,8 +18,6 @@ module.exports = async botInstance => {
       actionOn - currentTime
     )
 
-    botTimers.actionTimer = actionTimer
-
     const moveTimer = setTimeout(
       () => botMove(botInstance),
       moveOn - currentTime

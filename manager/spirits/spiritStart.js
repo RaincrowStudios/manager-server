@@ -18,8 +18,6 @@ module.exports = async spiritInstance => {
       actionOn - currentTime
     )
 
-    spiritTimers.actionTimer = actionTimer
-
     let moveTimer
     if (moveOn) {
       moveTimer = setTimeout(
