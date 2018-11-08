@@ -1,4 +1,4 @@
 module.exports = {
   port: 8080,
-  redisAddress: "1.255"
-};
+  redisAddress: '1.255'
+}
