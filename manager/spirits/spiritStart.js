@@ -26,8 +26,6 @@ module.exports = async spiritInstance => {
       )
     }
 
-    timers.update(spiritTimers)
-
     let spiritTimers = timers.by('instance', spiritInstance)
 
     if (spiritTimers) {
