@@ -67,27 +67,27 @@ process.on('unhandledRejection', async (reason, location) => {
   handleError({ reason, location })
 })
 
-process.on('SIGTERM', () => {
-  server.close(async () => {
-    for (const client of clients.where(() => true).map(entry => entry.client)) {
-      client.quit()
-    }
+process.on('SIGTERM', async () => {
+  for (const client of clients.where(() => true).map(entry => entry.client)) {
+    client.quit()
+  }
 
-    for (const subscriber of subscribers
-      .where(() => true)
-      .map(entry => entry.subscriber)) {
-      subscriber.quit()
-    }
+  for (const subscriber of subscribers
+    .where(() => true)
+    .map(entry => entry.subscriber)) {
+    subscriber.quit()
+  }
 
-    for (const timer of timers.where(() => true).map(entry => entry.timer)) {
-      clearTimeout(timer)
-    }
+  for (const timer of timers.where(() => true).map(entry => entry.timer)) {
+    clearTimeout(timer)
+  }
 
-    await informManager({
-      command: 'initialize',
-      instance: process.env.INSTANCE_ID
-    })
+  await informManager({
+    command: 'initialize',
+    instance: process.env.INSTANCE_ID
+  })
 
+  server.close(() => {
     process.exit(0)
   })
 })
