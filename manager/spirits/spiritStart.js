@@ -11,32 +11,29 @@ module.exports = async spiritInstance => {
       'moveOn'
     ])
 
+    const spiritTimers = timers.by('instance', spiritInstance)
+
     const currentTime = Date.now()
 
-    const actionTimer = setTimeout(
-      () => spiritAction(spiritInstance),
-      actionOn - currentTime
-    )
+    if (spiritTimers && !spiritTimers.actionTimer) {
+      const actionTimer = setTimeout(
+        () => spiritAction(spiritInstance),
+        actionOn - currentTime
+      )
+      spiritTimers.actionTimer = actionTimer
+    }
 
-    let moveTimer
-    if (moveOn) {
-      moveTimer = setTimeout(
+    if (moveOn && spiritTimers && !spiritTimers.moveTimer) {
+      const moveTimer = setTimeout(
         () => spiritMove(spiritInstance),
         moveOn - currentTime
       )
+
+      spiritTimers.moveTimer = moveTimer
     }
 
-    let spiritTimers = timers.by('instance', spiritInstance)
-
     if (spiritTimers) {
-      spiritTimers.actionTimer = actionTimer
-      spiritTimers.moveTimer = moveTimer
       timers.update(spiritTimers)
-    } else {
-      spiritTimers = { instance: spiritInstance }
-      spiritTimers.actionTimer = actionTimer
-      spiritTimers.moveTimer = moveTimer
-      timers.insert(spiritTimers)
     }
 
     return true

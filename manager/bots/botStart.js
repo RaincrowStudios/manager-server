@@ -11,30 +11,29 @@ module.exports = async botInstance => {
       'moveOn'
     ])
 
+    const botTimers = timers.by('instance', botInstance)
+
     const currentTime = Date.now()
 
-    const actionTimer = setTimeout(
-      () => botAction(botInstance),
-      actionOn - currentTime
-    )
+    if (botTimers && !botTimers.actionTimer) {
+      const actionTimer = setTimeout(
+        () => botAction(botInstance),
+        actionOn - currentTime
+      )
 
-    const moveTimer = setTimeout(
-      () => botMove(botInstance),
-      moveOn - currentTime
-    )
-
-    let botTimers = timers.by('instance', botInstance)
-
-    if (botTimers) {
       botTimers.actionTimer = actionTimer
-      botTimers.moveTimer = moveTimer
-      timers.update(botTimers)
-    } else {
-      botTimers = { instance: botInstance }
-      botTimers.actionTimer = actionTimer
-      botTimers.moveTimer = moveTimer
-      timers.insert(botTimers)
     }
+
+    if (botTimers && !botTimers.moveTimer) {
+      const moveTimer = setTimeout(
+        () => botMove(botInstance),
+        moveOn - currentTime
+      )
+
+      botTimers.moveTimer = moveTimer
+    }
+
+    timers.update(botTimers)
 
     return true
   } catch (err) {
