@@ -1,29 +1,29 @@
-const timers = require("../../database/timers");
-const getOneFromHash = require("../../redis/getOneFromHash");
-const handleError = require("../../utils/handleError");
-const collectibleExpire = require("./collectibleExpire");
+const timers = require('../../database/timers')
+const getOneFromHash = require('../../redis/getOneFromHash')
+const handleError = require('../../utils/handleError')
+const collectibleExpire = require('./collectibleExpire')
 
 module.exports = async collectibleInstance => {
   try {
-    const timer = { instance: collectibleInstance };
+    const timer = { instance: collectibleInstance }
 
-    const expiresOn = await getOneFromHash(collectibleInstance, "expiresOn");
+    const currentTime = Date.now()
 
-    const currentTime = Date.now();
+    const expiresOn =
+      (await getOneFromHash(collectibleInstance, 'expiresOn')) ||
+      currentTime + 24 * 60 * 60 * 1000
 
-    if (expiresOn) {
-      const expireTimer = setTimeout(
-        () => collectibleExpire(collectibleInstance),
-        expiresOn - currentTime
-      );
+    const expireTimer = setTimeout(
+      () => collectibleExpire(collectibleInstance),
+      expiresOn - currentTime
+    )
 
-      timer.expireTimer = expireTimer;
+    timer.expireTimer = expireTimer
 
-      timers.insert(timer);
-    }
+    timers.insert(timer)
 
-    return true;
+    return true
   } catch (err) {
-    return handleError(err);
+    return handleError(err)
   }
-};
+}
