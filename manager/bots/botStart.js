@@ -1,11 +1,20 @@
 const timers = require('../../database/timers')
+const checkKeyExistance = require('../../redis/getFieldsFromHash')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
+const removeFromAll = require('../../redis/removeFromAll')
 const handleError = require('../../utils/handleError')
 const botAction = require('./botAction')
 const botMove = require('./botMove')
 
 module.exports = async botInstance => {
   try {
+    const exists = await checkKeyExistance(botInstance)
+
+    if (!exists) {
+      await Promise.all([removeFromAll('bots'), removeFromAll('characters')])
+      return true
+    }
+
     const { actionOn, moveOn } = await getFieldsFromHash(botInstance, [
       'actionOn',
       'moveOn'
