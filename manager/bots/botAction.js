@@ -13,7 +13,6 @@ async function botAction(botInstance) {
 
     if (actionFreq) {
       if (state !== 'dead') {
-        console.log('bot acting...')
         informGame(botInstance, 'covens', 'head', 'covens/npe/action')
       }
 

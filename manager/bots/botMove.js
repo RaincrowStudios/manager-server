@@ -13,7 +13,6 @@ async function botMove(botInstance) {
 
     if (moveFreq) {
       if (state !== 'dead') {
-        console.log('bot moving...')
         informGame(botInstance, 'covens', 'head', 'covens/npe/move')
       }
 
