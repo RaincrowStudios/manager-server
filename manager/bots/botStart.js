@@ -20,7 +20,7 @@ module.exports = async botInstance => {
       'moveOn'
     ])
 
-    const botTimers = timers.by('instance', botInstance)
+    let botTimers = timers.by('instance', botInstance)
 
     const currentTime = Date.now()
 
@@ -42,7 +42,12 @@ module.exports = async botInstance => {
       botTimers.moveTimer = moveTimer
     }
 
-    timers.update(botTimers)
+    if (botTimers.instance) {
+      timers.update(botTimers)
+    } else {
+      botTimers.instance = botInstance
+      timers.insert(botTimers)
+    }
 
     return true
   } catch (err) {
