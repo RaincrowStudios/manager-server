@@ -1,5 +1,5 @@
 const timers = require('../../database/timers')
-const checkKeyExistance = require('../../redis/getFieldsFromHash')
+const checkKeyExistance = require('../../redis/checkKeyExistance')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const removeFromAll = require('../../redis/removeFromAll')
 const handleError = require('../../utils/handleError')

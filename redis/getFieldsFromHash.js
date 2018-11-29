@@ -1,31 +1,31 @@
-const selectRedisClient = require("./selectRedisClient");
+const selectRedisClient = require('./selectRedisClient')
 
 module.exports = (instance, fields) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!instance || typeof instance !== "string") {
-        throw new Error("Invalid instance: " + instance);
+      if (!instance || typeof instance !== 'string') {
+        throw new Error('Invalid instance: ' + instance)
       } else if (!fields || !Array.isArray(fields)) {
-        throw new Error("Invalid fields: " + fields);
+        throw new Error('Invalid fields: ' + fields)
       }
 
-      const client = await selectRedisClient(instance);
+      const client = await selectRedisClient(instance)
 
       client.hmget([instance, ...fields], (err, results) => {
         if (err) {
-          throw new Error("5300");
+          throw new Error('5300')
         }
-        const object = {};
+        const object = {}
         for (let i = 0, length = fields.length; i < length; i++) {
-          const result = JSON.parse(results[i]);
+          const result = JSON.parse(results[i])
           if (result !== null || result !== undefined) {
-            object[fields[i]] = result;
+            object[fields[i]] = result
           }
         }
-        resolve(object);
-      });
+        resolve(object)
+      })
     } catch (err) {
-      reject(err);
+      reject(err)
     }
-  });
-};
+  })
+}
