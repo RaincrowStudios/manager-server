@@ -61,6 +61,7 @@ async function manager(message) {
       }
       break
     case 'stop':
+      console.log('bot stopping...')
       stopTimers(message.instance)
       break
     case 'add':
