@@ -15,11 +15,11 @@ async function informGame(instance, game, method, route, priority = 0) {
 
     let url
     if (process.env.NODE_ENV === 'development') {
-      url = 'http://localhost:8080/api/ai' + route
+      url = 'http://localhost:8080/ai' + route
     } else if (process.env.NODE_ENV === 'staging') {
-      url = 'https://staging.raincrowstudios.xyz/api/ai' + route
+      url = 'https://staging.raincrowstudios.xyz/ai' + route
     } else {
-      url = 'https://raincrowstudios.xyz/api/ai' + route
+      url = 'https://raincrowstudios.xyz/ai' + route
     }
 
     await axios({
