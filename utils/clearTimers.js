@@ -1,14 +1,14 @@
-const timers = require("../database/timers");
+const timers = require('../database/timers')
 
 module.exports = instance => {
-  const timersToClear = timers.by("instance", instance);
-  if (timersToClear && typeof timersToClear === "object") {
+  const timersToClear = timers.by('instance', instance)
+  if (timersToClear && typeof timersToClear === 'object') {
     for (const key of Object.keys(timersToClear)) {
-      if (key !== "meta" && typeof timersToClear[key] === "object") {
-        clearTimeout(timersToClear[key]);
+      if (key !== 'meta' && typeof timersToClear[key] === 'object') {
+        clearTimeout(timersToClear[key])
       }
     }
 
-    timers.remove(timersToClear);
+    timers.remove(timersToClear)
   }
-};
+}
