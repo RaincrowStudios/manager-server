@@ -3,6 +3,7 @@ const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
+const checkActivity = require('../../utils/checkActivity')
 
 async function botMove(botInstance) {
   try {
@@ -13,7 +14,10 @@ async function botMove(botInstance) {
 
     if (moveFreq) {
       if (state !== 'dead') {
-        informGame(botInstance, 'covens', 'head', 'covens/npe/move')
+        let shouldPerformAction = await checkActivity(botInstance, 'move')
+        if (shouldPerformAction) {
+          informGame(botInstance, 'covens', 'head', 'covens/npe/move')
+        }
       }
 
       const currentTime = Date.now()
