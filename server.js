@@ -1,13 +1,4 @@
 'use strict'
-
-require('elastic-apm-node').start({
-  // Set required service name (allowed characters: a-z, A-Z, 0-9, -, _, and space)
-  serviceName: 'Raincrow Live Manager Server',
-  // Use if APM Server requires a token
-  secretToken: '',
-  // Set custom APM Server URL (default: http://localhost:8200)
-  serverUrl: 'http://elasticapm.jdo37mn.com:8200'
-})
 const http = require('http')
 const jwt = require('jsonwebtoken')
 const keys = require('../keys/keys')
@@ -48,7 +39,6 @@ async function startup() {
       } else {
         const token = req.headers.authorization.split(' ')[1]
         const decoded = jwt.verify(token, Buffer.from(keys.jwt, 'base64'))
-
         if (decoded.fromGame) {
           if (decoded.initialize) {
             await initializer()
