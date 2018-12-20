@@ -5,7 +5,6 @@ const updateHashField = require('../../redis/updateHashField')
 const removeFromAll = require('../../redis/removeFromAll')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
-const checkActivity = require('../../utils/checkActivity')
 
 async function spiritMove(spiritInstance) {
   try {
@@ -38,28 +37,24 @@ async function spiritMove(spiritInstance) {
 
     newMoveOn = currentTime + seconds * 1000
 
-    let shouldPerformAction = await checkActivity(spiritInstance, 'move')
+    update.push(updateHashField(spiritInstance, 'moveOn', newMoveOn))
 
-    if (shouldPerformAction) {
-      update.push(updateHashField(spiritInstance, 'moveOn', newMoveOn))
+    if (engagement && Object.keys(engagement).length) {
+      const chance = attributes.includes('fleet') ? 0.5 : 0.1
+      const roll = Math.random()
 
-      if (engagement && Object.keys(engagement).length) {
-        const chance = attributes.includes('fleet') ? 0.5 : 0.1
-        const roll = Math.random()
-
-        if (roll <= chance) {
-          update.push(
-            informGame(spiritInstance, 'covens', 'head', 'covens/npe/move')
-          )
-        }
-      } else {
+      if (roll <= chance) {
         update.push(
           informGame(spiritInstance, 'covens', 'head', 'covens/npe/move')
         )
       }
-
-      await Promise.all(update)
+    } else {
+      update.push(
+        informGame(spiritInstance, 'covens', 'head', 'covens/npe/move')
+      )
     }
+
+    await Promise.all(update)
 
     const newTimer = setTimeout(
       () => spiritMove(spiritInstance),

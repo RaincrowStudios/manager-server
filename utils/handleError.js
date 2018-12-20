@@ -1,7 +1,5 @@
 module.exports = (err, res) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error(err)
-  }
+  console.error(err)
 
   /*
   informLogger({

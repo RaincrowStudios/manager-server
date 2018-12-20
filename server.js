@@ -39,6 +39,7 @@ async function startup() {
       } else {
         const token = req.headers.authorization.split(' ')[1]
         const decoded = jwt.verify(token, Buffer.from(keys.jwt, 'base64'))
+        console.dir(decoded, { depth: null })
         if (decoded.fromGame) {
           if (decoded.initialize) {
             await initializer()

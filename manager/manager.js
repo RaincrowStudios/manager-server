@@ -3,6 +3,7 @@ const getOneFromHash = require('../redis/getOneFromHash')
 const initializer = require('../initializer/initializer')
 const botAdd = require('./bots/botAdd')
 const botStart = require('./bots/botStart')
+const botActivate = require('./bots/botActivate')
 const collectibleAdd = require('./collectibles/collectibleAdd')
 const cooldownAdd = require('./cooldowns/cooldownAdd')
 const conditionAdd = require('./conditions/conditionAdd')
@@ -54,10 +55,19 @@ async function manager(message) {
       if (process.env.NODE_ENV === 'production') {
         managers = await getManagedInstancesList()
       }
-
       manager = await getOneFromHash(message.instance, 'manager')
       if (manager === process.env.INSTANCE_ID || !managers.includes(manager)) {
         await startTimers[message.type](message.instance)
+      }
+      break
+    case 'activate':
+      if (process.env.NODE_ENV === 'production') {
+        managers = await getManagedInstancesList()
+      }
+
+      manager = await getOneFromHash(message.instance, 'manager')
+      if (manager === process.env.INSTANCE_ID || !managers.includes(manager)) {
+        await botActivate(message.instance)
       }
       break
     case 'stop':

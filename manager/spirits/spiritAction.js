@@ -5,7 +5,6 @@ const removeFromAll = require('../../redis/removeFromAll')
 const updateHashField = require('../../redis/updateHashField')
 const handleError = require('../../utils/handleError')
 const informGame = require('../../utils/informGame')
-const checkActivity = require('../../utils/checkActivity')
 
 async function spiritAction(spiritInstance) {
   try {
@@ -43,14 +42,10 @@ async function spiritAction(spiritInstance) {
 
     newActionOn = currentTime + seconds * 1000
 
-    let shouldPerformAction = await checkActivity(spiritInstance, 'move')
-
-    if (shouldPerformAction) {
-      await Promise.all([
-        informGame(spiritInstance, 'covens', 'head', 'covens/npe/action'),
-        updateHashField(spiritInstance, 'actionOn', newActionOn)
-      ])
-    }
+    await Promise.all([
+      informGame(spiritInstance, 'covens', 'head', 'covens/npe/action'),
+      updateHashField(spiritInstance, 'actionOn', newActionOn)
+    ])
 
     const newTimer = setTimeout(
       () => spiritAction(spiritInstance),
