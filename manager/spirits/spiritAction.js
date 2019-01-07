@@ -1,4 +1,4 @@
-const timers = require('../../database/timers')
+//const timers = require('../../database/timers')
 const getFieldsFromHash = require('../../redis/getFieldsFromHash')
 const getOneFromList = require('../../redis/getOneFromList')
 const removeFromAll = require('../../redis/removeFromAll')
@@ -47,7 +47,7 @@ async function spiritAction(spiritInstance) {
       updateHashField(spiritInstance, 'actionOn', newActionOn)
     ])
 
-    const newTimer = setTimeout(
+    /*const newTimer = setTimeout(
       () => spiritAction(spiritInstance),
       newActionOn - currentTime
     )
@@ -57,7 +57,7 @@ async function spiritAction(spiritInstance) {
       spiritTimers.actionTimer = newTimer
       timers.update(spiritTimers)
     }
-    return true
+    return true*/
   } catch (err) {
     return handleError(err)
   }
